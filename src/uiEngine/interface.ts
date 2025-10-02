@@ -1,4 +1,7 @@
 import { IconName } from "lucide-react/dynamic";
+import { IFontWeight, ITextSize, IVariant } from "./components/text-field";
+import { IAlertAppearance, IAlertSize, IAlertVariant } from "./components/alert-field";
+import { IConditions } from "./hooks/useNodeConditions";
 
 export type IFieldType =
     | "input"
@@ -15,7 +18,7 @@ export interface IFieldSchema {
     type: "field";
     name: string;
     label?: string;
-    fieldType: IFieldType;
+    fieldType?: IFieldType;
     placeholder?: string;
     options?: { label: string; value: any }[]; // cho select, radio
     rules?: {
@@ -26,15 +29,44 @@ export interface IFieldSchema {
     };
     colSpan?: number;
     labelPosition?: "top" | "left" | "right";
-    iconLeft?: IconName
+    labelWidth?: number;
+    iconLeft?: IconName;
+    className?: string
 }
 export interface IButtonSchema {
     type: "button";
     label: string;
+    labelLoading?: string;
     buttonType?: IButtonType;
     variant?: "secondary" | "primary" | "destructive" | "mono" | "outline" | "dashed" | "ghost" | "dim" | "foreground" | "inverse";
+    appearance?: "ghost" | "default";
+    handleClick?: string;
+    handleProcessing?: string;
     className?: string
-    onClick?: string;
+}
+
+interface ITextSchema {
+    type: 'text',
+    content: React.ReactNode;
+    variant?: IVariant;
+    size?: ITextSize;
+    weight?: IFontWeight;
+    muted?: boolean;
+    className?: string
+}
+
+interface IAlertSchema {
+    type: 'alert',
+    bind?: string,
+    className?: string;
+    variant?: IAlertVariant;
+    titleContent?: string;
+    titleClassName?: string;
+    appearance?: IAlertAppearance;
+    size?: IAlertSize;
+    icon?: { name: IconName, size?: number, color?: string, className?: string };
+    close?: boolean;
+    handleClose?: string;
 }
 
 interface ILine {
@@ -47,14 +79,21 @@ interface IEmptyFieldProps {
     type: 'empty';
     width?: string;
     height?: string;
-    className?: string;
+    className?: string
 }
-
-export type IFieldAll = { span?: number } & (IFieldSchema
+export type IFieldBase = {
+    span?: number;
+    deps?: string | string[];
+    conditions?: IConditions
+};
+export type IFieldAll = IFieldBase & (IFieldSchema
     | IButtonSchema
+    | ITextSchema
     | IGroupSchema
     | IEmptyFieldProps
-    | ILine)
+    | ILine
+    | IAlertSchema
+)
 
 export interface IGroupSchema {
     type: "group";
@@ -63,6 +102,7 @@ export interface IGroupSchema {
     columns?: number;
     direction?: "row";
     gap?: number;
+    className?: string;
     children: (IFieldAll)[];
 }
 

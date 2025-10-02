@@ -172,3 +172,7 @@ export function getSupabaseUrl() {
   // Nếu là subdomain kiểu 0102236276.vaonline.vn
   return `https://${hostname}`;
 }
+
+export function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

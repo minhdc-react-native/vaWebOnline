@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import { Control, FieldValues } from "react-hook-form";
 
 interface CheckboxFieldProps {
@@ -8,6 +9,7 @@ interface CheckboxFieldProps {
     label?: string;
     labelPosition?: "top" | "left" | "right";
     className?: string;
+    disabled?: boolean;
 }
 
 export function CheckboxField({
@@ -16,17 +18,18 @@ export function CheckboxField({
     label,
     labelPosition = "right",
     className,
+    disabled
 }: CheckboxFieldProps) {
     return (
         <FormField
             control={control}
             name={name}
+            disabled={disabled}
             render={({ field }) => {
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 return (
                     <FormItem
-                        className={`${isHorizontal ? "flex flex-row items-center space-x-2" : "flex flex-col space-y-1"
-                            } ${className || ""}`}
+                        className={cn(isHorizontal ? "flex flex-row items-center space-x-2" : "flex flex-col space-y-1", className)}
                     >
                         {label && labelPosition === "left" && (
                             <FormLabel className="text-sm font-normal cursor-pointer">{label}</FormLabel>

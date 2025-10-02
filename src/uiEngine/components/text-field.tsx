@@ -1,79 +1,58 @@
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    FormField,
-    FormItem,
-    FormLabel,
-    FormControl,
-    useFormField
-} from "@/components/ui/form";
-import { ErrorMessage } from "./erro-message";
-import { Control, ControllerRenderProps, FieldValues } from "react-hook-form";
-import { DynamicIcon, IconName } from "lucide-react/dynamic";
-import { useCallback } from "react";
+import React from "react";
+import { cn } from "@/lib/utils";
+export type ITextSize = "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
+export type IVariant = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+export type IFontWeight = "normal" | "medium" | "semibold" | "bold";
 
-interface TextFieldProps {
-    control: Control<FieldValues, any, FieldValues>;
-    name: string;
-    label?: string;
-    placeholder?: string;
-    type?: "input" | "textarea";
-    labelPosition?: "top" | "left" | "right";
-    iconLeft?: IconName
-    className?: string;
+interface ITextFieldProps extends React.HTMLAttributes<
+    HTMLParagraphElement | HTMLHeadingElement | HTMLSpanElement
+> {
+    variant?: IVariant;
+    size?: ITextSize;
+    weight?: IFontWeight;
+    muted?: boolean;
+    children: React.ReactNode;
 }
 
-export function TextField({
-    control,
-    name,
-    label,
-    placeholder,
-    type = "input",
-    labelPosition = "top",
-    iconLeft,
-    className
-}: TextFieldProps) {
-    const renderInput = useCallback((field: ControllerRenderProps<FieldValues, string>) => {
-        return <FormControl>{type === "input" ?
-            <Input placeholder={placeholder} {...field} className={iconLeft ? "pl-8" : undefined} />
-            :
-            <Textarea placeholder={placeholder} {...field} className={iconLeft ? "pl-8" : undefined} />}
-        </FormControl>
-    }, [placeholder, type, iconLeft]);
+const sizeMap: Record<ITextSize, string> = {
+    xs: "fs-8",   // nhỏ nhất
+    sm: "fs-7",
+    md: "fs-6",
+    lg: "fs-5",
+    xl: "fs-4",
+    xxl: "fs-3",  // lớn nhất
+};
+
+const weightMap = {
+    normal: "",
+    medium: "fw-medium",
+    semibold: "fw-semibold",
+    bold: "fw-bold",
+};
+
+export const TextField: React.FC<ITextFieldProps> = ({
+    variant = "span",
+    size,
+    weight = "normal",
+    muted = false,
+    className,
+    children,
+    ...rest
+}) => {
+
+    const Tag = variant as React.ElementType;
+
     return (
-
-        <FormField
-            control={control}
-            name={name}
-            render={({ field }) => {
-
-                const isHorizontal = labelPosition === "left" || labelPosition === "right";
-                return (
-                    <FormItem
-                        className={
-                            `${isHorizontal
-                                ? "relative flex flex-row items-center gap-2"
-                                : "relative flex flex-col gap-1"} ${className || ''}`
-                        }
-                    >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
-                        {label && labelPosition === "left" && (
-                            <FormLabel className="min-w-[101px]">{label}</FormLabel>
-                        )}
-                        {iconLeft ? <div className="relative w-full">
-                            <DynamicIcon name={iconLeft} size={24} className='absolute pl-2 top-2/4 -translate-y-2/4 text-gray-400' />
-                            {renderInput(field)}
-                        </div> :
-                            renderInput(field)
-                        }
-
-                        {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}</FormLabel>
-                        )}
-                        <ErrorMessage />
-                    </FormItem>
-                );
-            }}
-        />
+        <Tag
+            className={cn(
+                size && sizeMap[size],
+                weightMap[weight],
+                muted && "text-muted",
+                className
+            )}
+            {...rest}
+        >
+            {children}
+        </Tag>
     );
-}
+};

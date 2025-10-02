@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Control, FieldValues } from "react-hook-form";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { ErrorMessage } from "./erro-message";
+import { cn } from "@/lib/utils";
 
 interface PasswordFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -13,8 +14,10 @@ interface PasswordFieldProps {
     label?: string;
     placeholder?: string;
     labelPosition?: "top" | "left" | 'right';
+    labelWidth?: number;
     iconLeft?: IconName;
     className?: string;
+    disabled?: boolean;
 }
 
 export function PasswordField({
@@ -23,8 +26,10 @@ export function PasswordField({
     label,
     placeholder,
     labelPosition = "top",
+    labelWidth,
     iconLeft,
-    className
+    className,
+    disabled
 }: PasswordFieldProps) {
     const [visible, setVisible] = useState(false);
 
@@ -32,25 +37,29 @@ export function PasswordField({
         <FormField
             control={control}
             name={name}
+            disabled={disabled}
             render={({ field, fieldState }) => (
                 <FormItem>
                     <div
-                        className={
-                            `${labelPosition === "left"
-                                ? "flex items-center gap-2 relative"
-                                : "flex flex-col gap-1 relative"} ${className || ''}`
-                        }
+                        className={cn(labelPosition === "left"
+                            ? "flex items-center gap-2 relative"
+                            : "flex flex-col gap-1 relative", className)}
                     >
-                        {label && <FormLabel>{label}</FormLabel>}
-
+                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
+                        {label && labelPosition === "left" && (
+                            <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
+                        )}
                         <div className="relative w-full">
                             {iconLeft && <DynamicIcon name={iconLeft} size={24} className='absolute pl-2 top-2/4 -translate-y-2/4 text-gray-400' />}
-                            <Input
-                                {...field}
-                                placeholder={placeholder ?? "Enter password"}
-                                type={visible ? "text" : "password"}
-                                className={iconLeft ? "pl-8" : undefined}
-                            />
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    // autoComplete="new-password"
+                                    placeholder={placeholder ?? "Enter password"}
+                                    type={visible ? "text" : "password"}
+                                    className={iconLeft ? "pl-8" : undefined}
+                                />
+                            </FormControl>
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -67,6 +76,9 @@ export function PasswordField({
 
                             <ErrorMessage />
                         </div>
+                        {label && labelPosition === "right" && (
+                            <FormLabel className="ml-2">{label}</FormLabel>
+                        )}
                     </div>
                 </FormItem>
             )}

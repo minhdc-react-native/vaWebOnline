@@ -1,69 +1,125 @@
-import { useForm } from "react-hook-form";
+import { useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildZodFromSchema, buildDefaultValuesFromSchema } from "./build-zod";
-import { IFormSchema, IFieldSchema, IGroupSchema } from "./interface";
+import { IFormSchema, IFieldSchema, IGroupSchema, IFieldBase, IFieldAll } from "./interface";
 import { PasswordField } from "./components/password-field";
 import { CheckboxField } from "./components/checkbox-field";
 import { RadioField } from "./components/radio-field";
-import { TextField } from "./components/text-field";
+import { InputField } from "./components/input-field";
 import { EmptyField } from "./components/empty-field";
 import { ButtonField } from "./components/button-field";
 import { Form } from "@/components/ui/form";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { TextField } from "./components/text-field";
+import { cn } from "@/lib/utils";
+import { AlertField } from "./components/alert-field";
+import { useNodeConditions } from "./hooks/useNodeConditions";
 
-function RenderField({ field, control, className }: { field: IFieldSchema; control: any, className?: string }) {
+interface IRenderField {
+    field: IFieldAll;
+    control: any
+    valuesCheck: Record<string, any>;
+    className?: string;
+}
 
-    switch (field.fieldType) {
-        case "input":
-        case "textarea":
+function RenderField({ field, control, valuesCheck, className }: IRenderField) {
+    const { visible, disabled } = useNodeConditions(field, control, valuesCheck);
+    if (!visible) return null;
+    if (field.type === "field") {
+        const fieldType = field.fieldType || "input";
+        switch (fieldType) {
+            case "input":
+            case "textarea":
+                return (
+                    <InputField
+                        iconLeft={field.iconLeft}
+                        type={fieldType}
+                        control={control}
+                        name={field.name}
+                        disabled={disabled}
+                        label={field.label}
+                        className={className}
+                        placeholder={field.placeholder}
+                        labelPosition={field.labelPosition}
+                        labelWidth={field.labelWidth}
+                    />
+                );
+            case "password":
+                return (
+                    <PasswordField
+                        iconLeft={field.iconLeft}
+                        control={control}
+                        name={field.name}
+                        disabled={disabled}
+                        label={field.label}
+                        className={className}
+                        placeholder={field.placeholder}
+                        labelPosition={field.labelPosition}
+                        labelWidth={field.labelWidth}
+                    />
+                );
+            case "checkbox":
+                return (
+                    <CheckboxField
+                        control={control}
+                        name={field.name}
+                        disabled={disabled}
+                        label={field.label}
+                        className={className}
+                        labelPosition={field.labelPosition}
+                    />
+                );
+            case "radio":
+                return (
+                    <RadioField
+                        control={control}
+                        name={field.name}
+                        disabled={disabled}
+                        label={field.label}
+                        className={className}
+                        options={field.options ?? []}
+                        labelPosition={field.labelPosition}
+                    />
+                );
+            default:
+                return null;
+        }
+    } else {
+        return null;
+    }
+}
+
+function OtherField({ field, control, valuesCheck, className, handleAction }: IRenderField & { handleAction: (action: string) => void; }) {
+    const { getValues } = useFormContext();
+
+    const { visible, disabled } = useNodeConditions(field, control, valuesCheck);
+    if (!visible) return null;
+    switch (field.type) {
+        case "button":
             return (
-                <TextField
-                    key={field.name}
-                    iconLeft={field.iconLeft}
-                    type={field.fieldType}
-                    control={control}
-                    name={field.name}
-                    label={field.label}
-                    className={className}
-                    placeholder={field.placeholder}
-                    labelPosition={field.labelPosition}
-                />
+                <ButtonField btn={field} disabled={disabled} handleAction={handleAction} className={cn(field.className, className)} />
             );
-        case "password":
+        case "text":
             return (
-                <PasswordField
-                    key={field.name}
-                    iconLeft={field.iconLeft}
-                    control={control}
-                    name={field.name}
-                    label={field.label}
-                    className={className}
-                    placeholder={field.placeholder}
-                    labelPosition={field.labelPosition}
-                />
+                <TextField className={cn(field.className, className)} variant={field.variant}
+                    size={field.size} weight={field.weight} muted={field.muted}>
+                    {field.content}
+                </TextField>
             );
-        case "checkbox":
+        case "alert":
+            const titleContent = field.bind ? (getValues(field.bind) || valuesCheck[field.bind]) : '';
             return (
-                <CheckboxField
-                    key={field.name}
-                    control={control}
-                    name={field.name}
-                    label={field.label}
-                    className={className}
-                    labelPosition={field.labelPosition}
-                />
+                <AlertField className={cn(field.className, className)} variant={field.variant} icon={field.icon}
+                    size={field.size} titleContent={titleContent || field.titleContent} titleClassName={field.titleClassName}
+                    close={field.close} onClose={() => field.handleClose && handleAction(field.handleClose)} />
             );
-        case "radio":
+        case "empty":
             return (
-                <RadioField
-                    key={field.name}
-                    control={control}
-                    name={field.name}
-                    label={field.label}
-                    className={className}
-                    options={field.options ?? []}
-                    labelPosition={field.labelPosition}
-                />
+                <EmptyField width={field.width} height={field.height} className={cn(field.className, className)} />
+            );
+        case "line":
+            return (
+                <span className={field.className || (field.styleLine === "y" ? "h-full border-l mx-2" : "w-full border-t mx-2")} />
             );
         default:
             return null;
@@ -74,44 +130,46 @@ function RenderGroup({
     schema,
     control,
     handleAction,
+    valuesCheck
 }: {
-    schema: IGroupSchema;
+    schema: IFieldBase & IGroupSchema;
     control: any;
     handleAction: (action: string) => void;
+    valuesCheck: Record<string, any>;
 }) {
+
     const direction = schema.direction || "col";
     const layoutClass =
         schema.layout === "grid"
-            ? `grid grid-${direction}s-${schema.columns || 2} gap-${schema.gap || 4}`
-            : `flex flex-${direction} gap-${schema.gap || 4}`;
+            ? `grid grid-${direction}s-${schema.columns || 2} gap-${schema.gap || 2}`
+            : `flex flex-${direction} gap-${schema.gap || 2}`;
 
     const spanClass = useCallback((span?: number) => {
         return span === undefined ? undefined : schema.layout === "grid"
-            ? `${direction}-span-[${Math.min(span, (schema.columns || 2))}]`
-            : `flex-[${Math.max(span, (schema.columns || 2))}]`;
+            ? `${direction}-span-${Math.min(span, (schema.columns || 2))}`
+            : `flex-${Math.max(span, (schema.columns || 2))}`;
 
     }, [schema, direction])
 
+    const { visible } = useNodeConditions(schema, control, valuesCheck);
+    if (!visible) return null;
+
     return (
-        <div className={layoutClass}>
+        <div className={cn(layoutClass, schema.className)}>
             {schema.children.map((child, i) => {
                 const _className = spanClass(child.span);
                 switch (child.type) {
                     case "field":
                         return (
-                            <RenderField key={`${child.type}-${i}`} field={child} control={control} className={_className} />
+                            <RenderField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} />
                         );
                     case "button":
-                        return (
-                            <ButtonField key={`${child.type}-${i}`} btn={child} handleAction={handleAction} className={_className} />
-                        );
+                    case "text":
+                    case "alert":
                     case "empty":
-                        return (
-                            <EmptyField key={`${child.type}-${i}`} width={child.width} height={child.height} className={`${child.className || ''} ${_className || ''}`} />
-                        );
                     case "line":
                         return (
-                            <span key={`${child.type}-${i}`} className={child.className || (child.styleLine === "y" ? "h-full border-l mx-2" : "w-full border-t mx-2")} />
+                            <OtherField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} handleAction={handleAction} />
                         );
                     default:
                         break;
@@ -123,6 +181,7 @@ function RenderGroup({
                         schema={child}
                         control={control}
                         handleAction={handleAction}
+                        valuesCheck={valuesCheck}
                     />
                 );
             })}
@@ -132,28 +191,39 @@ function RenderGroup({
 
 export function SchemaForm({
     schema,
-    onAction
+    onAction,
+    values = {},
+    valuesCheck = {},
+    headerForm,
+    footerForm
 }: {
-    schema: IFormSchema;
-    onAction?: (action: string, values?: any) => void;
+    schema: IFieldBase & IFormSchema;
+    onAction?: (action: string, values?: Record<string, any>) => void;
+    values?: Record<string, any>;
+    valuesCheck?: Record<string, any>;
+    headerForm?: React.ReactNode;
+    footerForm?: React.ReactNode;
 }) {
+
     const zodSchema = buildZodFromSchema(schema);
     const defaultValues = buildDefaultValuesFromSchema(schema);
     const form = useForm({
         resolver: zodResolver(zodSchema),
-        defaultValues,
+        defaultValues: { ...defaultValues, ...values },
     });
     const onSubmit = () => {
         handleAction('submit');
     }
     const handleAction = (action: string) => {
-        if (onAction) onAction(action, form.getValues());
+        if (onAction) return onAction(action, form.getValues());
     };
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} />
+                {headerForm}
+                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={valuesCheck} />
+                {footerForm}
             </form>
         </Form>
     );

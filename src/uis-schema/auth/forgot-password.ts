@@ -1,16 +1,20 @@
 import { IGroupSchema } from "@/uiEngine/interface";
 
-export const schemaForgotPassword: IGroupSchema = {
+export const forgotPassword: IGroupSchema = {
     type: "group",
     layout: "flex",
     children: [
         {
+            type: "alert",
+            close: false,
+            icon: { name: "alert-circle", className: 'text-primary' },
+            titleContent: `Bạn phải nhập đúng địa chỉ email khi đăng ký! <br/>Ví dụ: <strong>support@vacom.com.vn</strong>`
+        },
+        {
             type: "field",
-            span: 2,
-            fieldType: "input",
             name: 'email',
-            label: 'Input email',
-            labelPosition: "left",
+            label: 'Email',
+            placeholder: 'nhập hòm thư',
             iconLeft: "mail",
             rules: { required: true, email: true }
         },
@@ -19,10 +23,9 @@ export const schemaForgotPassword: IGroupSchema = {
             layout: "grid",
             columns: 4,
             children: [
-                { type: "empty", span: 2 },
-                { type: "button", variant: "secondary", label: "Huỷ bỏ", onClick: 'closeDialog' },
-                { type: "button", variant: "primary", label: "Xác nhận", buttonType: "submit" }
+                { type: "button", span: 3, variant: "secondary", appearance: "ghost", label: "Huỷ bỏ", handleClick: 'closeDialog' },
+                { type: "button", span: 1, variant: "primary", label: "Xác nhận", buttonType: "submit", handleClick: 'submitAlert' },
             ]
-        }
+        },
     ]
 }

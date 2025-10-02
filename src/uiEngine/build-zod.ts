@@ -4,7 +4,8 @@ import { IFormSchema, IFieldAll } from "./interface";
 export function buildZodFromSchema(schema: IFormSchema): any {
     function traverse(node: IFieldAll): any {
         if (node.type === "field") {
-            switch (node.fieldType) {
+            const fieldType = node.fieldType || "input";
+            switch (fieldType) {
                 case "input":
                 case "textarea":
                 case "date": {
@@ -59,7 +60,8 @@ export function buildZodFromSchema(schema: IFormSchema): any {
 export function buildDefaultValuesFromSchema(schema: IFormSchema): Record<string, any> {
     function traverse(node: IFieldAll): Record<string, any> {
         if (node.type === "field") {
-            switch (node.fieldType) {
+            const fieldType = node.fieldType || "input";
+            switch (fieldType) {
                 case "input":
                 case "textarea":
                 case "password":

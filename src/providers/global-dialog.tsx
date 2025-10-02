@@ -6,6 +6,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from "@/lib/utils";
 interface ITitle {
     title: string;
     subTitle?: string
@@ -13,6 +14,7 @@ interface ITitle {
 interface IViewDialog {
     title: ITitle | string;
     content: ReactNode;
+    fullWidth?: boolean,
     classNameContent?: string
 }
 type DialogContextType = {
@@ -32,7 +34,7 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
     const [dialogs, setDialogs] = useState<IViewDialog[]>([]);
 
     const showDialog = (node: IViewDialog) => {
-        setDialogs((prev) => [...prev, node]); // push vào stack
+        setDialogs((prev) => [...prev, node]);
     };
 
     const closeDialog = () => {
@@ -50,7 +52,10 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                         if (!open) setDialogs((prev) => prev.filter((_, idx) => idx !== i));
                     }}
                 >
-                    <DialogContent className={view.classNameContent}>
+                    <DialogContent className={cn(
+                        view.fullWidth ? "w-screen max-w-screen h-screen max-h-screen rounded-[0px]" : "w-auto max-w-none",
+                        view.classNameContent
+                    )}>
                         <DialogHeader className="pb-2 m-0">
                             <DialogTitle>
                                 {typeof view.title === "string"

@@ -14,6 +14,7 @@ interface RadioFieldProps {
     options: RadioOption[];
     labelPosition?: "top" | "left" | "right";
     className?: string;
+    disabled?: boolean;
 }
 
 export function RadioField({
@@ -23,11 +24,13 @@ export function RadioField({
     options,
     labelPosition = "right",
     className,
+    disabled
 }: RadioFieldProps) {
     return (
         <FormField
             control={control}
             name={name}
+            disabled={disabled}
             render={({ field }) => (
                 <FormItem className={className}>
                     {label && labelPosition === "top" && (
