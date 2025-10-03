@@ -6,6 +6,7 @@ import { SchemaForm } from '@/uiEngine/schema-form';
 import { loginSchema } from '@/uis-schema/auth/login';
 import { delay } from '@/lib/helpers';
 import { forgotPassword } from '@/uis-schema/auth/forgot-password';
+import AsyncComboBox from '@/uiEngine/components/async-combobox';
 
 export function SignInPage() {
   const [searchParams] = useSearchParams();
@@ -162,17 +163,20 @@ export function SignInPage() {
         </div>
       }
       footerForm={
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <a
-            href="https://dangky.vacom.vn"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-semibold text-foreground hover:text-primary"
-          >
-            Sign Up
-          </a>
-        </div>
+        <>
+          <AsyncComboBox />
+          <div className="text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <a
+              href="https://dangky.vacom.vn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-foreground hover:text-primary"
+            >
+              Sign Up
+            </a>
+          </div>
+        </>
       }
     />
   );

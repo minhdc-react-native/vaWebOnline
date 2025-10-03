@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import AsyncComboBox from '@/uiEngine/components/async-combobox';
 
 interface IProjectsItem {
   name: string;
@@ -211,6 +212,7 @@ const Projects = () => {
           <Link to="/public-profile/projects/3-columns">All Projects</Link>
         </Button>
       </CardFooter>
+      <AsyncComboBox />
     </Card>
   );
 };
