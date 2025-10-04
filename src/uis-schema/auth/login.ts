@@ -22,10 +22,10 @@ export const loginSchema: IGroupSchema = {
         },
         {
             type: "field",
-            name: 'email',
-            label: 'email',
-            placeholder: 'Input email',
-            iconLeft: "mail",
+            name: 'username',
+            label: 'User name',
+            placeholder: 'Input username',
+            iconLeft: "log-in",
             rules: { required: true }
         },
         {
@@ -34,6 +34,20 @@ export const loginSchema: IGroupSchema = {
             fieldType: "password",
             label: 'Password',
             iconLeft: "key",
+            rules: { required: true }
+        },
+        {
+            type: "select",
+            name: 'orgUnit',
+            label: 'Org unit',
+            placeholder: 'Input orgUnit',
+            cleanable: true,
+            iconLeft: "database",
+            columns: [
+                { id: 'id', label: 'Mã', width: 150 },
+                { id: 'value', label: 'Tên công ty', width: 400 }
+            ],
+            display: { fDisplay: 'id' },
             rules: { required: true }
         },
         {
@@ -51,5 +65,8 @@ export const loginSchema: IGroupSchema = {
             ]
         },
         { type: "button", variant: "primary", label: "Sign in", labelLoading: "Loading...", buttonType: "submit", handleProcessing: 'processing' },
-    ]
+    ],
+    dataSource: {
+        orgUnit: { url: '/api/System/GetDvcsByUser?username=#USER_NAME#', mapKey: { '#USER_NAME#': 'username' } }
+    }
 }

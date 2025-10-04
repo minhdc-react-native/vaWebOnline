@@ -1,5 +1,5 @@
 // axiosApiHelper.ts
-import { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { Buffer } from 'buffer';
 import vcAxios from './vcAxios';
 import { getMessageError } from '@/lib/helpers';
@@ -28,7 +28,9 @@ export const api = {
     get: async ({ link, config, setLoading, callBack, callError }: IApiParams): Promise<any> => {
         try {
             setLoading?.(true);
+
             const res = await vcAxios.get(link, config);
+
             if (res?.data?.error) {
                 callError?.(res.data);
                 return Promise.reject(res.data);

@@ -4,50 +4,40 @@ import { getSupabaseUrl } from '@/lib/helpers';
 
 const vcAxios = axios.create();
 
-export const attachInterceptors = (showSessionExpiredDialog: () => void) => {
-    vcAxios.interceptors.request.use(async (config) => {
+vcAxios.interceptors.request.use((config) => {
+    return Promise.resolve().then(async () => {
+        const [token, year, dvcs, remember] = await Promise.all([
+            getData(KEY_STORAGE.TOKEN),
+            getData(KEY_STORAGE.YEAR_SELECTED),
+            getData(KEY_STORAGE.ORG_UNIT),
+            getData(KEY_STORAGE.INFO_LOGIN),
+        ]);
 
-        const token = await getData(KEY_STORAGE.TOKEN);
-        const year = await getData(KEY_STORAGE.YEAR_SELECTED);
-        const dvcs = await getData(KEY_STORAGE.ORG_UNIT);
-        const baseUrl = getSupabaseUrl();
-        if (baseUrl) {
-            config.baseURL = baseUrl;
-        } else {
-            config.baseURL = 'https://demoketoan.vaonline.vn';
-        }
-        const remember = await getData(KEY_STORAGE.INFO_LOGIN);
+        config.baseURL = getSupabaseUrl() || 'https://demoketoan.vaonline.vn';
+        config.headers = config.headers || {};
 
         if (token) {
             config.headers.Authorization = `Bearer ${token};${dvcs ?? ''};${year ?? ''};${remember?.lang ?? 'vi'}`;
         }
-        // config.headers['X-Rquested-With'] = "XMLHttpRequest";
         config.headers["Accept-language"] = remember?.lang ?? 'vi';
-        // config.headers["X-Orgcode"] = await getOrgUnit();
-        // config.headers["__tenant"] = await getTenant();
+
         return config;
     });
+});
 
-    vcAxios.interceptors.response.use(
-        (response) => {
-            const responseType = response.config?.responseType;
-            if (responseType === 'arraybuffer' || responseType === 'blob' || responseType === 'text') {
-                return response;
-            }
-            if (!response.data) {
-                return null;
-            }
-            return response.data || response;
-        },
-        async (error) => {
-            console.log("error>>", error);
-            if (error.response?.status === 401) {
-                await removeData(KEY_STORAGE.TOKEN);
-                showSessionExpiredDialog();
-            }
-            return Promise.reject(error);
+vcAxios.interceptors.response.use(
+    (response) => {
+        const type = response.config?.responseType;
+        if (['arraybuffer', 'blob', 'text'].includes(type || '')) return response;
+        return response.data ?? response;
+    },
+    async (error) => {
+        console.log("error>>", error);
+        if (error.response?.status === 401) {
+            await removeData(KEY_STORAGE.TOKEN);
         }
-    );
-};
+        return Promise.reject(error);
+    }
+);
 
 export default vcAxios;

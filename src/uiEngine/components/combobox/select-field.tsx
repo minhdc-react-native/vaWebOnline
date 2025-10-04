@@ -1,51 +1,57 @@
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
     FormField,
     FormItem,
-    FormLabel,
-    FormControl
+    FormLabel
 } from "@/components/ui/form";
-import { ErrorMessage } from "./erro-message";
-import { Control, ControllerRenderProps, FieldValues } from "react-hook-form";
-import { DynamicIcon, IconName } from "lucide-react/dynamic";
-import { useCallback } from "react";
+import { Control, FieldValues } from "react-hook-form";
+import { IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
+import { ErrorMessage } from "../erro-message";
+import AsyncComboBox, { IColumn } from "./async-combobox";
+import { useCallback } from "react";
+import { api } from "@/api/apiMethods";
+import VcComboBox from "./vc-combobox";
 
-interface IInputFieldProps {
+interface ISelectFieldProps {
     control: Control<FieldValues, any, FieldValues>;
     name: string;
     label?: string;
     placeholder?: string;
-    type?: "input" | "textarea";
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
     iconLeft?: IconName
     className?: string;
     disabled?: boolean;
+    cleanable?: boolean;
+    source?: IData[] | { url: string, keyFilter: string };
+    columns?: IColumn[];
+    display?: { fId?: string, fValue?: string, fDisplay?: string };
 }
 
-export function InputField({
+export function SelectField({
     control,
     name,
     label,
     placeholder,
-    type = "input",
     labelPosition = "top",
     labelWidth,
     iconLeft,
     className,
-    disabled
-}: IInputFieldProps) {
-    const renderInput = useCallback((field: ControllerRenderProps<FieldValues, string>) => {
-        return <FormControl>{type === "input" ?
-            <Input placeholder={placeholder} {...field} className={iconLeft ? "pl-8" : undefined} />
-            :
-            <Textarea placeholder={placeholder} {...field} className={iconLeft ? "pl-8" : undefined} />}
-        </FormControl>
-    }, [placeholder, type, iconLeft]);
+    disabled,
+    cleanable,
+    source = [],
+    columns,
+    display
+}: ISelectFieldProps) {
+    const fnApi = useCallback(async (inputValue: string, callback: (options: IData[]) => void) => {
+        if (!Array.isArray(source)) {
+            api.get({
+                link: source.url.replace(source.keyFilter, inputValue),
+                callBack: (res) => callback(res)
+            })
+        }
+    }, [source])
     return (
-
         <FormField
             control={control}
             name={name}
@@ -62,12 +68,9 @@ export function InputField({
                         {label && labelPosition === "left" && (
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
-                        {iconLeft ? <div className="relative w-full">
-                            <DynamicIcon name={iconLeft} size={24} className='absolute pl-2 top-2/4 -translate-y-2/4 text-gray-400' />
-                            {renderInput(field)}
-                        </div> :
-                            renderInput(field)
-                        }
+
+                        <VcComboBox placeholder={placeholder} {...field} source={Array.isArray(source) ? source : fnApi}
+                            columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} />
 
                         {label && labelPosition === "right" && (
                             <FormLabel className="ml-2">{label}</FormLabel>

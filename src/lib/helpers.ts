@@ -165,14 +165,51 @@ export const getError = (error: any) => {
 
 export function getSupabaseUrl() {
   const hostname = window.location.hostname;
-  // Nếu là localhost thì dùng 1 default URL
   if (hostname.includes('localhost')) {
     return "https://demoketoan.vaonline.vn";
   }
-  // Nếu là subdomain kiểu 0102236276.vaonline.vn
   return `https://${hostname}`;
 }
 
 export function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function sortTreeFlat(data: IData[], codeField?: string) {
+  const grouped = new Map<string | null, IData[]>();
+  data.forEach(item => {
+    if (!grouped.has(item.parentId)) {
+      grouped.set(item.parentId, []);
+    }
+    grouped.get(item.parentId)!.push(item);
+  });
+
+  if (codeField) {
+    grouped.forEach((arr, key) => {
+      arr.sort((a, b) => {
+        const codeA = a[codeField] ?? "";
+        const codeB = b[codeField] ?? "";
+        return String(codeA).localeCompare(String(codeB));
+      });
+    });
+  }
+  const result: IData[] = [];
+  function traverse(parentId: string | null) {
+    const children = grouped.get(parentId) || [];
+    for (const child of children) {
+      result.push(child);
+      traverse(child.id.toString());
+    }
+  }
+  traverse(null);
+  return result;
+}
+
+export function isNotEmpty(value: any): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string" && value.trim() === "") return false;
+  if (typeof value === "number" && value === 0) return false;
+  if (Array.isArray(value) && value.length === 0) return false;
+  if (typeof value === "object" && Object.keys(value).length === 0) return false;
+  return true;
+};

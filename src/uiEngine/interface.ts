@@ -2,36 +2,53 @@ import { IconName } from "lucide-react/dynamic";
 import { IFontWeight, ITextSize, IVariant } from "./components/text-field";
 import { IAlertAppearance, IAlertSize, IAlertVariant } from "./components/alert-field";
 import { IConditions } from "./hooks/useNodeConditions";
+import { IColumn } from "./components/combobox/async-combobox";
 
 export type IFieldType =
     | "input"
     | "password"
     | "textarea"
-    | "select"
     | "checkbox"
     | "radio"
     | "date"
 
 export type IButtonType = "submit" | "reset" | "button";
-
+type IRule = {
+    required?: boolean;
+    email?: boolean;
+    min?: number;
+    max?: number;
+}
 export interface IFieldSchema {
     type: "field";
     name: string;
     label?: string;
     fieldType?: IFieldType;
     placeholder?: string;
-    options?: { label: string; value: any }[]; // cho select, radio
-    rules?: {
-        required?: boolean;
-        email?: boolean;
-        min?: number;
-        max?: number;
-    };
+    options?: { label: string; value: any }[]; // radio
+    rules?: IRule;
     colSpan?: number;
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
     iconLeft?: IconName;
     className?: string
+}
+export interface ISelectSchema {
+    type: "select";
+    name: string;
+    label?: string;
+    placeholder?: string;
+    rules?: IRule;
+    colSpan?: number;
+    labelPosition?: "top" | "left" | "right";
+    labelWidth?: number;
+    iconLeft?: IconName;
+    className?: string;
+    cleanable?: boolean;
+    keySource?: string;
+    source?: { url: string, keyFilter: string };
+    columns?: IColumn[];
+    display?: { fId?: string, fValue?: string, fDisplay?: string };
 }
 export interface IButtonSchema {
     type: "button";
@@ -87,6 +104,7 @@ export type IFieldBase = {
     conditions?: IConditions
 };
 export type IFieldAll = IFieldBase & (IFieldSchema
+    | ISelectSchema
     | IButtonSchema
     | ITextSchema
     | IGroupSchema
@@ -95,6 +113,7 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | IAlertSchema
 )
 
+export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string> }>;
 export interface IGroupSchema {
     type: "group";
     label?: string;
@@ -104,6 +123,7 @@ export interface IGroupSchema {
     gap?: number;
     className?: string;
     children: (IFieldAll)[];
+    dataSource?: IDataSource,
 }
 
 export type IFormSchema = IGroupSchema;

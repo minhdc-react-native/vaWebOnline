@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { IFieldAll } from "../interface";
 import { useWatch } from "react-hook-form";
+import { isNotEmpty } from "@/lib/helpers";
 
 type IConditionExpr =
     | string
@@ -34,9 +35,9 @@ export function useNodeConditions(node: IFieldAll, control: any, valuesCheck: Re
         if (typeof expr === "string") {
             try {
                 const keys = Object.keys(valuesCheck);
-                const fn = new Function(...deps, ...keys, `return (${expr})`);
+                const fn = new Function(...deps, ...keys, 'isNotEmpty', `return (${expr})`);
                 const addValuesCheck = [...keys.map((key) => valuesCheck[key])];
-                return fn(...values, ...addValuesCheck);
+                return fn(...values, ...addValuesCheck, isNotEmpty);
             } catch {
                 return defaultValue;
             }
