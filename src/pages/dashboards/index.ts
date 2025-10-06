@@ -1,4 +1,5 @@
 export * from './default';
+export * from './vacom';
 export * from './demo1';
 export * from './demo2';
 export * from './demo3';

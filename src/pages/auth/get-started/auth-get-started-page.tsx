@@ -1,10 +1,10 @@
-import { Demo1LightSidebarContent } from '@/pages/dashboards/demo1';
+import { VacomLightSidebarContent } from '@/pages/dashboards/vacom';
 import { Container } from '@/components/common/container';
 
 export function AuthGetStartedPage() {
   return (
     <Container>
-      <Demo1LightSidebarContent />
+      <VacomLightSidebarContent />
     </Container>
   );
 }

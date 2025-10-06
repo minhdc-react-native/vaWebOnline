@@ -1,8 +1,10 @@
 import { z, ZodTypeAny } from "zod";
 import { IFormSchema, IFieldAll } from "./interface";
+import { useMemo } from "react";
 
-export function buildZodFromSchema(schema: IFormSchema): any {
+export function buildZodFromSchema(schema: IFormSchema, _: (id: string | undefined, values?: Record<string, any>) => string | undefined): any {
     function traverse(node: IFieldAll): any {
+        const labelMessage = `${_((node as any).label)}`;
         switch (node.type) {
             case "field":
                 const fieldType = node.fieldType || "input";
@@ -12,7 +14,7 @@ export function buildZodFromSchema(schema: IFormSchema): any {
                     case "date": {
                         let field = z.string();
                         if (node.rules?.required)
-                            field = field.min(1, `${node.label} is required`);
+                            field = field.min(1, `${labelMessage} ${_('is required')}`);
                         if (node.rules?.email) field = field.email();
                         if (node.rules?.min) field = field.min(node.rules.min);
                         if (node.rules?.max) field = field.max(node.rules.max);
@@ -21,21 +23,24 @@ export function buildZodFromSchema(schema: IFormSchema): any {
                     case "password": {
                         let field = z.string();
                         if (node.rules?.required) {
-                            field = field.min(1, `${node.label} is required`);
+                            field = field.min(1, `${labelMessage} ${_('is required')}`);
                         }
                         if (node.rules?.min) {
-                            field = field.min(node.rules.min, `${node.label} must be at least ${node.rules.min} characters`);
+                            field = field.min(node.rules.min, _(`validation.min`, { label: labelMessage, min: node.rules.min }));
+                        }
+                        if (node.rules?.max) {
+                            field = field.max(node.rules.max, _(`validation.max`, { label: labelMessage, max: node.rules.max }));
                         }
                         return { [node.name]: field };
                     }
                     case "checkbox": {
                         let field: ZodTypeAny = z.boolean();
-                        if (node.rules?.required) field = field.refine((v) => v, `${node.label} is required`);
+                        if (node.rules?.required) field = field.refine((v) => v, `${labelMessage} ${_('is required')}`);
                         return { [node.name]: field };
                     }
                     case "radio": {
                         let field: ZodTypeAny = z.any();
-                        if (node.rules?.required) field = field.refine((v) => v !== undefined && v !== "", `${node.label} is required`);
+                        if (node.rules?.required) field = field.refine((v) => v !== undefined && v !== "", `${labelMessage} ${_('is required')}`);
                         return { [node.name]: field };
                     }
                     default:
@@ -45,7 +50,7 @@ export function buildZodFromSchema(schema: IFormSchema): any {
                 let field: any = z.union([z.string().nullable(), z.number().nullable()]); // cho phép dữ liệu là: string | number
                 if (node.rules?.required) {
                     field = field.refine((val: any) => val !== "" && val !== null, {
-                        message: `${node.label} is required`
+                        message: `${labelMessage} ${_('is required')}`
                     });
                 }
                 return { [node.name]: field };

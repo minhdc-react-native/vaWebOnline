@@ -22,6 +22,7 @@ export const useDataSource = ({ source, control }: IProgs) => {
         control: control,
         name: fieldsWatch.watch,
     });
+
     const [dataSource, setDataSource] = useState<Record<string, any[]>>({});
     const setSource = useCallback((res: IData[] | string[], source: any, key: string) => {
         if (res.length === 0) {
@@ -53,37 +54,54 @@ export const useDataSource = ({ source, control }: IProgs) => {
         }));
     }, []);
 
-    const loadDataBegin = useCallback(async () => {
+    const loadDataBegin: {
+        (): Promise<void>;
+        controller?: AbortController;
+    } = useCallback(async () => {
         if (!source) return;
+
+        if (loadDataBegin.controller) {
+            loadDataBegin.controller.abort();
+        }
+        const controller = new AbortController();
+        loadDataBegin.controller = controller;
+
         const promises = Object.keys(source).map(async (key: any) => {
             const configSource: any = source[key];
             if (Array.isArray(configSource)) {
-                setDataSource(prev => ({
+                setDataSource((prev) => ({
                     ...prev,
-                    [key]: configSource
+                    [key]: configSource,
                 }));
             } else if (configSource?.url) {
                 let url: any = configSource.url;
-                // thay thế nếu có param field gắn vào.
-                Object.keys(fieldsWatch.mapKey).map((k, idx) => {
+                Object.keys(fieldsWatch.mapKey).forEach((k, idx) => {
                     url = url.replace(k, valuesWatch[idx]);
                 });
 
                 try {
                     await api.get({
                         link: url,
-                        callBack: (res => {
-                            if (res) {
+                        config: { signal: controller.signal },
+                        callBack: (res) => {
+                            if (!controller.signal.aborted) {
                                 setSource(res, source, key);
                             }
-                        })
+                        },
+                        callError: () => {
+                            if (!controller.signal.aborted) {
+                                setSource([], source, key);
+                            }
+                        },
                     });
                 } catch (error) {
-                    setSource([], source, key);
+                    if (!controller.signal.aborted) {
+                        setSource([], source, key);
+                    }
                 }
-
             }
         });
+
         await Promise.all(promises);
     }, [fieldsWatch, setSource, source, valuesWatch]);
 

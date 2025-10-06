@@ -23,7 +23,8 @@ export const forgotPassword: IGroupSchema = {
             layout: "grid",
             columns: 4,
             children: [
-                { type: "button", span: 3, variant: "secondary", appearance: "ghost", label: "Huỷ bỏ", handleClick: 'closeDialog' },
+                { type: "empty", span: 2 },
+                { type: "button", span: 1, variant: "secondary", appearance: "ghost", label: "Huỷ bỏ", handleClick: 'closeDialog' },
                 { type: "button", span: 1, variant: "primary", label: "Xác nhận", buttonType: "submit", handleClick: 'submitAlert' },
             ]
         },

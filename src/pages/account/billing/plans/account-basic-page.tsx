@@ -1,9 +1,9 @@
 import { Fragment } from 'react';
 import {
-  Toolbar,
-  ToolbarActions,
-  ToolbarHeading,
-} from '@/layouts/demo1/components/toolbar';
+  VcToolbar,
+  VcToolbarActions,
+  VcToolbarHeading,
+} from '@/layouts/vacom/components/toolbar';
 import { PageNavbar } from '@/pages/account';
 import { useSettings } from '@/providers/settings-provider';
 import { Button } from '@/components/ui/button';
@@ -16,17 +16,17 @@ export function AccountPlansPage() {
   return (
     <Fragment>
       <PageNavbar />
-      {settings?.layout === 'demo1' && (
+      {settings?.layout === 'vacom' && (
         <Container>
-          <Toolbar>
-            <ToolbarHeading
+          <VcToolbar>
+            <VcToolbarHeading
               title="Plans"
               description="Central Hub for Personal Customization"
             />
-            <ToolbarActions>
+            <VcToolbarActions>
               <Button variant="outline">View Billing</Button>
-            </ToolbarActions>
-          </Toolbar>
+            </VcToolbarActions>
+          </VcToolbar>
         </Container>
       )}
       <Container>

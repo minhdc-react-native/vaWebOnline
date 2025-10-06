@@ -12,7 +12,6 @@ import { SettingsProvider } from './providers/settings-provider';
 import { ThemeProvider } from './providers/theme-provider';
 import { TooltipsProvider } from './providers/tooltips-provider';
 import { GlobalDialogProvider } from './providers/global-dialog';
-import { useEffect } from 'react';
 
 
 const { BASE_URL } = import.meta.env;

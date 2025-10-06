@@ -9,13 +9,14 @@ import { InputField } from "./components/input-field";
 import { EmptyField } from "./components/empty-field";
 import { ButtonField } from "./components/button-field";
 import { Form } from "@/components/ui/form";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { TextField } from "./components/text-field";
 import { cn } from "@/lib/utils";
 import { AlertField } from "./components/alert-field";
 import { useNodeConditions } from "./hooks/useNodeConditions";
 import { SelectField } from "./components/combobox/select-field";
 import { useDataSource } from "./hooks/useDataSource";
+import { useT } from "@/i18n/config";
 
 interface IRenderField {
     field: IFieldAll;
@@ -27,6 +28,11 @@ interface IRenderField {
 
 function RenderField({ field, control, valuesCheck, dataSource = {}, className }: IRenderField) {
     const { visible, disabled } = useNodeConditions(field, control, valuesCheck);
+    const _ = useT();
+    const label = useMemo(() => {
+        return _((field as any).label || (field as any).name)
+    }, [_, field]);
+
     if (!visible) return null;
     switch (field.type) {
         case "field":
@@ -41,7 +47,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                             control={control}
                             name={field.name}
                             disabled={disabled}
-                            label={field.label}
+                            label={label}
                             className={className}
                             placeholder={field.placeholder}
                             labelPosition={field.labelPosition}
@@ -55,7 +61,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                             control={control}
                             name={field.name}
                             disabled={disabled}
-                            label={field.label}
+                            label={label}
                             className={className}
                             placeholder={field.placeholder}
                             labelPosition={field.labelPosition}
@@ -67,7 +73,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         control={control}
                         name={field.name}
                         disabled={disabled}
-                        label={field.label}
+                        label={label}
                         className={className}
                         labelPosition={field.labelPosition}
                     />;
@@ -76,7 +82,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         control={control}
                         name={field.name}
                         disabled={disabled}
-                        label={field.label}
+                        label={label}
                         className={className}
                         options={field.options ?? []}
                         labelPosition={field.labelPosition}
@@ -90,7 +96,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 control={control}
                 name={field.name}
                 disabled={disabled}
-                label={field.label}
+                label={label}
                 className={className}
                 placeholder={field.placeholder}
                 labelPosition={field.labelPosition}
@@ -214,10 +220,9 @@ export function SchemaForm({
     headerForm?: React.ReactNode;
     footerForm?: React.ReactNode;
 }) {
-
-    const zodSchema = buildZodFromSchema(schema);
+    const _ = useT();
+    const zodSchema = buildZodFromSchema(schema, _);
     const defaultValues = buildDefaultValuesFromSchema(schema);
-
     const form = useForm({
         mode: "onBlur",
         reValidateMode: "onBlur",
@@ -234,6 +239,12 @@ export function SchemaForm({
     };
 
     const { dataSource } = useDataSource({ source: schema.dataSource, control: form.control });
+
+    useEffect(() => {
+        Object.entries(values).forEach(([key, value]) => {
+            form.setValue(key as any, value);
+        });
+    }, [values]);
 
     return (
         <Form {...form}>

@@ -7,10 +7,10 @@ import { Control, FieldValues } from "react-hook-form";
 import { IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
 import { ErrorMessage } from "../erro-message";
-import AsyncComboBox, { IColumn } from "./async-combobox";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { api } from "@/api/apiMethods";
-import VcComboBox from "./vc-combobox";
+import VcComboBox, { IColumn } from "./vc-combobox";
+import { useT } from "@/i18n/config";
 
 interface ISelectFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -43,6 +43,16 @@ export function SelectField({
     columns,
     display
 }: ISelectFieldProps) {
+    const _ = useT();
+
+    const placeholderDefault = useMemo(() => {
+        return _('Select') + ' ' + label;
+    }, [_, label]);
+
+    const placeholderSearch = useMemo(() => {
+        return _('Search') + ' ' + label;
+    }, [_, label]);
+
     const fnApi = useCallback(async (inputValue: string, callback: (options: IData[]) => void) => {
         if (!Array.isArray(source)) {
             api.get({
@@ -69,7 +79,7 @@ export function SelectField({
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
 
-                        <VcComboBox placeholder={placeholder} {...field} source={Array.isArray(source) ? source : fnApi}
+                        <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
                             columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} />
 
                         {label && labelPosition === "right" && (

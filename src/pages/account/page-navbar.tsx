@@ -8,7 +8,7 @@ const PageNavbar = () => {
   const { settings } = useSettings();
   const accountMenuConfig = MENU_SIDEBAR?.['3']?.children;
 
-  if (accountMenuConfig && settings?.layout === 'demo1') {
+  if (accountMenuConfig && settings?.layout === 'vacom') {
     return (
       <Navbar>
         <Container>

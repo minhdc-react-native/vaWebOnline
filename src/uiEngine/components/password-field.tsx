@@ -7,6 +7,7 @@ import { Control, FieldValues } from "react-hook-form";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { ErrorMessage } from "./erro-message";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/config";
 
 interface PasswordFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -32,7 +33,7 @@ export function PasswordField({
     disabled
 }: PasswordFieldProps) {
     const [visible, setVisible] = useState(false);
-
+    const _ = useT();
     return (
         <FormField
             control={control}
@@ -50,12 +51,16 @@ export function PasswordField({
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
                         <div className="relative w-full">
-                            {iconLeft && <DynamicIcon name={iconLeft} size={24} className='absolute pl-2 top-2/4 -translate-y-2/4 text-gray-400' />}
+                            {iconLeft && <DynamicIcon
+                                name={iconLeft}
+                                size={18}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                            />}
                             <FormControl>
                                 <Input
                                     {...field}
                                     // autoComplete="new-password"
-                                    placeholder={placeholder ?? "Enter password"}
+                                    placeholder={placeholder ?? _("Enter password")}
                                     type={visible ? "text" : "password"}
                                     className={iconLeft ? "pl-8" : undefined}
                                 />

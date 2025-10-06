@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { AuthModel, UserModel } from '@/auth/lib/models';
+import { AuthModel, IYear } from '@/auth/lib/models';
 
 // Create AuthContext with types
 export const AuthContext = createContext<{
@@ -7,9 +7,9 @@ export const AuthContext = createContext<{
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   auth?: AuthModel;
   saveAuth: (auth: AuthModel | undefined) => void;
-  user?: UserModel;
-  setUser: React.Dispatch<React.SetStateAction<UserModel | undefined>>;
-  login: (email: string, password: string) => Promise<void>;
+  user?: Record<string, any>;
+  setUser: React.Dispatch<React.SetStateAction<Record<string, any> | undefined>>;
+  login: (values: Record<string, any>) => Promise<void>;
   register: (
     email: string,
     password: string,
@@ -23,26 +23,32 @@ export const AuthContext = createContext<{
     password_confirmation: string,
   ) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
-  getUser: () => Promise<UserModel | null>;
-  updateProfile: (userData: Partial<UserModel>) => Promise<UserModel>;
+  getUser: () => Promise<Record<string, any> | null>;
+  updateProfile: (userData: Partial<Record<string, any>>) => Promise<Record<string, any>>;
   logout: () => void;
   verify: () => Promise<void>;
   isAdmin: boolean;
+  currentYear: string | null;
+  listCurrentYear: IYear[];
+  infoDvcs: Record<string, any> | null
 }>({
   loading: false,
-  setLoading: () => {},
-  saveAuth: () => {},
-  setUser: () => {},
-  login: async () => {},
-  register: async () => {},
-  requestPasswordReset: async () => {},
-  resetPassword: async () => {},
-  resendVerificationEmail: async () => {},
+  setLoading: () => { },
+  saveAuth: () => { },
+  setUser: () => { },
+  login: async () => { },
+  register: async () => { },
+  requestPasswordReset: async () => { },
+  resetPassword: async () => { },
+  resendVerificationEmail: async () => { },
   getUser: async () => null,
-  updateProfile: async () => ({}) as UserModel,
-  logout: () => {},
-  verify: async () => {},
+  updateProfile: async () => ({}) as Record<string, any>,
+  logout: () => { },
+  verify: async () => { },
   isAdmin: false,
+  currentYear: null,
+  listCurrentYear: [],
+  infoDvcs: null
 });
 
 // Hook definition

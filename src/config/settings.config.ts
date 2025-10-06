@@ -4,6 +4,10 @@ export const APP_SETTINGS: Settings = {
   layout: '',
   container: 'fixed',
   layouts: {
+    vacom: {
+      sidebarCollapse: false,
+      sidebarTheme: 'light',
+    },
     demo1: {
       sidebarCollapse: false,
       sidebarTheme: 'light',

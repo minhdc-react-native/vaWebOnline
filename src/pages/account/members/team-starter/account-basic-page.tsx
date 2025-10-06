@@ -19,7 +19,7 @@ export function AccountTeamsStarterPage() {
   return (
     <Fragment>
       <PageNavbar />
-      {settings?.layout === 'demo1' && (
+      {settings?.layout === 'vacom' && (
         <Container>
           <Toolbar>
             <ToolbarHeading>

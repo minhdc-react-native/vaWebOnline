@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import debounce from "lodash.debounce";
 
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/command';
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { IconName } from "lucide-react/dynamic";
+import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
 
 
@@ -41,6 +41,7 @@ interface IProgs {
     iconLeft?: IconName;
     columns?: IColumn[];
     placeholder?: string;
+    placeholderSearch?: string;
     disabled?: boolean;
     cleanable?: boolean;
     display?: { fId?: string, fValue?: string, fDisplay?: string };
@@ -48,7 +49,7 @@ interface IProgs {
     onChange?: React.ChangeEventHandler<HTMLInputElement>
 }
 export default function VcComboBox({ value, source, iconLeft, columns = columnDefault,
-    placeholder, disabled, cleanable, display = { fId: 'id', fValue: 'value', fDisplay: 'value' }, className,
+    placeholder, placeholderSearch, disabled, cleanable, display = { fId: 'id', fValue: 'value', fDisplay: 'value' }, className,
     onChange
 }: IProgs) {
     display = { ...display, fId: display.fId ?? 'id', fValue: display.fValue ?? 'value', fDisplay: display.fDisplay ?? 'value' };
@@ -57,7 +58,6 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
 
     const [data, setData] = useState<IData[]>([]);
     const [dataFilter, setDataFilter] = useState<IData[]>([]);
-
     const reloadSource = useCallback(async () => {
         if (Array.isArray(source)) {
             const dataFix = source.map(s => ({
@@ -82,10 +82,11 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     }, [data, display.fId, isConstData, onChange]);
 
     useEffect(() => {
-        if (!!value) {
+        if (!!value && !itemSelected) {
+            // console.log('data,value>>', data, value);
             setItemSelected(data.find((item => item[display.fId!] === value)) ?? null);
         }
-    }, []);
+    }, [data, value]);
 
     const [open, setOpen] = useState(false);
 
@@ -109,6 +110,9 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                 })
             }
         }, 500), [data, display.fId, display.fValue, isConstData, source]);
+    const classNameContent = useMemo(() => {
+        return `w-[${totalWidth}px] p-0`;
+    }, [totalWidth])
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -119,17 +123,25 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                     placeholder={!value}
                     disabled={disabled}
                     aria-expanded={open}
-                // className="w-[200px]"
+                    className={cn("flex items-center justify-between w-full", className)}
                 >
-                    <span className={cn('truncate')}>
-                        {itemSelected?.[display.fDisplay!] || 'Select city...'}
-                    </span>
-                    {itemSelected?.[display.fDisplay!] ? <ButtonArrow icon={X} className="text-destructive" onClick={() => setItemSelected(null)} /> : <ButtonArrow />}
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        {iconLeft && <DynamicIcon name={iconLeft} className="absolute left-2 top-1/2 w-4 h-4 shrink-0 opacity-70 text-gray-400" />}
+                        <span className={cn("truncate", iconLeft ? "ml-4" : "")}>
+                            {itemSelected?.[display.fDisplay!] || placeholder}
+                        </span>
+                    </div>
+                    {itemSelected?.[display.fDisplay!] && cleanable ? <ButtonArrow icon={X} className="text-destructive"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setItemSelected(null);
+                        }
+                        } /> : <ButtonArrow />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className={`w-[${totalWidth}px] p-0`}>
+            <PopoverContent className={classNameContent}>
                 <Command>
-                    <CommandInput placeholder="Search city..." onValueChange={onSearch} />
+                    <CommandInput placeholder={placeholderSearch} onValueChange={onSearch} />
                     <CommandList>
                         <CustomMenuList itemSelected={itemSelected} fId={display.fId!} columns={columns} data={dataFilter} onSelect={(item) => {
                             onChangeSelected(item);

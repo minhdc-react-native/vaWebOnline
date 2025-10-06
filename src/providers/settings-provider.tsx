@@ -76,7 +76,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (!isBrowser()) return;
 
-    const init = structuredClone(APP_SETTINGS);
+    const init = structuredClone(APP_SETTINGS)
     Object.keys(localStorage)
       .filter((key) => key.startsWith(LOCAL_STORAGE_PREFIX))
       .forEach((key) => {

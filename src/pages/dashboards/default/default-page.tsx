@@ -1,5 +1,6 @@
 import { useSettings } from '@/providers/settings-provider';
 import {
+  VacomLightSidebarPage,
   Demo1LightSidebarPage,
   Demo2Page,
   Demo3Page,
@@ -10,7 +11,9 @@ import {
 const DefaultPage = () => {
   const { settings } = useSettings();
 
-  if (settings?.layout === 'demo1') {
+  if (settings?.layout === 'vacom') {
+    return <VacomLightSidebarPage />;
+  } else if (settings?.layout === 'demo1') {
     return <Demo1LightSidebarPage />;
   } else if (settings?.layout === 'demo2') {
     return <Demo2Page />;

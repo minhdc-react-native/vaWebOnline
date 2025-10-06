@@ -6,17 +6,19 @@ import { SchemaForm } from '@/uiEngine/schema-form';
 import { loginSchema } from '@/uis-schema/auth/login';
 import { delay } from '@/lib/helpers';
 import { forgotPassword } from '@/uis-schema/auth/forgot-password';
+import { useT } from '@/i18n/config';
+import { toast } from 'sonner';
+import { getLoginInfo } from '../lib/helpers';
 
 export function SignInPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { showDialog, closeDialog } = useGlobalDialog();
-
+  const { showDialog, closeDialog, showToast } = useGlobalDialog();
+  const _ = useT();
   // Check for success message from password reset or error messages
   useEffect(() => {
     const pwdReset = searchParams.get('pwd_reset');
@@ -57,37 +59,23 @@ export function SignInPage() {
     }
   }, [searchParams]);
 
-
   async function onSubmit(values: Record<string, any>) {
     try {
       setIsProcessing(true);
       setError(null);
-
-      await delay(3000);
-
-      console.log('Attempting to sign in with email:', values.email);
-
-      // Simple validation
-      if (!values.email.trim() || !values.password) {
-        setError('Email and password are required');
-        return;
-      }
-
       // Sign in using the auth context
-      await login(values.email, values.password);
-
+      await login(values);
       // Get the 'next' parameter from URL if it exists
       const nextPath = searchParams.get('next') || '/';
-
       // Use navigate for navigation
       navigate(nextPath);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected sign-in error:', err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'An unexpected error occurred. Please try again.',
-      );
+      const errMessage = err instanceof Error
+        ? err.message
+        : err;
+      setError(errMessage);
+      showToast(errMessage, "error");
     } finally {
       setIsProcessing(false);
     }
@@ -142,36 +130,42 @@ export function SignInPage() {
 
   const onClickFogotPassWord = useCallback(() => {
     showDialog({
-      title: "Quên mật khẩu",
+      title: _('Forgot password?') ?? "",
       // fullWidth: true,
       content: contentView
     })
-  }, [contentView, showDialog]);
+  }, [_, contentView, showDialog]);
+  const [infoLogin, setInfoLogin] = useState<Record<string, any>>();
+  useEffect(() => {
+    const info = getLoginInfo();
+    setInfoLogin(info);
+  }, [])
 
   return (
     <SchemaForm
       schema={loginSchema}
       onAction={onAction}
+      values={infoLogin}
       valuesCheck={{ errAlert: error, isProcessing }}
       headerForm={
         <div className="text-center space-y-1 pb-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{_('Sign in')}</h1>
           <p className="text-sm text-muted-foreground">
-            Welcome back! Log in with your credentials.
+            {_('Welcome back! Log in with your credentials.')}
           </p>
         </div>
       }
       footerForm={
         <>
           <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            {_('Don\'t have an account?') + ' '}
             <a
               href="https://dangky.vacom.vn"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-semibold text-foreground hover:text-primary"
             >
-              Sign Up
+              {_('Sign up')}
             </a>
           </div>
         </>

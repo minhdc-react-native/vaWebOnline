@@ -1,0 +1,20 @@
+{
+  "Sign in": "Đăng nhập",
+  "Sign up": "Đăng ký",
+  "Dark mode": "Giao diện tối",
+  "Welcome back! Log in with your credentials.": "Chào mừng trở lại! Đăng nhập bằng thông tin đăng nhập của bạn.",
+  "User name": "Tên truy cập",
+  "Password": "Mật khẩu",
+  "Org unit": "Đơn vị",
+  "Forgot password?": "Quên mật khẩu?",
+  "Remember me": "Ghi nhớ tôi",
+  "Don't have an account?": "Không có tài khoản?",
+  "Demo access": "Sử dụng tên truy cập <strong>ADMINISTRATOR</strong> và mật khẩu <strong>dtdd176177278</strong> để truy cập demo.",
+  "is required": "là bắt buộc",
+  "validation.min": "{label} phải có ít nhất {min} ký tự",
+  "validation.max": "{label} không được vượt quá {max} ký tự",
+  "Input": "Nhập",
+  "Select": "Nhập",
+  "Search": "Tìm",
+  "Enter password": "Nhập mật khẩu"
+}

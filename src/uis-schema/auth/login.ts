@@ -4,33 +4,31 @@ export const loginSchema: IGroupSchema = {
     type: "group",
     layout: "flex",
     children: [
-        {
-            type: "alert",
-            close: false,
-            icon: { name: "alert-circle", className: 'text-primary' },
-            titleContent: `Use <strong>demo@kt.com</strong> username and 
-              <strong>demo123</strong> password for demo access.`
-        },
-        {
-            type: "alert",
-            bind: 'errAlert',
-            variant: "destructive",
-            handleClose: 'closeAlert',
-            conditions: {
-                visible: "!!errAlert"
-            }
-        },
+        // {
+        //     type: "alert",
+        //     close: false,
+        //     icon: { name: "alert-circle", className: 'text-primary' },
+        //     titleContent: 'Demo access'
+        // },
+        // {
+        //     type: "alert",
+        //     bind: 'errAlert',
+        //     variant: "destructive",
+        //     handleClose: 'closeAlert',
+        //     conditions: {
+        //         visible: "!!errAlert"
+        //     }
+        // },
         {
             type: "field",
             name: 'username',
             label: 'User name',
-            placeholder: 'Input username',
-            iconLeft: "log-in",
+            iconLeft: "user-lock",
             rules: { required: true }
         },
         {
             type: "field",
-            name: 'password',
+            name: 'pass',
             fieldType: "password",
             label: 'Password',
             iconLeft: "key",
@@ -38,10 +36,9 @@ export const loginSchema: IGroupSchema = {
         },
         {
             type: "select",
-            name: 'orgUnit',
+            name: 'dvcs',
             label: 'Org unit',
-            placeholder: 'Input orgUnit',
-            cleanable: true,
+            // cleanable: true,
             iconLeft: "database",
             columns: [
                 { id: 'id', label: 'Mã', width: 150 },
@@ -64,9 +61,13 @@ export const loginSchema: IGroupSchema = {
                 { type: "button", variant: "destructive", appearance: "ghost", label: "Forgot password?", handleClick: 'forgotPassword' }
             ]
         },
-        { type: "button", variant: "primary", label: "Sign in", labelLoading: "Loading...", buttonType: "submit", handleProcessing: 'processing' },
+        {
+            type: "button", variant: "primary", label: "Sign in",
+            // labelLoading: "Loading...", 
+            buttonType: "submit", handleProcessing: 'processing'
+        },
     ],
     dataSource: {
-        orgUnit: { url: '/api/System/GetDvcsByUser?username=#USER_NAME#', mapKey: { '#USER_NAME#': 'username' } }
+        dvcs: { url: '/api/System/GetDvcsByUser?username=#USER_NAME#', mapKey: { '#USER_NAME#': 'username' } }
     }
 }

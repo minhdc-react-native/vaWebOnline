@@ -12,19 +12,15 @@ export interface AuthModel {
 
 // User model representing the user profile
 export interface UserModel {
-  id: string;
   username: string;
-  password?: string; // Optional as we don't always retrieve passwords
-  email: string;
-  first_name: string;
-  last_name: string;
-  fullname?: string; // May be stored directly in metadata
-  email_verified?: boolean;
-  occupation?: string;
-  company_name?: string; // Using snake_case consistently
-  phone?: string;
-  roles?: number[]; // Array of role IDs
-  pic?: string;
-  language?: LanguageCode; // Maintain existing type
-  is_admin?: boolean; // Added admin flag
+  pass: string;
+  dvcs: string;
+  remember: boolean;
+}
+
+export interface IYear {
+  NAM: string;
+  TU_NGAY: string;
+  DEN_NGAY: string;
+  QD_AD: number | null
 }

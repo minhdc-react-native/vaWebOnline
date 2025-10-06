@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { IButtonSchema } from "../interface";
 import { cn } from "@/lib/utils";
 import { LoaderCircleIcon } from "lucide-react";
+import { useT } from "@/i18n/config";
 
 export function ButtonField({
     btn,
@@ -14,6 +15,7 @@ export function ButtonField({
     className?: string;
     disabled?: boolean;
 }) {
+    const _ = useT();
     const typeButton = btn.buttonType || "button";
     const isProcessing = btn.handleProcessing ? handleAction(btn.handleProcessing) : false;
     return (
@@ -31,8 +33,8 @@ export function ButtonField({
             }}
         >
             {isProcessing ? (<span className="flex items-center gap-2">
-                <LoaderCircleIcon className="h-4 w-4 animate-spin" /> {btn.labelLoading || btn.label}
-            </span>) : btn.label}
+                <LoaderCircleIcon className="h-4 w-4 animate-spin" /> {_(btn.labelLoading || btn.label)}
+            </span>) : _(btn.label)}
         </Button>
     );
 }

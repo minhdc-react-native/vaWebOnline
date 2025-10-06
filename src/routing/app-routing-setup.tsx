@@ -1,7 +1,7 @@
 import { AuthRouting } from '@/auth/auth-routing';
 import { RequireAuth } from '@/auth/require-auth';
 import { ErrorRouting } from '@/errors/error-routing';
-import { Demo1Layout } from '@/layouts/demo1/layout';
+import { VacomLayout } from '@/layouts/vacom/layout';
 import {
   AccountActivityPage,
   AccountAllowedIPAddressesPage,
@@ -98,7 +98,7 @@ export function AppRoutingSetup() {
   return (
     <Routes>
       <Route element={<RequireAuth />}>
-        <Route element={<Demo1Layout />}>
+        <Route element={<VacomLayout />}>
           <Route path="/" element={<DefaultPage />} />
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route

@@ -22,6 +22,10 @@ export interface Settings {
   container: 'fixed' | 'fluid';
   layout: string;
   layouts: {
+    vacom: {
+      sidebarCollapse: boolean;
+      sidebarTheme: 'light' | 'dark';
+    };
     demo1: {
       sidebarCollapse: boolean;
       sidebarTheme: 'light' | 'dark';

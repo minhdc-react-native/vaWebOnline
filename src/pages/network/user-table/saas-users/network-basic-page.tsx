@@ -16,7 +16,7 @@ export function NetworkSaasUsersPage() {
 
   return (
     <Fragment>
-      {settings?.layout === 'demo1' && (
+      {settings?.layout === 'vacom' && (
         <Container>
           <Toolbar>
             <ToolbarHeading>

@@ -1,67 +1,68 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import { AuthContext } from '@/auth/context/auth-context';
 import * as authHelper from '@/auth/lib/helpers';
-import { AuthModel, UserModel } from '@/auth/lib/models';
+import { AuthModel, IYear, UserModel } from '@/auth/lib/models';
 import { SupabaseAdapter } from '../adapters/supabase-adapter';
-
-// Fake user
-const demoUser: UserModel = {
-  id: 'demo',
-  username: 'Demo',
-  email: 'demo@kt.com',
-  first_name: 'Demo',
-  last_name: 'User',
-  is_admin: true,
-};
-
-const demoAuth: AuthModel = {
-  access_token: 'fake-token-123',
-  refresh_token: 'fake-refresh-123'
-};
-
+import { api } from '@/api/apiMethods';
+import { KEY_STORAGE, removeData, setData } from '@/lib/storage';
 export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(false);
   const [auth, setAuth] = useState<AuthModel | undefined>(authHelper.getAuth());
-  const [currentUser, setCurrentUser] = useState<UserModel | undefined>(
-    demoUser
-  );
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [currentUser, setCurrentUser] = useState<Record<string, any> | undefined>();
+  const [currentYear, setCurrentYear] = useState<string | null>(null);
+  const [listCurrentYear, setListCurrentYear] = useState<IYear[]>([]);
 
-  useEffect(() => {
-    setIsAdmin(currentUser?.is_admin === true);
-  }, [currentUser]);
+  const [infoDvcs, setInfoDvcs] = useState<Record<string, any> | null>(null);
 
   const saveAuth = (auth: AuthModel | undefined) => {
     setAuth(auth);
     if (auth) {
+      setData(KEY_STORAGE.TOKEN, auth.access_token);
       authHelper.setAuth(auth);
     } else {
+      removeData(KEY_STORAGE.TOKEN);
       authHelper.removeAuth();
     }
   };
 
-  // ✅ Fake login luôn thành công
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const login = async (email: string, password: string) => {
-    saveAuth(demoAuth);
-    setCurrentUser(demoUser);
+  const login = async (data: Record<string, any>) => {
+    const res = await api.post({
+      link: `/api/Account/Login`,
+      data: {
+        username: data.username,
+        pass: data.pass,
+        dvcs: data.dvcs,
+        captcha_token: ''
+      },
+      setLoading
+    });
+    if (res?.error) {
+      throw res.error;
+    } else {
+      setCurrentYear(res.nam?.[0].NAM);
+      setListCurrentYear(res.nam ?? []);
+      saveAuth({ access_token: res.token });
+      setCurrentUser(data);
+      setData(KEY_STORAGE.YEAR_SELECTED, res.nam?.[0].NAM);
+      setData(KEY_STORAGE.ORG_UNIT, data.dvcs);
+      if (data.remember) {
+        authHelper.setLoginInfo(data);
+      } else {
+        authHelper.removeLoginInfo();
+      }
+    }
+    await api.get({
+      link: `/api/System/GetInfoDvcs`,
+      callBack: (res: IData[]) => {
+        if (res && res.length > 0) setInfoDvcs(res[0]);
+      }
+    });
   };
 
   // ✅ Fake register cũng login luôn
-  const register = async (
-    email: string,
-    password: string,
-    password_confirmation: string,
-    firstName?: string,
-    lastName?: string
-  ) => {
-    saveAuth(demoAuth);
-    setCurrentUser({
-      ...demoUser,
-      email,
-      first_name: firstName || 'New',
-      last_name: lastName || 'User',
-    });
+  const register = async () => {
+
   };
 
   const logout = () => {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setCurrentUser(undefined);
   };
 
-  const getUser = async (): Promise<UserModel | null> => {
+  const getUser = async (): Promise<Record<string, any> | null> => {
     try {
       return await SupabaseAdapter.getCurrentUser();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -103,7 +104,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
         updateProfile,
         logout,
         verify: async () => { },
-        isAdmin,
+        isAdmin: true,
+        currentYear,
+        listCurrentYear: listCurrentYear,
+        infoDvcs
       }}
     >
       {children}

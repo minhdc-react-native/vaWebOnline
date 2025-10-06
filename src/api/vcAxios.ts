@@ -20,7 +20,6 @@ vcAxios.interceptors.request.use((config) => {
             config.headers.Authorization = `Bearer ${token};${dvcs ?? ''};${year ?? ''};${remember?.lang ?? 'vi'}`;
         }
         config.headers["Accept-language"] = remember?.lang ?? 'vi';
-
         return config;
     });
 });

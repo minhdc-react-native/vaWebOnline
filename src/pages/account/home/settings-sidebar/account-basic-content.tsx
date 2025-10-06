@@ -22,6 +22,7 @@ import {
 } from './components';
 
 const stickySidebarClasses: Record<string, string> = {
+  'vacom-layout': 'top-[calc(var(--header-height)+1rem)]',
   'demo1-layout': 'top-[calc(var(--header-height)+1rem)]',
   'demo2-layout': 'top-[calc(var(--header-height)+1rem)]',
   'demo3-layout': 'top-[calc(var(--header-height)+var(--navbar-height)+1rem)]',
@@ -59,7 +60,7 @@ export function AccountSettingsSidebarContent() {
   // Get the sticky class based on the current layout, provide a default if not found
   const stickyClass = settings?.layout
     ? stickySidebarClasses[settings?.layout] ||
-      'top-[calc(var(--header-height)+1rem)]'
+    'top-[calc(var(--header-height)+1rem)]'
     : 'top-[calc(var(--header-height)+1rem)]';
 
   return (
