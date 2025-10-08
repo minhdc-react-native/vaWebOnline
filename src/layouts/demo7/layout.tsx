@@ -49,7 +49,6 @@ const Demo7Layout = () => {
       </Helmet>
       <div className="flex grow flex-col in-data-[sticky-header=on]:pt-(--header-height-default)">
         <Header />
-
         <div className="grow" role="content">
           {!pathname.includes('/public-profile/') && (
             <Toolbar>
@@ -96,7 +95,6 @@ const Demo7Layout = () => {
           )}
           <Outlet />
         </div>
-
         <Footer />
       </div>
     </>

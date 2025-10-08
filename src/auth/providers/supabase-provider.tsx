@@ -4,15 +4,18 @@ import * as authHelper from '@/auth/lib/helpers';
 import { AuthModel, IYear, UserModel } from '@/auth/lib/models';
 import { SupabaseAdapter } from '../adapters/supabase-adapter';
 import { api } from '@/api/apiMethods';
-import { KEY_STORAGE, removeData, setData } from '@/lib/storage';
+import { getData, KEY_STORAGE, removeData, setData } from '@/lib/storage';
 export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(false);
   const [auth, setAuth] = useState<AuthModel | undefined>(authHelper.getAuth());
-  const [currentUser, setCurrentUser] = useState<Record<string, any> | undefined>();
-  const [currentYear, setCurrentYear] = useState<string | null>(null);
-  const [listCurrentYear, setListCurrentYear] = useState<IYear[]>([]);
+  const [currentUser, setCurrentUser] = useState<Record<string, any> | undefined>(authHelper.getLoginInfo());
+
+  const [listCurrentYear, setListCurrentYear] = useState<IYear[]>(getData(KEY_STORAGE.YEAR_LIST) ?? []);
+  const [currentYear, setCurrentYear] = useState<string | null>(getData(KEY_STORAGE.YEAR_SELECTED) ?? null);
 
   const [infoDvcs, setInfoDvcs] = useState<Record<string, any> | null>(null);
+
+  const [currentApp, setCurrentApp] = useState<IData | null>(null);
 
   const saveAuth = (auth: AuthModel | undefined) => {
     setAuth(auth);
@@ -44,6 +47,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setListCurrentYear(res.nam ?? []);
       saveAuth({ access_token: res.token });
       setCurrentUser(data);
+
+      setData(KEY_STORAGE.YEAR_LIST, res.nam);
+
       setData(KEY_STORAGE.YEAR_SELECTED, res.nam?.[0].NAM);
       setData(KEY_STORAGE.ORG_UNIT, data.dvcs);
       if (data.remember) {
@@ -52,12 +58,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
         authHelper.removeLoginInfo();
       }
     }
-    await api.get({
-      link: `/api/System/GetInfoDvcs`,
-      callBack: (res: IData[]) => {
-        if (res && res.length > 0) setInfoDvcs(res[0]);
-      }
-    });
   };
 
   // ✅ Fake register cũng login luôn
@@ -77,7 +77,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } catch (error) {
       return currentUser ?? null;
     }
-
   };
 
   const updateProfile = async (userData: Partial<UserModel>) => {
@@ -106,8 +105,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
         verify: async () => { },
         isAdmin: true,
         currentYear,
+        setCurrentYear,
         listCurrentYear: listCurrentYear,
-        infoDvcs
+        infoDvcs,
+        setInfoDvcs,
+        currentApp,
+        setCurrentApp
       }}
     >
       {children}

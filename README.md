@@ -100,3 +100,6 @@ https://flowbite.com/tools/tailwind-cheat-sheet/
 
 # leaning component
 https://reui.io/
+
+# icon dynamic
+https://lucide.dev/icons/?search=arrow

@@ -68,7 +68,7 @@ export function SignInPage() {
       // Get the 'next' parameter from URL if it exists
       const nextPath = searchParams.get('next') || '/';
       // Use navigate for navigation
-      navigate(nextPath);
+      navigate('/');
     } catch (err: any) {
       console.error('Unexpected sign-in error:', err);
       const errMessage = err instanceof Error
@@ -150,9 +150,9 @@ export function SignInPage() {
       headerForm={
         <div className="text-center space-y-1 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight">{_('Sign in')}</h1>
-          <p className="text-sm text-muted-foreground">
+          {/* <p className="text-sm text-muted-foreground">
             {_('Welcome back! Log in with your credentials.')}
-          </p>
+          </p> */}
         </div>
       }
       footerForm={

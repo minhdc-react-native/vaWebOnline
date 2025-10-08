@@ -110,9 +110,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                 })
             }
         }, 500), [data, display.fId, display.fValue, isConstData, source]);
-    const classNameContent = useMemo(() => {
-        return `w-[${totalWidth}px] p-0`;
-    }, [totalWidth])
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -139,7 +137,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         } /> : <ButtonArrow />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className={classNameContent}>
+            <PopoverContent style={{ width: `${totalWidth}px` }} className="p-0">
                 <Command>
                     <CommandInput placeholder={placeholderSearch} onValueChange={onSearch} />
                     <CommandList>

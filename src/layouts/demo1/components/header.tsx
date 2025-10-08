@@ -179,11 +179,16 @@ export function Header() {
               />
               <UserDropdownMenu
                 trigger={
-                  <img
-                    className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer"
-                    src={toAbsoluteUrl('/media/avatars/300-2.png')}
-                    alt="User Avatar"
-                  />
+                  <div className="flex items-center gap-2">
+                    <img
+                      className="size-9 rounded-full border-2 border-green-500"
+                      src={toAbsoluteUrl('/media/avatars/300-2.png')}
+                      alt="User avatar"
+                    />
+                    <div className="flex flex-col">
+                      {'ADMINISTRATOR'}
+                    </div>
+                  </div>
                 }
               />
             </>

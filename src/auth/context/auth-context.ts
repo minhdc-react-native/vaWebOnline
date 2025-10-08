@@ -29,8 +29,12 @@ export const AuthContext = createContext<{
   verify: () => Promise<void>;
   isAdmin: boolean;
   currentYear: string | null;
+  setCurrentYear: (year: string) => void,
   listCurrentYear: IYear[];
-  infoDvcs: Record<string, any> | null
+  infoDvcs: Record<string, any> | null,
+  setInfoDvcs: (info: Record<string, any>) => void;
+  currentApp: IData | null;
+  setCurrentApp: (app: IData) => void;
 }>({
   loading: false,
   setLoading: () => { },
@@ -47,8 +51,12 @@ export const AuthContext = createContext<{
   verify: async () => { },
   isAdmin: false,
   currentYear: null,
+  setCurrentYear: (year: string) => { },
   listCurrentYear: [],
-  infoDvcs: null
+  infoDvcs: null,
+  setInfoDvcs: (info: Record<string, any>) => { },
+  currentApp: null,
+  setCurrentApp: (app: IData) => { }
 });
 
 // Hook definition

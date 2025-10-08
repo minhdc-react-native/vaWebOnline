@@ -1,6 +1,14 @@
 import { AuthRouting } from '@/auth/auth-routing';
 import { RequireAuth } from '@/auth/require-auth';
 import { ErrorRouting } from '@/errors/error-routing';
+import { Demo1Layout } from '@/layouts/demo1/layout';
+import { Demo2Layout } from '@/layouts/demo2/layout';
+import { Demo3Layout } from '@/layouts/demo3/layout';
+import { Demo4Layout } from '@/layouts/demo4/layout';
+import { Demo5Layout } from '@/layouts/demo5/layout';
+import { Demo6Layout } from '@/layouts/demo6/layout';
+import { Demo7Layout } from '@/layouts/demo7/layout';
+import { Demo8Layout } from '@/layouts/demo8/layout';
 import { VacomLayout } from '@/layouts/vacom/layout';
 import {
   AccountActivityPage,
@@ -98,7 +106,7 @@ export function AppRoutingSetup() {
   return (
     <Routes>
       <Route element={<RequireAuth />}>
-        <Route element={<VacomLayout />}>
+        <Route element={<Demo2Layout />}>
           <Route path="/" element={<DefaultPage />} />
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route

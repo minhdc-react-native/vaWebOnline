@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/auth/context/auth-context';
 import { useLocation } from 'react-router';
 import { useLoadingBar } from 'react-top-loading-bar';
+import { AppRoutingVacom } from './app-routing-vacom';
 import { AppRoutingSetup } from './app-routing-setup';
 
 export function AppRouting() {
@@ -52,5 +53,5 @@ export function AppRouting() {
     }
   }, [previousLocation]);
 
-  return <AppRoutingSetup />;
+  return <AppRoutingVacom />;
 }
