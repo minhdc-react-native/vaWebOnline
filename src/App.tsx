@@ -20,11 +20,11 @@ export function App() {
   const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
-      <GlobalDialogProvider>
-        <AuthProvider>
-          <SettingsProvider>
-            <ThemeProvider>
-              <I18nProvider>
+      <I18nProvider>
+        <GlobalDialogProvider>
+          <AuthProvider>
+            <SettingsProvider>
+              <ThemeProvider>
                 <HelmetProvider>
                   <TooltipsProvider>
                     <QueryProvider>
@@ -39,11 +39,11 @@ export function App() {
                     </QueryProvider>
                   </TooltipsProvider>
                 </HelmetProvider>
-              </I18nProvider>
-            </ThemeProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </GlobalDialogProvider>
+              </ThemeProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </GlobalDialogProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

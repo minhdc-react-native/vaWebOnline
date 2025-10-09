@@ -13,7 +13,7 @@ export function VcHeader() {
     <header
       className={cn(
         'header fixed top-0 z-10 start-0 flex items-stretch shrink-0 border-b border-transparent bg-background end-0 pe-[var(--removed-body-scroll-bar-size,0px)]',
-        headerSticky && 'border-b border-border',
+        'border-b border-border',
       )}
     >
       <div className='flex flex-col w-full'>
@@ -22,7 +22,6 @@ export function VcHeader() {
         <Container className="flex justify-between items-stretch lg:gap-4">
           <VcMegaMenu />
         </Container>
-        <hr />
       </div>
     </header>
   );

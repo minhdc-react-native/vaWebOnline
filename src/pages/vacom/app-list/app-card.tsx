@@ -25,10 +25,10 @@ export function AppCard({ name, color, icon, onClick }: AppCardProps) {
                         group
                         relative
                         flex flex-col items-center justify-center
-                        w-28 h-28 rounded-2xl text-white
+                        w-20 h-20 rounded-2xl text-white
                         shadow-md hover:shadow-xl
                         transition-all duration-300
-                        hover:scale-105
+                        hover:scale-110 hover:cursor-pointer
                     "
             >
                 <span
@@ -42,9 +42,9 @@ export function AppCard({ name, color, icon, onClick }: AppCardProps) {
                     blur-[2px]
                     "
                 ></span>
-                <DynamicIcon name={(mapIcon as any)[icon.trim()] || icon} size={50} />
+                <DynamicIcon name={(mapIcon as any)[icon.trim()] || icon} size={30} />
             </button>
-            <span className="text-md font-semibold">{name}</span>
+            <span className="text-sm font-semibold">{name}</span>
         </div>
     )
 }

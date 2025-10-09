@@ -35,6 +35,8 @@ export const AuthContext = createContext<{
   setInfoDvcs: (info: Record<string, any>) => void;
   currentApp: IData | null;
   setCurrentApp: (app: IData) => void;
+  currentMenu: IData[],
+  setCurrentMenu: (menus: IData[]) => void;
 }>({
   loading: false,
   setLoading: () => { },
@@ -56,7 +58,9 @@ export const AuthContext = createContext<{
   infoDvcs: null,
   setInfoDvcs: (info: Record<string, any>) => { },
   currentApp: null,
-  setCurrentApp: (app: IData) => { }
+  setCurrentApp: (app: IData) => { },
+  currentMenu: [],
+  setCurrentMenu: (menus: IData[]) => { }
 });
 
 // Hook definition

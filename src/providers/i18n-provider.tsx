@@ -93,7 +93,7 @@ export const I18nProvider = ({ children }: PropsWithChildren) => {
 
       // Lưu lại config hiện tại
       setData(I18N_CONFIG_KEY, updatedLang);
-      setData(KEY_STORAGE.INFO_LOGIN, { lang: updatedLang.code });
+      setData(KEY_STORAGE.LANG_SELECTED, updatedLang.code);
       setCurrenLanguage(updatedLang);
     } catch (err) {
       console.error('Error changing language:', err);

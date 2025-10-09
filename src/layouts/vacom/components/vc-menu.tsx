@@ -13,22 +13,26 @@ import {
 } from '@/components/ui/menubar';
 import { useVcMenu } from './useVcMenu';
 import { useEffect } from 'react';
-interface IProgs {
-    menus: IData[]
-}
-export function VcMenu({ menus }: IProgs) {
+import { useGlobalDialog } from '@/providers/global-dialog';
+import { useAuth } from '@/auth/context/auth-context';
+
+export function VcMenu() {
     const { pathname } = useLocation();
+    const { currentMenu: menus } = useAuth();
+    const { showDialog } = useGlobalDialog();
     const navigate = useNavigate();
 
-    const { isActive, hasActiveChild } = useVcMenu(pathname);
-
-    useEffect(() => {
-        if (menus.length > 0) {
-            const menuFirst = menus[0].submenu ? menus[0].submenu[0] : menus[0];
-            const path = `/app/${menuFirst.code}/${menuFirst.window_id}`;
-            navigate(path);
+    const handleClick = (e: React.MouseEvent, item: IData) => {
+        if (item.code === "customview_win") {
+            e.preventDefault();
+            showDialog({
+                title: 'customview_win',
+                content: <div><span dangerouslySetInnerHTML={{ __html: item.value ?? "" }} /></div>
+            })
         }
-    }, [menus, navigate]);
+    };
+
+    const { isActive, hasActiveChild } = useVcMenu(pathname);
 
     const buildMenu = (items: IData[]) => {
         return items.map((item, index) => {
@@ -48,7 +52,7 @@ export function VcMenu({ menus }: IProgs) {
                             data-active={isActive(path) || undefined}
                             data-here={hasActiveChild(item.submenu) || undefined}
                         >
-                            {item.value}
+                            <span dangerouslySetInnerHTML={{ __html: item.value ?? "" }} />
                             <ChevronDown className="ms-auto size-3.5" />
                         </MenubarTrigger>
                         <MenubarContent className="min-w-[175px]" sideOffset={0}>
@@ -70,11 +74,12 @@ export function VcMenu({ menus }: IProgs) {
                             )}
                         >
                             <Link
-                                to={path || ''}
+                                to={item.code === "customview_win" ? "#" : path || ""}
+                                onClick={(e) => handleClick(e, item)}
                                 data-active={isActive(path) || undefined}
                                 data-here={hasActiveChild(item.submenu) || undefined}
                             >
-                                {item.value}
+                                <span dangerouslySetInnerHTML={{ __html: item.value ?? "" }} />
                             </Link>
                         </MenubarTrigger>
                     </MenubarMenu>
@@ -93,7 +98,7 @@ export function VcMenu({ menus }: IProgs) {
                             data-active={isActive(path) || undefined}
                             data-here={hasActiveChild(item.submenu) || undefined}
                         >
-                            <span>{item.value}</span>
+                            <span dangerouslySetInnerHTML={{ __html: item.value ?? "" }} />
                         </MenubarSubTrigger>
                         <MenubarSubContent className="min-w-[175px]">
                             {buildSubMenu(item.submenu)}
@@ -108,7 +113,12 @@ export function VcMenu({ menus }: IProgs) {
                         data-active={isActive(path) || undefined}
                         data-here={hasActiveChild(item.submenu) || undefined}
                     >
-                        <Link to={path || ''}>{item.value}</Link>
+                        <Link
+                            to={item.code === "customview_win" ? "#" : path || ""}
+                            onClick={(e) => handleClick(e, item)}
+                        >
+                            <span dangerouslySetInnerHTML={{ __html: item.value ?? "" }} />
+                        </Link>
                     </MenubarItem>
                 );
             }

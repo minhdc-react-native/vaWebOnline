@@ -12,6 +12,15 @@ export const RequireAuth = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const verificationStarted = useRef(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!(loading || globalLoading)) {
+      setTimeout(() => setVisible(false), 200);
+    } else {
+      setVisible(true);
+    }
+  }, [loading, globalLoading]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,10 +39,9 @@ export const RequireAuth = () => {
     checkAuth();
   }, [auth, verify]);
 
-  // Show screen loader while checking authentication
-  if (loading || globalLoading) {
-    return <ScreenLoader />;
-  }
+  // if (loading || globalLoading) {
+  //   return <ScreenLoader />;
+  // }
 
   // If not authenticated, redirect to login
   if (!auth?.access_token) {
@@ -46,5 +54,8 @@ export const RequireAuth = () => {
   }
 
   // If authenticated, render child routes
-  return <Outlet />;
+  return <div className="relative min-h-screen w-full">
+    <ScreenLoader visible={visible} />
+    <Outlet />
+  </div>
 };

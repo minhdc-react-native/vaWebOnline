@@ -58,11 +58,11 @@ export const loginSchema: IGroupSchema = {
                     name: 'remember',
                     label: 'Remember me'
                 },
-                { type: "button", variant: "destructive", appearance: "ghost", label: "Forgot password?", handleClick: 'forgotPassword' }
+                { type: "button", variant: "destructive", appearance: "ghost", hotkey: "F2", label: "Forgot password?", handleClick: 'forgotPassword' }
             ]
         },
         {
-            type: "button", variant: "primary", label: "Sign in",
+            type: "button", variant: "primary", label: "Sign in", hotkey: "F10",
             // labelLoading: "Loading...", 
             buttonType: "submit", handleProcessing: 'processing'
         },

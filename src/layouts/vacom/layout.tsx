@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
-import { addDays } from 'date-fns';
-import { DateRange } from 'react-day-picker';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Outlet, useLocation } from 'react-router-dom';
 import { MENU_SIDEBAR } from '@/config/menu.config';
@@ -15,21 +13,16 @@ export function VacomLayout() {
   const { getCurrentItem } = useMenu(pathname);
   const item = getCurrentItem(MENU_SIDEBAR);
 
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2025, 0, 20),
-    to: addDays(new Date(2025, 0, 20), 20),
-  });
-
   // Using the custom hook to set multiple CSS variables and class properties
   useBodyClass(`
-    [--header-height-default:95px]
-    data-[sticky-header=on]:[--header-height:60px]
+    [--header-height-default:140px]
+    data-[sticky-header=on]:[--header-height:140px]
     [--header-height:var(--header-height-default)]	
     [--header-height-mobile:70px]	
   `);
 
   useEffect(() => {
-    setOption('layout', 'demo7');
+    setOption('layout', 'vacom');
   }, [setOption]);
 
   return (
@@ -37,9 +30,14 @@ export function VacomLayout() {
       <Helmet>
         <title>{item?.title}</title>
       </Helmet>
-      <div className="flex grow flex-col in-data-[sticky-header=on]:pt-(--header-height-default)">
-        <VcHeader />
-        <div className="grow" role="content">
+      <div className="flex flex-col h-screen overflow-hidden">
+        <div
+          className="shrink-0"
+          style={{ height: 'var(--header-height)' }}
+        >
+          <VcHeader />
+        </div>
+        <div className="flex-1 overflow-auto bg-muted/10" role="content">
           <Outlet />
         </div>
       </div>

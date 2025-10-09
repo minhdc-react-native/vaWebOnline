@@ -2,12 +2,12 @@ import { AuthRouting } from '@/auth/auth-routing';
 import { RequireAuth } from '@/auth/require-auth';
 import { ErrorRouting } from '@/errors/error-routing';
 import { VacomLayout } from '@/layouts/vacom/layout';
-import {
-    AccountGetStartedPage
-} from '@/pages/account';
-import { DefaultPage, Demo1DarkSidebarPage } from '@/pages/dashboards';
-import { ProfileDefaultPage } from '@/pages/public-profile';
 import { AppListPage } from '@/pages/vacom/app-list/app-list';
+import { CustomViewPage } from '@/pages/vacom/customview/customview-page';
+import { DashboardPage } from '@/pages/vacom/dashboard/dashboard-page';
+import { ReportWindowPage } from '@/pages/vacom/reportwindow/reportwindow-page';
+import { TreeWindowPage } from '@/pages/vacom/treewindow/treewindow-page';
+import { WindowPage } from '@/pages/vacom/window/window-page';
 import { Navigate, Route, Routes } from 'react-router';
 
 export function AppRoutingVacom() {
@@ -16,10 +16,12 @@ export function AppRoutingVacom() {
             <Route element={<RequireAuth />}>
                 <Route index element={<AppListPage />} />
                 <Route path="app/*" element={<VacomLayout />}>
-                    <Route index element={<DefaultPage />} />
-                    <Route path="dark-sidebar" element={<Demo1DarkSidebarPage />} />
-                    <Route path="public-profile/profiles/default/" element={<ProfileDefaultPage />} />
-                    <Route path="auth/get-started" element={<AccountGetStartedPage />} />
+                    {/* <Route index element={<DefaultPage />} /> */}
+                    <Route path="dashboard/:window_id" element={<DashboardPage />} />
+                    <Route path="treewindow/:window_id" element={<TreeWindowPage />} />
+                    <Route path="window/:window_id" element={<WindowPage />} />
+                    <Route path="customview/:window_id" element={<CustomViewPage />} />
+                    <Route path="reportwindow/:window_id" element={<ReportWindowPage />} />
                 </Route>
             </Route>
 

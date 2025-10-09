@@ -4,7 +4,8 @@ export const KEY_STORAGE = {
   YEAR_LIST: 'year-list',
   ORG_UNIT: 'org-unit',
   SUB_DOMAIN: 'sub-domain',
-  INFO_LOGIN: 'info-login'
+  INFO_LOGIN: 'info-login',
+  LANG_SELECTED: 'lang-selected'
 };
 
 const getData = (key: string): any | undefined => {

@@ -16,6 +16,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [infoDvcs, setInfoDvcs] = useState<Record<string, any> | null>(null);
 
   const [currentApp, setCurrentApp] = useState<IData | null>(null);
+  const [currentMenu, setCurrentMenu] = useState<IData[]>([]);
 
   const saveAuth = (auth: AuthModel | undefined) => {
     setAuth(auth);
@@ -110,7 +111,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
         infoDvcs,
         setInfoDvcs,
         currentApp,
-        setCurrentApp
+        setCurrentApp,
+        currentMenu,
+        setCurrentMenu
       }}
     >
       {children}

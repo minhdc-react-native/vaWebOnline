@@ -111,6 +111,34 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
             }
         }, 500), [data, display.fId, display.fValue, isConstData, source]);
 
+    const [highlightIndex, setHighlightIndex] = useState<number>(-1);
+
+    useEffect(() => {
+        if (!open) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (dataFilter.length === 0) return;
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setHighlightIndex((prev) => (prev + 1) % dataFilter.length);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setHighlightIndex((prev) => (prev - 1 + dataFilter.length) % dataFilter.length);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlightIndex >= 0 && highlightIndex < dataFilter.length) {
+                    onChangeSelected(dataFilter[highlightIndex]);
+                    setOpen(false);
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [open, dataFilter, highlightIndex, onChangeSelected]);
+
+    useEffect(() => {
+        if (open) setHighlightIndex(-1);
+    }, [open, dataFilter]);
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -144,7 +172,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         <CustomMenuList itemSelected={itemSelected} fId={display.fId!} columns={columns} data={dataFilter} onSelect={(item) => {
                             onChangeSelected(item);
                             setOpen(false);
-                        }} />
+                        }} highlightIndex={highlightIndex} />
                     </CommandList>
                 </Command>
             </PopoverContent>
@@ -156,9 +184,10 @@ interface IMenuList {
     fId: string;
     columns: IColumn[];
     data: IData[];
-    onSelect: (item: IData) => void
+    onSelect: (item: IData) => void;
+    highlightIndex?: number;
 }
-const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect }: IMenuList) => {
+const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1 }: IMenuList) => {
     return (
         <table className="w-full border-collapse table-fixed">
             <colgroup>
@@ -179,9 +208,9 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect }: IMenuLis
                 </tr>
             </thead>
             <tbody>
-                {data.map(item => {
+                {data.map((item, idx) => {
                     return (
-                        <CustomOption key={item[fId]} columns={columns} item={item} isSelected={item[fId] === itemSelected?.[fId]} onSelect={onSelect} />
+                        <CustomOption key={item[fId]} columns={columns} item={item} isSelected={item[fId] === itemSelected?.[fId]} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
                     );
                 })}
             </tbody>
@@ -193,14 +222,28 @@ interface IOption {
     item: IData;
     isSelected: boolean,
     onSelect: (item: IData) => void;
+    isHighlighted: boolean
 }
-const CustomOption = ({ columns, item, isSelected, onSelect }: IOption) => {
+const CustomOption = ({ columns, item, isSelected, onSelect, isHighlighted }: IOption) => {
+    const rowRef = useRef<HTMLTableRowElement | null>(null);
+
+    useEffect(() => {
+        if ((isHighlighted) && rowRef.current) {
+            rowRef.current.scrollIntoView({
+                block: "center",
+                behavior: "smooth",
+            });
+        }
+    }, [isHighlighted]);
+
     return (
         <tr
+            ref={rowRef}
             onClick={() => onSelect(item)}
             className={cn(
-                "cursor-pointer",
-                isSelected && "bg-amber-50 font-bold"
+                "cursor-pointer transition-colors",
+                isSelected && "bg-amber-50 font-bold",
+                isHighlighted && "bg-amber-100"
             )}
         >
             {columns.map((col: any) => (

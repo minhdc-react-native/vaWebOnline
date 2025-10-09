@@ -26,11 +26,14 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { I18N_LANGUAGES } from '@/i18n/config';
+import { useGlobalDialog } from '@/providers/global-dialog';
+import { removeAllCacheItem } from '@/lib/utils';
 
 export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
   const { logout, user } = useAuth();
   const { currenLanguage, changeLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { showToast, showDialog } = useGlobalDialog();
   // const displayAvatar = user?.pic || toAbsoluteUrl('/media/avatars/300-2.png');
   const displayAvatar = toAbsoluteUrl('/media/avatars/300-2.png');
 
@@ -41,7 +44,18 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
   const handleThemeToggle = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
   };
+  const handleDeleteCache = () => {
+    removeAllCacheItem((isProcessing) => {
+      showToast(isProcessing ? "Đang xoá Cache" : "Đã xoá xong!", isProcessing ? "info" : "success");
+    })
+  }
 
+  const handleChangePass = () => {
+    showDialog({
+      title: "Đổi mật khẩu",
+      content: <div><span>Nội dung đổi mật khẩu</span></div>
+    })
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
@@ -62,13 +76,24 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
         <DropdownMenuSeparator />
         {/* Menu Items */}
         <DropdownMenuItem asChild>
-          <Link
-            to="#"
-            className="flex items-center gap-2"
+          <Button
+            variant={"ghost"}
+            onClick={handleChangePass}
+            className="flex items-center justify-start gap-2 w-full"
           >
             <DynamicIcon name={"key"} />
             Đổi mật khẩu
-          </Link>
+          </Button>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Button
+            variant={"ghost"}
+            onClick={handleDeleteCache}
+            className="flex items-center justify-start gap-2 w-full"
+          >
+            <DynamicIcon name={"delete"} className='text-primary' />
+            Xoá Cache
+          </Button>
         </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex items-center gap-2 [&_[data-slot=dropdown-menu-sub-trigger-indicator]]:hidden hover:[&_[data-slot=badge]]:border-input data-[state=open]:[&_[data-slot=badge]]:border-input">

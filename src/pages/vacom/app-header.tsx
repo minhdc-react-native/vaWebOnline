@@ -4,22 +4,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { UserDropdownMenu } from '@/partials/topbar/user-dropdown-menu';
 import { useEffect } from 'react';
-import { StoreClientTopbar } from '../store-client/components/common/topbar';
+import { useApiQuery } from '@/api/useApi';
 interface IProgs {
     hiddenUser?: boolean
 }
 export function AppHeader({ hiddenUser }: IProgs) {
     const { currentYear, setCurrentYear, listCurrentYear, user, infoDvcs, setInfoDvcs } = useAuth();
-
+    const { data, isSuccess } = useApiQuery<IData[]>(['infoDvcs'], {
+        link: `/api/System/GetInfoDvcs`
+    })
     useEffect(() => {
-        if (!!infoDvcs) return;
-        api.get({
-            link: `/api/System/GetInfoDvcs`,
-            callBack: (res: IData[]) => {
-                if (res && res.length > 0) setInfoDvcs(res[0]);
-            }
-        });
-    }, []);
+        if (isSuccess && data && data.length > 0) {
+            setInfoDvcs(data[0]);
+        }
+    }, [isSuccess, data, setInfoDvcs]);
 
     return (
         <header className="w-full flex items-center justify-between px-6 py-4">

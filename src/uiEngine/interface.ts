@@ -2,7 +2,7 @@ import { IconName } from "lucide-react/dynamic";
 import { IFontWeight, ITextSize, IVariant } from "./components/text-field";
 import { IAlertAppearance, IAlertSize, IAlertVariant } from "./components/alert-field";
 import { IConditions } from "./hooks/useNodeConditions";
-import { IColumn } from "./components/combobox/async-combobox";
+import { IColumn } from "./components/combobox/vc-combobox";
 
 export type IFieldType =
     | "input"
@@ -53,6 +53,7 @@ export interface ISelectSchema {
 export interface IButtonSchema {
     type: "button";
     label: string;
+    hotkey?: string;
     labelLoading?: string;
     buttonType?: IButtonType;
     variant?: "secondary" | "primary" | "destructive" | "mono" | "outline" | "dashed" | "ghost" | "dim" | "foreground" | "inverse";
