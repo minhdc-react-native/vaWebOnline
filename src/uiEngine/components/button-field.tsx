@@ -24,7 +24,7 @@ export function ButtonField({
     useEffect(() => {
         if (!btn.hotkey) return;
         const handler = (e: KeyboardEvent) => {
-            const key = e.key.toLowerCase();
+            const key = e.key?.toLowerCase();
             const hk = btn.hotkey!.toLowerCase();
             const match =
                 (hk.includes("ctrl") ? e.ctrlKey : true) &&

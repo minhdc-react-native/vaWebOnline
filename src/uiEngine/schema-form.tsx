@@ -17,6 +17,7 @@ import { useNodeConditions } from "./hooks/useNodeConditions";
 import { SelectField } from "./components/combobox/select-field";
 import { useDataSource } from "./hooks/useDataSource";
 import { useT } from "@/i18n/config";
+import { DateInputField } from "./components/date-input-field";
 
 interface IRenderField {
     field: IFieldAll;
@@ -87,6 +88,19 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         options={field.options ?? []}
                         labelPosition={field.labelPosition}
                     />;
+                case "date":
+                    return (
+                        <DateInputField
+                            control={control}
+                            name={field.name}
+                            disabled={disabled}
+                            label={label}
+                            className={className}
+                            placeholder={field.placeholder}
+                            labelPosition={field.labelPosition}
+                            labelWidth={field.labelWidth}
+                        />
+                    );
                 default:
                     return null;
             }
@@ -224,8 +238,8 @@ export function SchemaForm({
     const zodSchema = buildZodFromSchema(schema, _);
     const defaultValues = buildDefaultValuesFromSchema(schema);
     const form = useForm({
-        mode: "onBlur",
-        reValidateMode: "onBlur",
+        // mode: "onBlur",
+        // reValidateMode: "onBlur",
         resolver: zodResolver(zodSchema),
         defaultValues: { ...defaultValues, ...values },
     });

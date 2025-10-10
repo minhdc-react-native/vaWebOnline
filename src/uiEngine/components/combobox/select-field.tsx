@@ -11,6 +11,7 @@ import { useCallback, useMemo } from "react";
 import { api } from "@/api/apiMethods";
 import VcComboBox, { IColumn } from "./vc-combobox";
 import { useT } from "@/i18n/config";
+import { InputWrapper } from "@/components/ui/input";
 
 interface ISelectFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -78,7 +79,6 @@ export function SelectField({
                         {label && labelPosition === "left" && (
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
-
                         <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
                             columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} />
 

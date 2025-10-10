@@ -12,7 +12,9 @@ import {
 import { flexRender, Row } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { useDataGrid } from "@/components/ui/data-grid";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
+import { FilterColumn } from "./filter-columns";
+import { DataGridColumnFilter } from "../ui/data-grid-column-filter";
 
 interface TreeRow<T> {
     id: string | number;
@@ -22,7 +24,6 @@ interface TreeRow<T> {
 export function DataGridTree<TData extends TreeRow<TData>>() {
     const { table, props } = useDataGrid();
 
-    // Trạng thái mở rộng của tree (bạn có thể lưu ở react-table state nếu muốn)
     const [expanded, setExpanded] = React.useState<Record<string | number, boolean>>({});
 
     const toggleRow = (rowId: string | number) => {
@@ -33,26 +34,22 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
     };
 
     const renderTreeRows = (row: Row<TData>, level = 0) => {
-        const rowData = row.original;
-
-        const hasChildren = Array.isArray(rowData.children) && rowData.children.length > 0;
-        const isExpanded = expanded[row.id] !== undefined ? expanded[row.id] : true;;
-
+        const hasChildren = row.subRows.length > 0;
+        const isExpanded = expanded[row.id] !== undefined ? expanded[row.id] : true;
         return (
             <Fragment key={row.id}>
                 <DataGridTableBodyRow
                     row={row}
-                    className={cn(level > 0 && "bg-muted/20")}
+                    className={cn(row.getIsSelected() && 'selected', hasChildren && 'font-bold')}
                 >
                     {row.getVisibleCells().map((cell, colIndex) => {
                         const content = flexRender(cell.column.columnDef.cell, cell.getContext());
-
                         return (
                             <DataGridTableBodyRowCell cell={cell} key={colIndex}>
                                 {colIndex === 0 ? (
-                                    <div className="flex items-center">
+                                    <div className={cn("flex items-center")}>
                                         <div style={{ width: level * 16 }} />
-                                        {hasChildren ? (
+                                        {hasChildren && (
                                             <button
                                                 style={{ width: 18 }}
                                                 type="button"
@@ -63,12 +60,12 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
                                                 }}
                                             >
                                                 {isExpanded ? (
-                                                    <ChevronDown size={14} className="text-muted-foreground" />
+                                                    <DynamicIcon name="minus-square" size={14} className="text-muted-foreground" />
                                                 ) : (
-                                                    <ChevronRight size={14} className="text-muted-foreground" />
+                                                    <DynamicIcon name="plus-square" size={14} className="text-muted-foreground" />
                                                 )}
                                             </button>
-                                        ) : (<div style={{ width: 22 }} />)}
+                                        )}
                                         {content}
                                     </div>
                                 ) : (
@@ -78,10 +75,8 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
                         );
                     })}
                 </DataGridTableBodyRow>
-
-                {hasChildren && isExpanded && rowData.children!.map((child, index) => {
-                    const subRow = table.getRowModel().rows.find(r => r.original === child);
-                    return subRow ? renderTreeRows(subRow, level + 1) : null;
+                {hasChildren && isExpanded && row.subRows.map((subRow, index) => {
+                    return renderTreeRows(subRow, level + 1);
                 })}
             </Fragment>
         );
@@ -91,12 +86,21 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
         <DataGridTableBase>
             <DataGridTableHead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                    <DataGridTableHeadRow key={headerGroup.id} headerGroup={headerGroup}>
-                        {headerGroup.headers.map((header) => (
-                            <DataGridTableHeadRowCell header={header} key={header.id}>
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                            </DataGridTableHeadRowCell>
-                        ))}
+                    <DataGridTableHeadRow
+                        key={headerGroup.id} headerGroup={headerGroup}>
+                        {headerGroup.headers.map((header) => {
+                            return (
+                                <DataGridTableHeadRowCell
+                                    header={header} key={header.id}>
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                    {header.column.columnDef.meta?.filterVariant ? (
+                                        <div>
+                                            <FilterColumn column={header.column} />
+                                        </div>
+                                    ) : null}
+                                </DataGridTableHeadRowCell>
+                            )
+                        })}
                     </DataGridTableHeadRow>
                 ))}
             </DataGridTableHead>
@@ -104,7 +108,7 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
             <DataGridTableBody>
                 {table.getRowModel().rows.length ? (
                     table.getRowModel().rows
-                        .filter((r) => !(r.original as any).parentId) // Chỉ render root node
+                        .filter((r) => !(r.original as any).parentId)
                         .map((row) => renderTreeRows(row))
                 ) : (
                     <DataGridTableEmpty />

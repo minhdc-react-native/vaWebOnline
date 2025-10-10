@@ -11,6 +11,7 @@ import { Button, ButtonArrow } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
+import { InputWrapper } from "@/components/ui/input";
 
 
 export interface IColumn {
@@ -152,8 +153,8 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                     className={cn("flex items-center justify-between w-full", className)}
                 >
                     <div className="flex items-center gap-2 overflow-hidden">
-                        {iconLeft && <DynamicIcon name={iconLeft} className="absolute left-2 top-1/2 w-4 h-4 shrink-0 opacity-70 text-gray-400" />}
-                        <span className={cn("truncate", iconLeft ? "ml-4" : "")}>
+                        {iconLeft && <DynamicIcon name={iconLeft} className="absolute left-2.5 top-1/2 w-4 h-4 shrink-0 opacity-70 text-gray-400" />}
+                        <span className={cn("truncate", iconLeft ? "ml-5" : "")}>
                             {itemSelected?.[display.fDisplay!] || placeholder}
                         </span>
                     </div>

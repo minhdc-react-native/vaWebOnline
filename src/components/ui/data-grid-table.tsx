@@ -77,7 +77,7 @@ function DataGridTableHead({ children }: { children: ReactNode }) {
 
 function DataGridTableHeadRow<TData>({
   children,
-  headerGroup,
+  headerGroup
 }: {
   children: ReactNode;
   headerGroup: HeaderGroup<TData>;
@@ -93,7 +93,7 @@ function DataGridTableHeadRow<TData>({
         props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
-        props.tableClassNames?.headerRow,
+        props.tableClassNames?.headerRow
       )}
     >
       {children}
@@ -121,7 +121,6 @@ function DataGridTableHeadRowCell<TData>({
   const headerCellSpacing = headerCellSpacingVariants({
     size: props.tableLayout?.dense ? 'dense' : 'default',
   });
-
   return (
     <th
       key={header.id}
@@ -250,7 +249,7 @@ function DataGridTableBodyRow<TData>({
   row: Row<TData>;
   dndRef?: React.Ref<HTMLTableRowElement>;
   dndStyle?: CSSProperties;
-  className?: string
+  className?: string;
 }) {
   const { props, table } = useDataGrid();
 

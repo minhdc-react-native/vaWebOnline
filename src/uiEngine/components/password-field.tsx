@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, X } from "lucide-react";
+import { Input, InputWrapper } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Control, FieldValues } from "react-hook-form";
@@ -51,34 +51,27 @@ export function PasswordField({
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
                         <div className="relative w-full">
-                            {iconLeft && <DynamicIcon
-                                name={iconLeft}
-                                size={18}
-                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />}
                             <FormControl>
-                                <Input
-                                    {...field}
-                                    // autoComplete="new-password"
-                                    placeholder={placeholder ?? _("Enter password")}
-                                    type={visible ? "text" : "password"}
-                                    className={iconLeft ? "pl-8" : undefined}
-                                />
+                                <InputWrapper>
+                                    {iconLeft && <DynamicIcon
+                                        name={iconLeft}
+                                        size={18}
+                                    />}
+                                    <Input
+                                        {...field}
+                                        // autoComplete="new-password"
+                                        placeholder={placeholder ?? _("Enter password")}
+                                        type={visible ? "text" : "password"}
+                                        className={iconLeft ? "pl-8" : undefined}
+                                    />
+                                    {field.value !== '' && <X onClick={() => field.onChange("")} />}
+                                    <DynamicIcon
+                                        name={visible ? "eye-off" : "eye"}
+                                        onClick={() => setVisible(!visible)}
+                                        size={18}
+                                    />
+                                </InputWrapper>
                             </FormControl>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                mode="icon"
-                                onClick={() => setVisible(!visible)}
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            >
-                                {visible ? (
-                                    <EyeOff className="text-muted-foreground" />
-                                ) : (
-                                    <Eye className="text-muted-foreground" />
-                                )}
-                            </Button>
-
                             <ErrorMessage />
                         </div>
                         {label && labelPosition === "right" && (

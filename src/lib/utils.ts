@@ -16,25 +16,22 @@ interface IProgsCacheItem {
   cacheKey: string;
   url: string;
   method?: 'get' | 'post';
-  callBack: (res: any) => void;
-  setLoading?: (loading: boolean) => void
+  onMapRes?: (res: any) => any
 }
 
 const keyCacheBegin = 'app-vacom-config:';
-export function getCacheItem({ cacheKey, url, method = "get", callBack, setLoading }: IProgsCacheItem) {
+export const getCacheItem = async ({ cacheKey, url, method = "get", onMapRes }: IProgsCacheItem) => {
   const cacheKeyFull = `${keyCacheBegin}${cacheKey}`;
   const value = getData(cacheKeyFull);
   if (!value) {
-    api[method]({
-      link: url,
-      callBack: (res) => {
-        setData(cacheKeyFull, res);
-        callBack(res);
-      },
-      setLoading
+    const res = await api[method]({
+      link: url
     });
+    const mapRes = onMapRes ? onMapRes(res) : res;
+    setData(cacheKeyFull, mapRes);
+    return mapRes;
   } else {
-    callBack(value);
+    return value;
   }
 }
 export const removeAllCacheItem = async (callBack: (isProgress: boolean) => void) => {

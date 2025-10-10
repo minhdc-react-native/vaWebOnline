@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input, InputWrapper } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
     FormField,
@@ -12,6 +12,7 @@ import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/config";
+import { X } from "lucide-react";
 
 interface IInputFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -45,12 +46,12 @@ export function InputField({
     }, [_, label]);
 
     const renderInput = useCallback((field: ControllerRenderProps<FieldValues, string>) => {
-        return <FormControl>{type === "input" ?
-            <Input placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "pl-8" : undefined} />
+        return type === "input" ?
+            (<Input placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "border-none" : undefined} />)
             :
-            <Textarea placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "pl-8" : undefined} />}
-        </FormControl>
+            (<Textarea placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "pl-8" : undefined} />)
     }, [placeholder, placeholderDefault, type, iconLeft]);
+
     return (
 
         <FormField
@@ -69,16 +70,16 @@ export function InputField({
                         {label && labelPosition === "left" && (
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
-                        {iconLeft ? <div className="relative w-full">
-                            <DynamicIcon
-                                name={iconLeft}
-                                size={18}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />
-                            {renderInput(field)}
-                        </div> :
-                            renderInput(field)
-                        }
+                        <FormControl>
+                            <InputWrapper>
+                                {iconLeft && <DynamicIcon
+                                    name={iconLeft}
+                                    size={18}
+                                />}
+                                {renderInput(field)}
+                                {field.value !== '' && <X onClick={() => field.onChange("")} />}
+                            </InputWrapper>
+                        </FormControl>
 
                         {label && labelPosition === "right" && (
                             <FormLabel className="ml-2">{label}</FormLabel>

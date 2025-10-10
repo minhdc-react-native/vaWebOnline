@@ -106,6 +106,7 @@ export function SignInPage() {
   const onActionAlert = useCallback((action: string, values?: Record<string, any>) => {
     switch (action) {
       case 'submit':
+        console.log('values>', values);
         setDataDialog(prev => ({ ...prev, ...(values || {}) }))
         closeDialog();
         break;

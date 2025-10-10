@@ -19,6 +19,14 @@ export const forgotPassword: IGroupSchema = {
             rules: { required: true, email: true }
         },
         {
+            type: "field",
+            fieldType: "date",
+            name: 'voucherDate',
+            label: 'Ngày',
+            placeholder: 'Ngày tháng',
+            rules: { required: true }
+        },
+        {
             type: "group",
             layout: "grid",
             columns: 4,

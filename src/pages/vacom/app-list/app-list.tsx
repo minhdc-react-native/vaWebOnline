@@ -64,7 +64,7 @@ export function AppListPage() {
                 <AppHeader />
                 <div className="grid lg:grid-cols-1 grow bg-no-repeat page-bg">
                     <main className="flex-1 flex flex-col items-center justify-start py-10">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-15 max-w-5xl">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10 max-w-5xl">
                             {apps?.map(app => (
                                 <AppCard
                                     key={app.id}

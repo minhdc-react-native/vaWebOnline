@@ -10,14 +10,31 @@ export function buildZodFromSchema(schema: IFormSchema, _: (id: string | undefin
                 const fieldType = node.fieldType || "input";
                 switch (fieldType) {
                     case "input":
-                    case "textarea":
-                    case "date": {
+                    case "textarea": {
                         let field = z.string();
                         if (node.rules?.required)
                             field = field.min(1, `${labelMessage} ${_('is required')}`);
                         if (node.rules?.email) field = field.email();
                         if (node.rules?.min) field = field.min(node.rules.min);
                         if (node.rules?.max) field = field.max(node.rules.max);
+                        return { [node.name]: field };
+                    }
+                    case "date": {
+                        const base = z
+                            .string()
+                            .nullable()
+                            .optional()
+                            .transform((val) => (val === "" ? null : val));
+
+                        let field: z.ZodTypeAny;
+
+                        if (node.rules?.required) {
+                            field = base.refine((val) => !!val, {
+                                message: `${labelMessage} ${_('is required')}`,
+                            });
+                        } else {
+                            field = base;
+                        }
                         return { [node.name]: field };
                     }
                     case "password": {
@@ -81,7 +98,6 @@ export function buildDefaultValuesFromSchema(schema: IFormSchema): Record<string
                     case "input":
                     case "textarea":
                     case "password":
-                    case "date":
                         return { [node.name]: "" };
                     case "checkbox":
                         return { [node.name]: false };
