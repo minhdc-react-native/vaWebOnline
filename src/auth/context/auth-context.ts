@@ -37,6 +37,8 @@ export const AuthContext = createContext<{
   setCurrentApp: (app: IData) => void;
   currentMenu: IData[],
   setCurrentMenu: (menus: IData[]) => void;
+  currentMenuSelected: IData | null,
+  setCurrentMenuSelected: (menu: IData) => void;
 }>({
   loading: false,
   setLoading: () => { },
@@ -60,7 +62,9 @@ export const AuthContext = createContext<{
   currentApp: null,
   setCurrentApp: (app: IData) => { },
   currentMenu: [],
-  setCurrentMenu: (menus: IData[]) => { }
+  setCurrentMenu: (menus: IData[]) => { },
+  currentMenuSelected: null,
+  setCurrentMenuSelected: (menu: IData) => { }
 });
 
 // Hook definition

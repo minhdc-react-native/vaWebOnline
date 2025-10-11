@@ -52,6 +52,8 @@ export interface DataGridProps<TData extends object> {
   recordCount: number;
   children?: ReactNode;
   onRowClick?: (row: TData) => void;
+  onDoubleClick?: (row: TData) => void;
+  onContextMenu?: (menuKey: string, row: TData) => void;
   isLoading?: boolean;
   loadingMode?: 'skeleton' | 'spinner';
   loadingMessage?: ReactNode | string;

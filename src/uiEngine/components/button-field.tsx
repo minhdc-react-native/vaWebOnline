@@ -3,8 +3,9 @@ import { IButtonSchema } from "../interface";
 import { cn } from "@/lib/utils";
 import { LoaderCircleIcon } from "lucide-react";
 import { useT } from "@/i18n/config";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { DynamicIcon } from "lucide-react/dynamic";
 
 export function ButtonField({
     btn,
@@ -19,8 +20,13 @@ export function ButtonField({
 }) {
     const _ = useT();
     const buttonRef = useRef<HTMLButtonElement | null>(null);
+    const [pressed, setPressed] = useState(false);
     const typeButton = btn.buttonType || "button";
     const isProcessing = btn.handleProcessing ? handleAction(btn.handleProcessing) : false;
+    const onPressStyle = () => {
+        setPressed(true);
+        setTimeout(() => setPressed(false), 150);
+    }
     useEffect(() => {
         if (!btn.hotkey) return;
         const handler = (e: KeyboardEvent) => {
@@ -41,6 +47,8 @@ export function ButtonField({
             if (form && activeForm && form !== activeForm) return;
 
             e.preventDefault();
+
+            onPressStyle();
 
             switch (typeButton) {
                 case "submit":
@@ -65,15 +73,24 @@ export function ButtonField({
             type={btn.buttonType === "submit" ? "submit" : typeButton}
             variant={btn.variant}
             appearance={btn.appearance}
-            className={cn(btn.className, className)}
+            className={cn(
+                btn.className,
+                className,
+                pressed && "scale-[0.97] transition-all"
+            )}
             disabled={disabled || (isProcessing as boolean)}
             onClick={(e) => {
                 if (typeButton === "button") {
+                    onPressStyle();
                     e.preventDefault();
                     if (btn.handleClick) handleAction(btn.handleClick);
                 }
             }}
         >
+            {btn.iconLeft && <DynamicIcon
+                name={btn.iconLeft}
+                size={18}
+            />}
             {isProcessing ? (<span className="flex items-center gap-2">
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" /> {_(btn.labelLoading || btn.label)}
             </span>) : _(btn.label)}

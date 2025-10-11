@@ -18,11 +18,12 @@ import { useAuth } from '@/auth/context/auth-context';
 
 export function VcMenu() {
     const { pathname } = useLocation();
-    const { currentMenu: menus } = useAuth();
+    const { currentMenu: menus, setCurrentMenuSelected } = useAuth();
     const { showDialog } = useGlobalDialog();
     const navigate = useNavigate();
 
     const handleClick = (e: React.MouseEvent, item: IData) => {
+        setCurrentMenuSelected(item);
         if (item.code === "customview_win") {
             e.preventDefault();
             showDialog({

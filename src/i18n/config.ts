@@ -67,8 +67,8 @@ export {
 
 export function useT() {
   const { formatMessage } = useIntl();
-  return (id?: string, values?: Record<string, any>) => {
-    if (!id) return id;
+  return (id?: string | null, values?: Record<string, any>) => {
+    if (!id) return '';
     try {
       return formatMessage({ id }, values);
     } catch (e) {

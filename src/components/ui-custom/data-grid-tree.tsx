@@ -14,16 +14,17 @@ import { cn } from "@/lib/utils";
 import { useDataGrid } from "@/components/ui/data-grid";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { FilterColumn } from "./filter-columns";
-import { DataGridColumnFilter } from "../ui/data-grid-column-filter";
-
+import { RowContextMenu } from "@/pages/vacom/row-context-menu";
+interface IProgs {
+    itemSelected?: IData
+}
 interface TreeRow<T> {
     id: string | number;
     children?: T[];
 }
 
-export function DataGridTree<TData extends TreeRow<TData>>() {
+export function DataGridTree<TData extends TreeRow<TData>>({ itemSelected }: IProgs) {
     const { table, props } = useDataGrid();
-
     const [expanded, setExpanded] = React.useState<Record<string | number, boolean>>({});
 
     const toggleRow = (rowId: string | number) => {
@@ -38,43 +39,46 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
         const isExpanded = expanded[row.id] !== undefined ? expanded[row.id] : true;
         return (
             <Fragment key={row.id}>
-                <DataGridTableBodyRow
-                    row={row}
-                    className={cn(row.getIsSelected() && 'selected', hasChildren && 'font-bold')}
-                >
-                    {row.getVisibleCells().map((cell, colIndex) => {
-                        const content = flexRender(cell.column.columnDef.cell, cell.getContext());
-                        return (
-                            <DataGridTableBodyRowCell cell={cell} key={colIndex}>
-                                {colIndex === 0 ? (
-                                    <div className={cn("flex items-center")}>
-                                        <div style={{ width: level * 16 }} />
-                                        {hasChildren && (
-                                            <button
-                                                style={{ width: 18 }}
-                                                type="button"
-                                                className="mr-1"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleRow(row.id);
-                                                }}
-                                            >
-                                                {isExpanded ? (
-                                                    <DynamicIcon name="minus-square" size={14} className="text-muted-foreground" />
-                                                ) : (
-                                                    <DynamicIcon name="plus-square" size={14} className="text-muted-foreground" />
-                                                )}
-                                            </button>
-                                        )}
-                                        {content}
-                                    </div>
-                                ) : (
-                                    content
-                                )}
-                            </DataGridTableBodyRowCell>
-                        );
-                    })}
-                </DataGridTableBodyRow>
+                <RowContextMenu<TData> row={row.original}>
+                    <DataGridTableBodyRow
+                        row={row}
+                        className={cn((row.getIsSelected() || itemSelected?.id === row.original.id) && 'selected bg-amber-50', hasChildren && 'font-bold')}
+                    >
+                        {row.getVisibleCells().map((cell, colIndex) => {
+                            const content = flexRender(cell.column.columnDef.cell, cell.getContext());
+                            return (
+                                <DataGridTableBodyRowCell
+                                    cell={cell} key={colIndex}>
+                                    {colIndex === 0 ? (
+                                        <div className={cn("flex items-center")}>
+                                            <div style={{ width: level * 16 }} />
+                                            {hasChildren && (
+                                                <button
+                                                    style={{ width: 18 }}
+                                                    type="button"
+                                                    className="mr-1"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleRow(row.id);
+                                                    }}
+                                                >
+                                                    {isExpanded ? (
+                                                        <DynamicIcon name="minus-square" size={14} className="text-muted-foreground cursor-pointer" />
+                                                    ) : (
+                                                        <DynamicIcon name="plus-square" size={14} className="text-muted-foreground  cursor-pointer" />
+                                                    )}
+                                                </button>
+                                            )}
+                                            {content}
+                                        </div>
+                                    ) : (
+                                        content
+                                    )}
+                                </DataGridTableBodyRowCell>
+                            );
+                        })}
+                    </DataGridTableBodyRow>
+                </RowContextMenu>
                 {hasChildren && isExpanded && row.subRows.map((subRow, index) => {
                     return renderTreeRows(subRow, level + 1);
                 })}

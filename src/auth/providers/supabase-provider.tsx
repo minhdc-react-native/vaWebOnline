@@ -17,6 +17,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const [currentApp, setCurrentApp] = useState<IData | null>(null);
   const [currentMenu, setCurrentMenu] = useState<IData[]>([]);
+  const [currentMenuSelected, setCurrentMenuSelected] = useState<IData | null>(null);
 
   const saveAuth = (auth: AuthModel | undefined) => {
     setAuth(auth);
@@ -113,7 +114,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
         currentApp,
         setCurrentApp,
         currentMenu,
-        setCurrentMenu
+        setCurrentMenu,
+        currentMenuSelected,
+        setCurrentMenuSelected,
       }}
     >
       {children}

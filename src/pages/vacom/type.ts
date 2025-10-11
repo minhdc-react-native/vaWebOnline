@@ -3,6 +3,7 @@ interface IFieldConfig {
     ROW: number | null;
     COL: number | null;
     HIDDEN: boolean;
+    HIDE_IN_GRID: boolean;
     COLUMN_NAME: string;
     CAPTION: string | null;
     CAPTION_FIELD: string | null;
@@ -16,6 +17,8 @@ interface IFieldConfig {
     LABEL_WIDTH: number | null;
     DEFAULT_VALUE: string | null;
     WIDTH: number | null;
+    COLUMN_WIDTH: number | null;
+    TYPE_FILTER: string | null;
 }
 interface ITabConfig {
     id: string;

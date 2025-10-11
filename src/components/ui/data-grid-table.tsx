@@ -238,36 +238,51 @@ function DataGridTableBodyRowSkeletonCell<TData>({ children, column }: { childre
   );
 }
 
-function DataGridTableBodyRow<TData>({
-  children,
-  row,
-  dndRef,
-  dndStyle,
-  className
-}: {
-  children: ReactNode;
-  row: Row<TData>;
-  dndRef?: React.Ref<HTMLTableRowElement>;
-  dndStyle?: CSSProperties;
-  className?: string;
-}) {
+const DataGridTableBodyRow = React.forwardRef<
+  HTMLTableRowElement,
+  {
+    children: ReactNode;
+    row: Row<any>;
+    dndRef?: React.Ref<HTMLTableRowElement>;
+    dndStyle?: CSSProperties;
+    className?: string;
+  }
+>(function DataGridTableBodyRow(
+  { children, row, dndRef, dndStyle, className, ...rest },
+  ref
+) {
   const { props, table } = useDataGrid();
 
   return (
     <tr
-      ref={dndRef}
+      ref={(node) => {
+        // ⚡ Gộp ref drag-n-drop + ref từ ContextMenuTrigger
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as any).current = node;
+        if (typeof dndRef === "function") dndRef(node);
+        else if (dndRef && "current" in dndRef) (dndRef as any).current = node;
+      }}
+      {...rest} // ✅ Cực quan trọng để Radix nhận onContextMenu, v.v.
       style={{ ...(dndStyle ? dndStyle : null) }}
-      data-state={table.options.enableRowSelection && row.getIsSelected() ? 'selected' : undefined}
+      data-state={
+        table.options.enableRowSelection && row.getIsSelected()
+          ? "selected"
+          : undefined
+      }
       onClick={() => props.onRowClick && props.onRowClick(row.original)}
+      onDoubleClick={() =>
+        props.onDoubleClick && props.onDoubleClick(row.original)
+      }
       className={cn(
-        'hover:bg-muted/40 data-[state=selected]:bg-muted/50',
-        props.onRowClick && 'cursor-pointer',
+        "hover:bg-muted/40 data-[state=selected]:bg-muted/50",
+        (props.onRowClick || props.onDoubleClick) && "cursor-pointer",
         !props.tableLayout?.stripped &&
         props.tableLayout?.rowBorder &&
-        'border-b border-border [&:not(:last-child)>td]:border-b',
-        props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
-        props.tableLayout?.stripped && 'odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted',
-        table.options.enableRowSelection && '[&_>:first-child]:relative',
+        "border-b border-border [&:not(:last-child)>td]:border-b",
+        props.tableLayout?.cellBorder && "[&_>:last-child]:border-e-0",
+        props.tableLayout?.stripped &&
+        "odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted",
+        table.options.enableRowSelection && "[&_>:first-child]:relative",
         props.tableClassNames?.bodyRow,
         className
       )}
@@ -275,7 +290,7 @@ function DataGridTableBodyRow<TData>({
       {children}
     </tr>
   );
-}
+});
 
 function DataGridTableBodyRowExpandded<TData>({ row }: { row: Row<TData> }) {
   const { props, table } = useDataGrid();
@@ -296,7 +311,7 @@ function DataGridTableBodyRowCell<TData>({
   children,
   cell,
   dndRef,
-  dndStyle,
+  dndStyle
 }: {
   children: ReactNode;
   cell: Cell<TData, unknown>;

@@ -53,6 +53,7 @@ export interface ISelectSchema {
 export interface IButtonSchema {
     type: "button";
     label: string;
+    iconLeft?: IconName;
     hotkey?: string;
     labelLoading?: string;
     buttonType?: IButtonType;
