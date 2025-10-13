@@ -1,7 +1,4 @@
 'use client';
-
-import { IWindowConfig } from './type';
-import { useCallback, useMemo } from 'react';
 import { ButtonField } from '@/uiEngine/components/button-field';
 import { useT } from '@/i18n/config';
 import { useAuth } from '@/auth/context/auth-context';
@@ -34,7 +31,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                             iconLeft: "refresh-ccw",
                             variant: "outline",
                             hotkey: "F5",
-                            handleClick: "onRefresh"
+                            handleClick: "Refresh"
                         }
                     }
                     handleAction={handleAction}
@@ -48,7 +45,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 iconLeft: "plus",
                                 variant: "outline",
                                 hotkey: "F4",
-                                handleClick: "onNew"
+                                handleClick: "New"
                             }
                         }
                         handleAction={handleAction}
@@ -62,7 +59,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 iconLeft: "edit",
                                 variant: "outline",
                                 hotkey: "F3",
-                                handleClick: "onEdit"
+                                handleClick: "Edit"
                             }
                         }
                         handleAction={handleAction}
@@ -76,7 +73,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 iconLeft: "delete",
                                 variant: "outline",
                                 hotkey: "F8",
-                                handleClick: "onEdit"
+                                handleClick: "Delete"
                             }
                         }
                         handleAction={handleAction}
@@ -90,7 +87,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 iconLeft: "copy",
                                 variant: "outline",
                                 hotkey: "F9",
-                                handleClick: "onNew"
+                                handleClick: "Copy"
                             }
                         }
                         handleAction={handleAction}

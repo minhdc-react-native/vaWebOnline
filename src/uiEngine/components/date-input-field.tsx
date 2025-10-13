@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { OnSelectHandler } from "react-day-picker";
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { isNotEmpty } from "@/lib/helpers";
 
 interface IDateFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -72,7 +73,7 @@ export function DateInputField({
                                     onChange={(val) => field.onChange(toDateString(val))}>
                                     <DateInput />
                                 </DateField>
-                                {field.value !== '' && <X onClick={() => field.onChange(null)} />}
+                                {isNotEmpty(field.value) && <X onClick={() => field.onChange(null)} />}
                             </InputWrapper>
                         </FormControl>
 

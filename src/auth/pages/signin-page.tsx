@@ -9,6 +9,7 @@ import { forgotPassword } from '@/uis-schema/auth/forgot-password';
 import { useT } from '@/i18n/config';
 import { toast } from 'sonner';
 import { getLoginInfo } from '../lib/helpers';
+import Fieldset from '@/uiEngine/components/fieldset-component';
 
 export function SignInPage() {
   const [searchParams] = useSearchParams();
@@ -133,7 +134,10 @@ export function SignInPage() {
     showDialog({
       title: _('Forgot password?') ?? "",
       // fullWidth: true,
-      content: contentView
+      content: contentView,
+      classNameContent: 'w-[700px]',
+      confirmBeforeClose: true,
+
     })
   }, [_, contentView, showDialog]);
   const [infoLogin, setInfoLogin] = useState<Record<string, any>>();
@@ -151,9 +155,6 @@ export function SignInPage() {
       headerForm={
         <div className="text-center space-y-1 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight">{_('Sign in')}</h1>
-          {/* <p className="text-sm text-muted-foreground">
-            {_('Welcome back! Log in with your credentials.')}
-          </p> */}
         </div>
       }
       footerForm={

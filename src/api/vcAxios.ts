@@ -12,7 +12,7 @@ vcAxios.interceptors.request.use((config) => {
             getData(KEY_STORAGE.ORG_UNIT),
             getData(KEY_STORAGE.LANG_SELECTED),
         ]);
-        config.baseURL = getSupabaseUrl() || 'https://demoketoan.vaonline.vn';
+        config.baseURL = getSupabaseUrl() || 'https://hoclaptrinh.vaonline.vn';
         config.headers = config.headers || {};
 
         if (token) {

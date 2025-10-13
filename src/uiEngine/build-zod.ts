@@ -71,16 +71,32 @@ export function buildZodFromSchema(schema: IFormSchema, _: (id: string | undefin
                     });
                 }
                 return { [node.name]: field };
+            case "number":
+                let fieldNumber: any = z.union([z.string().nullable(), z.number().nullable()]); // cho phép dữ liệu là: string | number
+                if (node.rules?.required) {
+                    fieldNumber = fieldNumber.refine((val: any) => val !== "" && val !== null, {
+                        message: `${labelMessage} ${_('is required')}`
+                    });
+                }
+                return { [node.name]: fieldNumber };
             default:
                 break;
         }
 
         // group
         if ("children" in node) {
-            return node.children.reduce(
-                (acc, child) => ({ ...acc, ...traverse(child) }),
-                {}
-            );
+            if (Array.isArray(node.children)) {
+                return node.children.reduce(
+                    (acc, child) => ({ ...acc, ...traverse(child) }),
+                    {}
+                );
+            } else if (Array.isArray(node.children.children)) {
+                return node.children.children.reduce(
+                    (acc, child) => ({ ...acc, ...traverse(child) }),
+                    {}
+                );
+            }
+
         }
         return {};
     }
@@ -108,15 +124,24 @@ export function buildDefaultValuesFromSchema(schema: IFormSchema): Record<string
                 }
             case "select":
                 return { [node.name]: null };
+            case "number":
+                return { [node.name]: null };
             default:
                 break;
         }
         // group
         if ("children" in node) {
-            return node.children.reduce(
-                (acc, child) => ({ ...acc, ...traverse(child) }),
-                {}
-            );
+            if (Array.isArray(node.children)) {
+                return node.children.reduce(
+                    (acc, child) => ({ ...acc, ...traverse(child) }),
+                    {}
+                );
+            } else if (Array.isArray(node.children.children)) {
+                return node.children.children.reduce(
+                    (acc, child) => ({ ...acc, ...traverse(child) }),
+                    {}
+                );
+            }
         }
 
         return {};

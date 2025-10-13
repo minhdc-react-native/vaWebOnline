@@ -1,7 +1,7 @@
 import { useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildZodFromSchema, buildDefaultValuesFromSchema } from "./build-zod";
-import { IFormSchema, IFieldSchema, IGroupSchema, IFieldBase, IFieldAll } from "./interface";
+import { IFormSchema, IGroupSchema, IFieldBase, IFieldAll } from "./interface";
 import { PasswordField } from "./components/password-field";
 import { CheckboxField } from "./components/checkbox-field";
 import { RadioField } from "./components/radio-field";
@@ -18,6 +18,8 @@ import { SelectField } from "./components/combobox/select-field";
 import { useDataSource } from "./hooks/useDataSource";
 import { useT } from "@/i18n/config";
 import { DateInputField } from "./components/date-input-field";
+import { InputNumberField } from "./components/number-field";
+import Fieldset from "./components/fieldset-component";
 
 interface IRenderField {
     field: IFieldAll;
@@ -120,6 +122,22 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 columns={field.columns}
                 display={field.display}
             />
+        case "number":
+            return <InputNumberField
+                iconLeft={field.iconLeft}
+                control={control}
+                name={field.name}
+                disabled={disabled}
+                label={label}
+                className={className}
+                placeholder={field.placeholder}
+                labelPosition={field.labelPosition}
+                labelWidth={field.labelWidth}
+                thousandSeparator={field.thousandSeparator}
+                decimalSeparator={field.decimalSeparator}
+                decimalScale={field.decimalScale}
+                allowNegative={field.allowNegative}
+            />
         default:
             return null;
     }
@@ -175,7 +193,7 @@ function RenderGroup({
     const spanClass = useCallback((span?: number) => {
         return span === undefined ? undefined : schema.layout === "grid"
             ? `${direction}-span-${Math.min(span, (schema.columns || 2))}`
-            : `flex-${Math.max(span, (schema.columns || 2))}`;
+            : `flex-${Math.min(span, (schema.columns || 2))}`;
 
     }, [schema, direction])
 
@@ -183,12 +201,13 @@ function RenderGroup({
     if (!visible) return null;
 
     return (
-        <div className={cn(layoutClass, schema.className)}>
+        <div style={{ width: schema.width }} className={cn(layoutClass, schema.className)}>
             {schema.children.map((child, i) => {
                 const _className = spanClass(child.span);
                 switch (child.type) {
                     case "field":
                     case "select":
+                    case "number":
                         return (
                             <RenderField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} dataSource={dataSource} />
                         );
@@ -199,6 +218,19 @@ function RenderGroup({
                     case "line":
                         return (
                             <OtherField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} handleAction={handleAction} />
+                        );
+                    case "fieldset":
+                        return (
+                            <Fieldset title={child.title} width={child.width} collapsible={child.collapsible} defaultOpen={child.defaultOpen} className={child.className}>
+                                <RenderGroup
+                                    key={`${child.type}-${i}`}
+                                    schema={child.children}
+                                    control={control}
+                                    handleAction={handleAction}
+                                    valuesCheck={valuesCheck}
+                                    dataSource={dataSource}
+                                />
+                            </Fieldset>
                         );
                     default:
                         break;

@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 
 export interface IWinContext {
-    handleAction: (action: string) => void
+    handleAction: (action: string, row?: IData) => void
 }
 export const WinContext = createContext<IWinContext>({
     handleAction: () => { }

@@ -42,8 +42,9 @@ export function ButtonField({
 
             const button = buttonRef.current;
             if (!button) return;
-            const form = button.form;
+            const form = button.closest("form");
             const activeForm = document.activeElement?.closest("form");
+            const isInForm = !!form;
             if (form && activeForm && form !== activeForm) return;
 
             e.preventDefault();
@@ -52,10 +53,14 @@ export function ButtonField({
 
             switch (typeButton) {
                 case "submit":
-                    if (form) form.requestSubmit(button);
+                    if (isInForm) {
+                        form!.requestSubmit(button);
+                    } else {
+                        if (btn.handleClick) handleAction(btn.handleClick);
+                    }
                     break;
                 case "reset":
-                    if (form) form.reset();
+                    if (isInForm) form!.reset();
                     break;
                 default:
                     if (btn.handleClick) handleAction(btn.handleClick);

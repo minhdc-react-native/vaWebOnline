@@ -19,12 +19,65 @@ export const forgotPassword: IGroupSchema = {
             rules: { required: true, email: true }
         },
         {
-            type: "field",
-            fieldType: "date",
-            name: 'voucherDate',
-            label: 'Ngày',
-            placeholder: 'Ngày tháng',
-            rules: { required: true }
+            type: "group",
+            layout: "flex",
+            direction: "row",
+            children: [
+                {
+                    type: "fieldset",
+                    // collapsible: true,
+                    className: "flex-1",
+                    title: "Thông tin",
+                    children: {
+                        type: "group",
+                        layout: "flex",
+                        direction: "row",
+                        children: [
+                            {
+                                type: "field",
+                                fieldType: "input",
+                                name: 'fullName',
+                                label: 'Họ và Tên',
+                                placeholder: 'Nhập & tên',
+                                rules: { required: true },
+                                span: 1
+                            },
+                            {
+                                type: "field",
+                                fieldType: "date",
+                                name: 'voucherDate',
+                                label: 'Ngày',
+                                placeholder: 'Ngày tháng',
+                                rules: { required: true },
+                                span: 1
+                            }
+                        ]
+                    },
+                },
+                {
+                    type: "fieldset",
+                    // collapsible: true,
+                    width: 200,
+                    title: "Khác",
+                    children: {
+                        type: "group",
+                        layout: "flex",
+                        direction: "row",
+                        children: [
+                            {
+                                type: "number",
+                                name: 'total',
+                                label: 'Tổng cộng',
+                                placeholder: 'Nhập số...',
+                                iconLeft: "sigma",
+                                decimalScale: 2,
+                                rules: { required: true },
+                                span: 1
+                            }
+                        ]
+                    },
+                },
+            ]
         },
         {
             type: "group",

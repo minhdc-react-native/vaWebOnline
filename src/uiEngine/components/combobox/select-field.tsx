@@ -3,7 +3,7 @@ import {
     FormItem,
     FormLabel
 } from "@/components/ui/form";
-import { Control, FieldValues } from "react-hook-form";
+import { Control, FieldValues, useFormContext } from "react-hook-form";
 import { IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
 import { ErrorMessage } from "../erro-message";
@@ -26,6 +26,7 @@ interface ISelectFieldProps {
     cleanable?: boolean;
     source?: IData[] | { url: string, keyFilter: string };
     columns?: IColumn[];
+    expression?: Record<string, string>;
     display?: { fId?: string, fValue?: string, fDisplay?: string };
 }
 
@@ -41,11 +42,12 @@ export function SelectField({
     disabled,
     cleanable,
     source = [],
+    expression = {},
     columns,
     display
 }: ISelectFieldProps) {
     const _ = useT();
-
+    const { setValue } = useFormContext();
     const placeholderDefault = useMemo(() => {
         return _('Select') + ' ' + label;
     }, [_, label]);
@@ -56,12 +58,19 @@ export function SelectField({
 
     const fnApi = useCallback(async (inputValue: string, callback: (options: IData[]) => void) => {
         if (!Array.isArray(source)) {
-            api.get({
+            await api.get({
                 link: source.url.replace(source.keyFilter, inputValue),
                 callBack: (res) => callback(res)
-            })
+            });
         }
-    }, [source])
+    }, [source]);
+
+    const onSelect = useCallback((item: IData | null) => {
+        Object.keys(expression).map(exp => {
+            setValue?.(exp, item?.[expression[exp]]);
+        })
+    }, [expression, setValue]);
+
     return (
         <FormField
             control={control}
@@ -79,8 +88,9 @@ export function SelectField({
                         {label && labelPosition === "left" && (
                             <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
                         )}
+
                         <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
-                            columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} />
+                            columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} onSelect={onSelect} />
 
                         {label && labelPosition === "right" && (
                             <FormLabel className="ml-2">{label}</FormLabel>

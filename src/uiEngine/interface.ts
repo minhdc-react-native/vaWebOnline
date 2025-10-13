@@ -33,6 +33,23 @@ export interface IFieldSchema {
     iconLeft?: IconName;
     className?: string
 }
+export interface INumberSchema {
+    type: "number";
+    name: string;
+    label?: string;
+    placeholder?: string;
+    options?: { label: string; value: any }[]; // radio
+    rules?: IRule;
+    colSpan?: number;
+    labelPosition?: "top" | "left" | "right";
+    labelWidth?: number;
+    iconLeft?: IconName;
+    className?: string;
+    thousandSeparator?: string;
+    decimalSeparator?: string;
+    decimalScale?: number;
+    allowNegative?: boolean;
+}
 export interface ISelectSchema {
     type: "select";
     name: string;
@@ -49,6 +66,7 @@ export interface ISelectSchema {
     source?: { url: string, keyFilter: string };
     columns?: IColumn[];
     display?: { fId?: string, fValue?: string, fDisplay?: string };
+    expression?: Record<string, string>;
 }
 export interface IButtonSchema {
     type: "button";
@@ -105,7 +123,17 @@ export type IFieldBase = {
     deps?: string | string[];
     conditions?: IConditions
 };
+interface IFieldset {
+    type: "fieldset",
+    title: string;
+    children: IGroupSchema;
+    className?: string;
+    collapsible?: boolean;
+    defaultOpen?: boolean;
+    width?: number;
+}
 export type IFieldAll = IFieldBase & (IFieldSchema
+    | INumberSchema
     | ISelectSchema
     | IButtonSchema
     | ITextSchema
@@ -113,6 +141,7 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | IEmptyFieldProps
     | ILine
     | IAlertSchema
+    | IFieldset
 )
 
 export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string> }>;
@@ -122,9 +151,10 @@ export interface IGroupSchema {
     layout: "grid" | "flex";
     columns?: number;
     direction?: "row";
+    width?: number;
     gap?: number;
     className?: string;
-    children: (IFieldAll)[];
+    children: IFieldAll[];
     dataSource?: IDataSource,
 }
 

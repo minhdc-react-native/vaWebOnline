@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 const ERROR_MESSAGES = {
   UNKNOWN: "Đã xảy ra lỗi không xác định",
   NETWORK: "Lỗi kết nối mạng",
@@ -101,7 +103,7 @@ export function timeAgo(date: Date | string): string {
 
   return `${Math.floor(diff / 31536000)} year${Math.floor(diff / 31536000) > 1 ? 's' : ''} ago`;
 }
-
+/*
 export function formatDate(input: Date | string | number): string {
   const date = new Date(input);
   return date.toLocaleDateString('en-US', {
@@ -122,7 +124,7 @@ export function formatDateTime(input: Date | string | number): string {
     hour12: true,
   });
 }
-
+*/
 export const getMessageError = (error: any) => {
   let msgError: string;
   if (!error) msgError = ERROR_MESSAGES.UNKNOWN;
@@ -166,7 +168,7 @@ export const getError = (error: any) => {
 export function getSupabaseUrl() {
   const hostname = window.location.hostname;
   if (hostname.includes('localhost')) {
-    return "https://demoketoan.vaonline.vn";
+    return "https://hoclaptrinh.vaonline.vn";
   }
   return `https://${hostname}`;
 }
@@ -212,4 +214,45 @@ export function isNotEmpty(value: any): boolean {
   if (Array.isArray(value) && value.length === 0) return false;
   if (typeof value === "object" && Object.keys(value).length === 0) return false;
   return true;
+};
+
+export const formatNumber = (
+  value: number | null | undefined,
+  options?: {
+    thousandSeparator?: string;
+    decimalSeparator?: string;
+    fractionDigits?: number;
+  }
+) => {
+  if (value == null) return "";
+
+  const {
+    thousandSeparator = " ",
+    decimalSeparator = ".",
+    fractionDigits = 2,
+  } = options || {};
+
+  // Bước 1: format mặc định theo en-US (dễ thay thế)
+  const formatted = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+
+  // Bước 2: thay thế dấu "," và "." theo tuỳ chọn
+  // (Trong en-US: "," là nghìn, "." là thập phân)
+  return formatted
+    .replace(/,/g, thousandSeparator)
+    .replace(/\./g, decimalSeparator);
+};
+
+export const formatDate = (value: string | Date | null | undefined) => {
+  if (!value) return "";
+  const date = new Date(value);
+  return format(date, "dd/MM/yyyy");
+};
+
+export const formatDateTime = (value: string | Date | null | undefined) => {
+  if (!value) return "";
+  const date = new Date(value);
+  return format(date, "dd/MM/yyyy HH:mm:ss");
 };

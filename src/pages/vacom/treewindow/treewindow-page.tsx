@@ -1,5 +1,5 @@
 import { useParams } from "react-router";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
 import { Container } from "@/components/common/container";
 import {
     getCoreRowModel,
@@ -15,25 +15,41 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useTreeWindow } from "./useTreeWindow";
 import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
+import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type";
+import { SchemaForm } from "@/uiEngine/schema-form";
 
 declare module '@tanstack/react-table' {
     //allows us to define custom properties for our columns
     interface ColumnMeta<TData extends RowData, TValue> {
-        filterVariant?: 'textFilter' | 'serverFilter' | 'selectFilter' | 'numberFilter' | 'datepickerFilter' | 'serverDateRangeFilter' |
-        'serverSelectFilter' | 'serverNumericFilter' | 'checkboxFilter'
+        filterVariant?: IFilterVariant,
+        typeEditor?: ITypeEditor,
+        classCellName?: string,
+        columnType?: IColumnType
     }
 }
 
 export function TreeWindowPage() {
     const { window_id } = useParams();
+
+    const getContentView = useCallback((config: IContentView) => {
+        return <SchemaForm
+            schema={config.schema}
+            onAction={config.handleAction}
+            values={config.values}
+            valuesCheck={config.valueCheck}
+        />;
+    }, []);
+
     const { windowConfig, columns, data, onRefresh, itemSelected, permission,
-        setItemSelected, onDoubleClick, onContextMenu } = useTreeWindow({ window_id })
+        setItemSelected, onDoubleClick, onContextMenu, handleAction } = useTreeWindow({ window_id, getContentView });
+
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const table = useReactTable({
         columns,
         data: data || [],
         getRowId: (row: IData) => row.id.toString(),
         getSubRows: (row: any) => row.children,
+        columnResizeMode: 'onChange',
         getExpandedRowModel: getExpandedRowModel(),
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -53,18 +69,9 @@ export function TreeWindowPage() {
 
     const ctxWinValue = useMemo<IWinContext>(
         () => ({
-            handleAction: (action) => {
-                switch (action) {
-                    case 'onRefresh':
-                        onRefresh();
-                        break;
-
-                    default:
-                        break;
-                }
-            }
+            handleAction
         }),
-        [onRefresh]
+        [handleAction]
     );
 
     return (
@@ -74,7 +81,7 @@ export function TreeWindowPage() {
                     <div className="flex flex-col h-full space-y-2.5">
                         <HeaderWin permission={permission} />
                         <div className="flex-1 min-h-0">
-                            <DataGrid table={table} tableLayout={{ headerSticky: true }}
+                            <DataGrid table={table} tableLayout={{ headerSticky: true, columnsResizable: true }}
                                 onRowClick={setItemSelected} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu}
                                 recordCount={data?.length || 0}>
                                 <DataGridContainer className="h-full">

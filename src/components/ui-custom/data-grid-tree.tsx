@@ -50,7 +50,7 @@ export function DataGridTree<TData extends TreeRow<TData>>({ itemSelected }: IPr
                                 <DataGridTableBodyRowCell
                                     cell={cell} key={colIndex}>
                                     {colIndex === 0 ? (
-                                        <div className={cn("flex items-center")}>
+                                        <div className={cn("flex items-center", cell.column.columnDef.meta?.classCellName)}>
                                             <div style={{ width: level * 16 }} />
                                             {hasChildren && (
                                                 <button

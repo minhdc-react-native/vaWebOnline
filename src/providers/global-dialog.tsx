@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useMemo, useCallback, useRef, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Alert, AlertIcon, AlertTitle } from "@/components/ui/alert";
 import { RiCheckboxCircleFill, RiCloseCircleFill, RiErrorWarningFill, RiInformationFill } from "@remixicon/react";
+import { useT } from "@/i18n/config";
+import { Button } from "@/components/ui/button";
+import { ButtonField } from "@/uiEngine/components/button-field";
 interface ITitle {
     title: string;
     subTitle?: string
@@ -18,7 +21,8 @@ interface IViewDialog {
     title: ITitle | string;
     content: ReactNode;
     fullWidth?: boolean,
-    classNameContent?: string
+    classNameContent?: string,
+    confirmBeforeClose?: boolean;
 }
 type DialogContextType = {
     showDialog: (node: IViewDialog) => void;
@@ -38,14 +42,22 @@ type ToastType = 'success' | 'warning' | 'error' | 'info';
 
 export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
     const [dialogs, setDialogs] = useState<IViewDialog[]>([]);
+    const _ = useT();
+
+    const dialogsRef = useRef(dialogs);
+    useEffect(() => {
+        dialogsRef.current = dialogs;
+    }, [dialogs]);
 
     const showDialog = (node: IViewDialog) => {
         setDialogs((prev) => [...prev, node]);
     };
-
     const closeDialog = () => {
-        setDialogs((prev) => prev.slice(0, -1)); // pop thằng cuối
+        const lastIdx = dialogsRef.current.length - 1;
+        const lastView = dialogsRef.current[lastIdx];
+        handleDialogClose(lastIdx, lastView);
     };
+
     const showToast = (
         title: string | React.ReactNode,
         type: ToastType = "info"
@@ -93,6 +105,64 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
             }
         );
     };
+
+
+    const handleDialogClose = (i: number, view: IViewDialog) => {
+        if (!view.confirmBeforeClose) {
+            setDialogs((prev) => prev.filter((_, idx) => idx !== i));
+            return;
+        }
+        const handleAction = (action: string) => {
+            switch (action) {
+                case 'onExit':
+                    setDialogs((prev2) =>
+                        prev2.filter((_, idx) => idx !== prev2.length - 1 && idx !== i)
+                    );
+                    break;
+                default:
+                    setDialogs((prev2) => prev2.filter((_, idx) => idx !== prev2.length - 1))
+                    break;
+            }
+        }
+        setDialogs((prev) => [
+            ...prev,
+            {
+                title: _('THOAT'),
+                content: (
+                    <div className="flex flex-col gap-4">
+                        <p>{_('MUON_THOAT')}</p>
+                        <div className="flex justify-end gap-2">
+                            <ButtonField
+                                btn={
+                                    {
+                                        type: "button",
+                                        label: _('KHONG'),
+                                        variant: "outline",
+                                        handleClick: "onCancel",
+                                        className: "min-w-[100px]"
+                                    }
+                                }
+                                handleAction={handleAction}
+                            />
+                            <ButtonField
+                                btn={
+                                    {
+                                        type: "button",
+                                        label: _('CO'),
+                                        variant: "primary",
+                                        handleClick: "onExit",
+                                        className: "min-w-[100px]"
+                                    }
+                                }
+                                handleAction={handleAction}
+                            />
+                        </div>
+                    </div>
+                ),
+            },
+        ]);
+    };
+
     return (
         <DialogContext.Provider value={{ showDialog, closeDialog, showToast }}>
             {children}
@@ -101,7 +171,7 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                     key={i}
                     open={true}
                     onOpenChange={(open) => {
-                        if (!open) setDialogs((prev) => prev.filter((_, idx) => idx !== i));
+                        if (!open) handleDialogClose(i, view);
                     }}
                 >
                     <DialogContent className={cn(

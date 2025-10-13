@@ -1,4 +1,6 @@
-interface IFieldConfig {
+import { IFormSchema } from "@/uiEngine/interface";
+
+export interface IFieldConfig {
     id: string;
     ROW: number | null;
     COL: number | null;
@@ -7,7 +9,8 @@ interface IFieldConfig {
     COLUMN_NAME: string;
     CAPTION: string | null;
     CAPTION_FIELD: string | null;
-    TYPE_EDITOR: string;
+    TYPE_EDITOR: ITypeEditor;
+    COLUMN_TYPE: IColumnType;
     GRAVITY: number | null;
     PLACEHOLDER: string | null;
     SPACE: string | null;
@@ -19,6 +22,9 @@ interface IFieldConfig {
     WIDTH: number | null;
     COLUMN_WIDTH: number | null;
     TYPE_FILTER: string | null;
+    REF_ID: string | null;
+    LIST_COLUMN: string | null;
+    FIELD_EXPRESSION: string | null;
 }
 interface ITabConfig {
     id: string;
@@ -40,3 +46,19 @@ export interface IWindowConfig {
     URL_VIDEO: string | null;
     Tabs: ITabConfig[]
 }
+
+export interface IContentView {
+    schema: IFormSchema;
+    handleAction: (action: string, values?: Record<string, any>) => void;
+    values: Record<string, any>;
+    valueCheck?: Record<string, any>;
+}
+
+export type IFilterVariant = 'textFilter' | 'serverFilter' | 'selectFilter' | 'numberFilter' | 'datepickerFilter' | 'serverDateRangeFilter' |
+    'serverSelectFilter' | 'serverNumericFilter' | 'checkboxFilter';
+export type ITypeEditor = 'text' | 'combo' | 'richselect' | 'checkbox' | 'datepicker' | 'autonumeric' | 'treesuggest' | 'gridsuggest' |
+    'gridcombo' | 'textarea' | 'radio' | 'multiselect' | 'dateedit' | 'treeplus' | 'gridplus' | 'reftemp' | 'list_time' | 'colorpicker' | 'rating' |
+    'password' | 'number' | 'ckeditor' | 'linkedit' | 'template';
+export type IColumnType = 'VC_BIT' | 'VC_CHAR' | 'VC_CODE' | 'VC_CODE_LG' | 'VC_CODE_SM' | 'VC_CODE_XS' | 'VC_DATE' | 'VC_DATETIME' | 'VC_DAY' |
+    'VC_DONGIA' | 'VC_ID_GUI' | 'VC_INFO' | 'VC_INFO_LG' | 'VC_INFO_SM' | 'VC_INFO_XS' | 'VC_INT' | 'VC_MONTH' | 'VC_PT' | 'VC_REC' | 'VC_SMALLINT' | 'VC_SOLUONG' |
+    'VC_TIEN' | 'VC_TINYINT' | 'VC_TYGIA' | 'VC_YEAR'        

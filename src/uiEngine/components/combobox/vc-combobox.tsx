@@ -11,8 +11,7 @@ import { Button, ButtonArrow } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
-import { InputWrapper } from "@/components/ui/input";
-
+import { useT } from "@/i18n/config";
 
 export interface IColumn {
     id: string;
@@ -47,11 +46,12 @@ interface IProgs {
     cleanable?: boolean;
     display?: { fId?: string, fValue?: string, fDisplay?: string };
     className?: string;
-    onChange?: React.ChangeEventHandler<HTMLInputElement>
+    onChange?: React.ChangeEventHandler<HTMLInputElement>;
+    onSelect?: (itemSelected: IData | null) => void;
 }
 export default function VcComboBox({ value, source, iconLeft, columns = columnDefault,
     placeholder, placeholderSearch, disabled, cleanable, display = { fId: 'id', fValue: 'value', fDisplay: 'value' }, className,
-    onChange
+    onChange, onSelect
 }: IProgs) {
     display = { ...display, fId: display.fId ?? 'id', fValue: display.fValue ?? 'value', fDisplay: display.fDisplay ?? 'value' };
 
@@ -80,7 +80,10 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         setItemSelected(item);
         if (isConstData) setDataFilter(data);
         onChange?.(item?.[display.fId!] || null);
-    }, [data, display.fId, isConstData, onChange]);
+        onSelect?.(item);
+        // expression...
+
+    }, [data, display.fId, isConstData, onChange, onSelect]);
 
     useEffect(() => {
         if (!!value && !itemSelected) {
@@ -189,6 +192,7 @@ interface IMenuList {
     highlightIndex?: number;
 }
 const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1 }: IMenuList) => {
+    const _ = useT();
     return (
         <table className="w-full border-collapse table-fixed">
             <colgroup>
@@ -203,7 +207,7 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightI
                             key={col.id}
                             className="px-3 py-2 text-left border-b border-border"
                         >
-                            {col.label || col.id}
+                            {_(col.label || col.id)}
                         </th>
                     ))}
                 </tr>
