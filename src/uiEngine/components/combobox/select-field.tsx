@@ -20,6 +20,7 @@ interface ISelectFieldProps {
     placeholder?: string;
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
+    width?: number;
     iconLeft?: IconName
     className?: string;
     disabled?: boolean;
@@ -28,6 +29,7 @@ interface ISelectFieldProps {
     columns?: IColumn[];
     expression?: Record<string, string>;
     display?: { fId?: string, fValue?: string, fDisplay?: string };
+    required?: boolean;
 }
 
 export function SelectField({
@@ -37,6 +39,7 @@ export function SelectField({
     placeholder,
     labelPosition = "top",
     labelWidth,
+    width,
     iconLeft,
     className,
     disabled,
@@ -44,7 +47,8 @@ export function SelectField({
     source = [],
     expression = {},
     columns,
-    display
+    display,
+    required
 }: ISelectFieldProps) {
     const _ = useT();
     const { setValue } = useFormContext();
@@ -80,20 +84,21 @@ export function SelectField({
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 return (
                     <FormItem
+                        style={{ width: width }}
                         className={cn(isHorizontal
                             ? "relative flex flex-row items-center gap-2"
                             : "relative flex flex-col gap-1", className)}
                     >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="abc">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
+                            <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
 
                         <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
                             columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} onSelect={onSelect} />
 
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}</FormLabel>
+                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <ErrorMessage />
                     </FormItem>

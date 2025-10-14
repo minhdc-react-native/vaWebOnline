@@ -1,10 +1,10 @@
 interface EmptyFieldProps {
-    width?: string;
+    width?: number;
     height?: string;
     className?: string;
 }
-export function EmptyField({ width = "w-full", height = "h-6", className = "" }: EmptyFieldProps) {
+export function EmptyField({ width, height = "h-6", className = "" }: EmptyFieldProps) {
     return (
-        <div className={`${width} ${height} ${className}`} />
+        <div style={{ width: width }} className={`${height} ${className}`} />
     );
 }

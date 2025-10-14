@@ -13,6 +13,21 @@ import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
 import { useT } from "@/i18n/config";
 
+function findInTree<T extends Record<string, any>>(
+    items: T[],
+    key: string,
+    value: any
+): T | null {
+    for (const item of items) {
+        if (item[key] === value) return item;
+        if (item.children && item.children.length > 0) {
+            const found: any = findInTree(item.children, key, value);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
 export interface IColumn {
     id: string;
     label?: string;
@@ -20,8 +35,7 @@ export interface IColumn {
     width?: number
 }
 const columnDefault: IColumn[] = [
-    { id: "id", width: 100 },
-    { id: "value", width: 250 },
+    { id: "value", label: 'GIA_TRI' },
 ];
 type IFormatDate = {
     type: 'date',
@@ -50,9 +64,10 @@ interface IProgs {
     onSelect?: (itemSelected: IData | null) => void;
 }
 export default function VcComboBox({ value, source, iconLeft, columns = columnDefault,
-    placeholder, placeholderSearch, disabled, cleanable, display = { fId: 'id', fValue: 'value', fDisplay: 'value' }, className,
+    placeholder, placeholderSearch, disabled, cleanable, display = {}, className,
     onChange, onSelect
 }: IProgs) {
+
     display = { ...display, fId: display.fId ?? 'id', fValue: display.fValue ?? 'value', fDisplay: display.fDisplay ?? 'value' };
 
     const isConstData = Array.isArray(source);
@@ -86,9 +101,9 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     }, [data, display.fId, isConstData, onChange, onSelect]);
 
     useEffect(() => {
-        if (!!value && !itemSelected) {
-            // console.log('data,value>>', data, value);
-            setItemSelected(data.find((item => item[display.fId!] === value)) ?? null);
+        if (!!value && !itemSelected && Array.isArray(data)) {
+            const foundItem = findInTree(data, display.fId!, value);
+            setItemSelected(foundItem ?? null);
         }
     }, [data, value]);
 
@@ -97,6 +112,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     const totalWidth = useMemo(() => {
         return columns.reduce((sum: number, col: any) => sum + (col?.width ?? 100), 0);
     }, [columns]);
+
 
     const onSearch = useMemo(() =>
         debounce((textSearch: string, dataFull: IData[] = data) => {
@@ -109,7 +125,6 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         ...s,
                         valueSearch: `${s[display.fId!]} ${s[display.fValue!]}`.toLowerCase()
                     }));
-                    // setData(dataFix);
                     setDataFilter(dataFix);
                 })
             }
@@ -143,10 +158,32 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         if (open) setHighlightIndex(-1);
     }, [open, dataFilter]);
 
+
+    const triggerRef = useRef<HTMLButtonElement | null>(null);
+    const [triggerWidth, setTriggerWidth] = useState<number>(0);
+
+    useEffect(() => {
+        if (triggerRef.current) {
+            setTriggerWidth(triggerRef.current.offsetWidth);
+            const resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    setTriggerWidth(entry.contentRect.width);
+                }
+            });
+            resizeObserver.observe(triggerRef.current);
+            return () => resizeObserver.disconnect();
+        }
+    }, []);
+
+    const popoverWidth = useMemo(
+        () => Math.max(triggerWidth, totalWidth),
+        [triggerWidth, totalWidth]
+    );
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button
+                    ref={triggerRef}
                     variant="outline"
                     role="combobox"
                     mode="input"
@@ -157,7 +194,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                 >
                     <div className="flex items-center gap-2 overflow-hidden">
                         {iconLeft && <DynamicIcon name={iconLeft} className="absolute left-2.5 top-1/2 w-4 h-4 shrink-0 opacity-70 text-gray-400" />}
-                        <span className={cn("truncate", iconLeft ? "ml-5" : "")}>
+                        <span className={cn("truncate", iconLeft ? "ml-5" : "", !itemSelected && "text-muted-foreground")}>
                             {itemSelected?.[display.fDisplay!] || placeholder}
                         </span>
                     </div>
@@ -169,7 +206,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         } /> : <ButtonArrow />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent style={{ width: `${totalWidth}px` }} className="p-0">
+            <PopoverContent style={{ width: totalWidth, minWidth: popoverWidth }} className="p-0">
                 <Command>
                     <CommandInput placeholder={placeholderSearch} onValueChange={onSearch} />
                     <CommandList>
@@ -215,7 +252,7 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightI
             <tbody>
                 {data.map((item, idx) => {
                     return (
-                        <CustomOption key={item[fId]} columns={columns} item={item} isSelected={item[fId] === itemSelected?.[fId]} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
+                        <CustomOption key={item[fId]} columns={columns} item={item} itemSelected={itemSelected} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
                     );
                 })}
             </tbody>
@@ -225,15 +262,25 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightI
 interface IOption {
     columns: IColumn[];
     item: IData;
-    isSelected: boolean,
+    itemSelected: IData | null,
     onSelect: (item: IData) => void;
     isHighlighted: boolean
 }
-const CustomOption = ({ columns, item, isSelected, onSelect, isHighlighted }: IOption) => {
+const CustomOption = ({
+    columns,
+    item,
+    itemSelected,
+    isHighlighted,
+    onSelect,
+}: IOption) => {
     const rowRef = useRef<HTMLTableRowElement | null>(null);
+    const [isExpanded, setExpanded] = useState(true);
+
+    const hasChildren = item.children && item.children.length > 0;
+    const level = item.level || 0;
 
     useEffect(() => {
-        if ((isHighlighted) && rowRef.current) {
+        if (isHighlighted && rowRef.current) {
             rowRef.current.scrollIntoView({
                 block: "center",
                 behavior: "smooth",
@@ -242,23 +289,68 @@ const CustomOption = ({ columns, item, isSelected, onSelect, isHighlighted }: IO
     }, [isHighlighted]);
 
     return (
-        <tr
-            ref={rowRef}
-            onClick={() => onSelect(item)}
-            className={cn(
-                "cursor-pointer transition-colors",
-                isSelected && "bg-amber-50 font-bold",
-                isHighlighted && "bg-amber-100"
-            )}
-        >
-            {columns.map((col: any) => (
-                <td
-                    key={item[col.id]}
-                    className="px-3 py-2 border-b border-border text-sm text-foreground truncate"
-                >
-                    {item[col.id]}
-                </td>
-            ))}
-        </tr>
+        <>
+            <tr
+                ref={rowRef}
+                onClick={() => {
+                    onSelect(item);
+                }}
+                className={cn(
+                    "cursor-pointer transition-colors",
+                    (itemSelected?.id === item.id) && "bg-amber-50 font-bold",
+                    isHighlighted && "bg-amber-50"
+                )}
+            >
+                {columns.map((col: any, idx: number) => (
+                    <td
+                        key={idx}
+                        className={cn(
+                            "px-3 py-2 border-b border-border text-sm text-foreground truncate"
+                        )}
+                    >
+                        {idx === 0 ? (
+                            <div className="flex items-center">
+                                <div
+                                    style={{ width: `${level * 16}px` }}
+                                    className="shrink-0"
+                                />
+                                {hasChildren && (
+                                    <button
+                                        type="button"
+                                        className="mr-1 text-muted-foreground hover:text-foreground"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setExpanded(!isExpanded);
+                                        }}
+                                    >
+                                        {isExpanded ? (
+                                            <DynamicIcon name="minus-square" size={14} className="text-muted-foreground cursor-pointer" />
+                                        ) : (
+                                            <DynamicIcon name="plus-square" size={14} className="text-muted-foreground  cursor-pointer" />
+                                        )}
+                                    </button>
+                                )}
+                                <span>{item[col.id]}</span>
+                            </div>
+                        ) : (
+                            item[col.id]
+                        )}
+                    </td>
+                ))}
+            </tr>
+
+            {isExpanded &&
+                hasChildren &&
+                item.children.map((child: any) => (
+                    <CustomOption
+                        key={child.id}
+                        columns={columns}
+                        item={{ ...child, level: level + 1 }}
+                        itemSelected={itemSelected}
+                        isHighlighted={false}
+                        onSelect={onSelect}
+                    />
+                ))}
+        </>
     );
 };

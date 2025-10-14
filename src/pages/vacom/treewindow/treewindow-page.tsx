@@ -1,5 +1,5 @@
 import { useParams } from "react-router";
-import { Fragment, useCallback, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Container } from "@/components/common/container";
 import {
     getCoreRowModel,
@@ -8,6 +8,7 @@ import {
     useReactTable,
     getExpandedRowModel,
     RowData,
+    ColumnPinningState
 } from '@tanstack/react-table';
 import { DataGridTree } from "@/components/ui-custom/data-grid-tree";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
@@ -19,7 +20,6 @@ import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type"
 import { SchemaForm } from "@/uiEngine/schema-form";
 
 declare module '@tanstack/react-table' {
-    //allows us to define custom properties for our columns
     interface ColumnMeta<TData extends RowData, TValue> {
         filterVariant?: IFilterVariant,
         typeEditor?: ITypeEditor,
@@ -40,8 +40,13 @@ export function TreeWindowPage() {
         />;
     }, []);
 
-    const { windowConfig, columns, data, onRefresh, itemSelected, permission,
-        setItemSelected, onDoubleClick, onContextMenu, handleAction } = useTreeWindow({ window_id, getContentView });
+    const { columns, data, itemSelected, permission,
+        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning } = useTreeWindow({ window_id, getContentView });
+    const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(pinning);
+
+    useEffect(() => {
+        setColumnPinning(pinning);
+    }, [pinning])
 
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const table = useReactTable({
@@ -61,8 +66,10 @@ export function TreeWindowPage() {
         },
         state: {
             columnFilters,
+            columnPinning
         },
         onColumnFiltersChange: setColumnFilters,
+        onColumnPinningChange: setColumnPinning,
         filterFromLeafRows: true,
         enableMultiRowSelection: false
     });
@@ -81,7 +88,8 @@ export function TreeWindowPage() {
                     <div className="flex flex-col h-full space-y-2.5">
                         <HeaderWin permission={permission} />
                         <div className="flex-1 min-h-0">
-                            <DataGrid table={table} tableLayout={{ headerSticky: true, columnsResizable: true }}
+                            <DataGrid table={table} tableLayout={{ columnsPinnable: true, headerSticky: true, columnsResizable: true }}
+                                autoFocus={true} onKeyDown={onKeyDown}
                                 onRowClick={setItemSelected} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu}
                                 recordCount={data?.length || 0}>
                                 <DataGridContainer className="h-full">

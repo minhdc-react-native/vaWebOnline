@@ -31,7 +31,7 @@ export interface IFieldSchema {
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
     iconLeft?: IconName;
-    className?: string
+    className?: string;
 }
 export interface INumberSchema {
     type: "number";
@@ -72,6 +72,7 @@ export interface IButtonSchema {
     type: "button";
     label: string;
     iconLeft?: IconName;
+    autoFocus?: boolean;
     hotkey?: string;
     labelLoading?: string;
     buttonType?: IButtonType;
@@ -114,14 +115,14 @@ interface ILine {
 
 interface IEmptyFieldProps {
     type: 'empty';
-    width?: string;
     height?: string;
     className?: string
 }
 export type IFieldBase = {
     span?: number;
     deps?: string | string[];
-    conditions?: IConditions
+    conditions?: IConditions;
+    width?: number;
 };
 interface IFieldset {
     type: "fieldset",
@@ -130,8 +131,22 @@ interface IFieldset {
     className?: string;
     collapsible?: boolean;
     defaultOpen?: boolean;
-    width?: number;
 }
+
+export interface IColorSchema {
+    type: "color";
+    name: string;
+    label?: string;
+    placeholder?: string;
+    rules?: IRule;
+    colSpan?: number;
+    labelPosition?: "top" | "left" | "right";
+    labelWidth?: number;
+    iconLeft?: IconName;
+    className?: string;
+    palette?: string[];
+}
+
 export type IFieldAll = IFieldBase & (IFieldSchema
     | INumberSchema
     | ISelectSchema
@@ -142,16 +157,16 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | ILine
     | IAlertSchema
     | IFieldset
+    | IColorSchema
 )
 
-export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string> }>;
+export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string>, typeView?: 'table' | 'tree' }>;
 export interface IGroupSchema {
     type: "group";
     label?: string;
     layout: "grid" | "flex";
     columns?: number;
     direction?: "row";
-    width?: number;
     gap?: number;
     className?: string;
     children: IFieldAll[];

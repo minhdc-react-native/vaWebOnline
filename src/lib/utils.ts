@@ -22,7 +22,7 @@ interface IProgsCacheItem {
 const keyCacheBegin = 'app-vacom-config:';
 export const getCacheItem = async ({ cacheKey, url, method = "get", onMapRes }: IProgsCacheItem) => {
   const cacheKeyFull = `${keyCacheBegin}${cacheKey}`;
-  const value = getData(cacheKeyFull);
+  const value = null;//getData(cacheKeyFull);
   if (!value) {
     const res = await api[method]({
       link: url

@@ -21,12 +21,13 @@ interface IViewDialog {
     title: ITitle | string;
     content: ReactNode;
     fullWidth?: boolean,
+    width?: number,
     classNameContent?: string,
     confirmBeforeClose?: boolean;
 }
 type DialogContextType = {
     showDialog: (node: IViewDialog) => void;
-    closeDialog: () => void;
+    closeDialog: (isSubmit?: boolean) => void;
     showToast: (title: string | React.ReactNode, type?: 'success' | 'warning' | 'error' | 'info') => void
 };
 
@@ -52,10 +53,10 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
     const showDialog = (node: IViewDialog) => {
         setDialogs((prev) => [...prev, node]);
     };
-    const closeDialog = () => {
+    const closeDialog = (isSubmit?: boolean) => {
         const lastIdx = dialogsRef.current.length - 1;
         const lastView = dialogsRef.current[lastIdx];
-        handleDialogClose(lastIdx, lastView);
+        handleDialogClose(lastIdx, lastView, !!isSubmit);
     };
 
     const showToast = (
@@ -107,8 +108,8 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
     };
 
 
-    const handleDialogClose = (i: number, view: IViewDialog) => {
-        if (!view.confirmBeforeClose) {
+    const handleDialogClose = (i: number, view: IViewDialog, isSubmit?: boolean) => {
+        if (!view.confirmBeforeClose || isSubmit) {
             setDialogs((prev) => prev.filter((_, idx) => idx !== i));
             return;
         }
@@ -151,7 +152,8 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                                         label: _('CO'),
                                         variant: "primary",
                                         handleClick: "onExit",
-                                        className: "min-w-[100px]"
+                                        className: "min-w-[100px]",
+                                        autoFocus: true
                                     }
                                 }
                                 handleAction={handleAction}
@@ -174,10 +176,12 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                         if (!open) handleDialogClose(i, view);
                     }}
                 >
-                    <DialogContent className={cn(
-                        view.fullWidth ? "w-screen max-w-screen h-screen max-h-screen rounded-[0px]" : "w-auto max-w-none",
-                        view.classNameContent
-                    )}>
+                    <DialogContent
+                        // style={{ width: view.width }}
+                        className={cn(
+                            view.fullWidth ? "w-screen max-w-screen h-screen max-h-screen rounded-[0px]" : "w-auto max-w-none",
+                            view.classNameContent
+                        )}>
                         <DialogHeader className="pb-2 m-0">
                             <DialogTitle>
                                 {typeof view.title === "string"

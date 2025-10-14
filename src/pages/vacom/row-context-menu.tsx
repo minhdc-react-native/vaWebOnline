@@ -46,7 +46,7 @@ export function RowContextMenu<T extends IData>({
         {addMenu && addMenu.length > 0 && <ContextMenuSeparator />}
         {addMenu && addMenu.map(m => {
           return (
-            <ContextMenuItem onClick={() => onContext?.(m.id.toString(), row)}>
+            <ContextMenuItem key={m.id} onClick={() => onContext?.(m.id.toString(), row)}>
               <DynamicIcon name={m.icon} className="pr-2" />
               {_(m.title)}
             </ContextMenuItem>

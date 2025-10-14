@@ -1,5 +1,4 @@
-import { Input, InputGroup, InputWrapper } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { InputWrapper } from "@/components/ui/input";
 import {
     FormField,
     FormItem,
@@ -7,15 +6,13 @@ import {
     FormControl
 } from "@/components/ui/form";
 import { Control, FieldValues } from "react-hook-form";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useT } from "@/i18n/config";
 import { DateInput, DateField } from '@/components/ui/datefield';
 import { ErrorMessage } from "./erro-message";
 import { CalendarDays, X } from "lucide-react";
-import { CalendarDate, DateValue, parseDate } from '@internationalized/date';
+import { DateValue, parseDate } from '@internationalized/date';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { OnSelectHandler } from "react-day-picker";
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { isNotEmpty } from "@/lib/helpers";
@@ -29,6 +26,8 @@ interface IDateFieldProps {
     labelWidth?: number;
     className?: string;
     disabled?: boolean;
+    width?: number;
+    required?: boolean;
 }
 
 const toDateString = (v: DateValue | null) =>
@@ -43,7 +42,9 @@ export function DateInputField({
     labelPosition = "top",
     labelWidth,
     className,
-    disabled
+    disabled,
+    width,
+    required
 }: IDateFieldProps) {
     return (
         <FormField
@@ -56,13 +57,14 @@ export function DateInputField({
                 // setValue(fixDate);
                 return (
                     <FormItem
+                        style={{ width: width }}
                         className={cn(isHorizontal
                             ? "relative flex flex-row items-center gap-2"
                             : "relative flex flex-col gap-1", className)}
                     >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="abc">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
+                            <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <FormControl>
                             <InputWrapper>
@@ -78,7 +80,7 @@ export function DateInputField({
                         </FormControl>
 
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}</FormLabel>
+                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <ErrorMessage />
                     </FormItem>

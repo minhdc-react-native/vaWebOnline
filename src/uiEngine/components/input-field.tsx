@@ -21,10 +21,12 @@ interface IInputFieldProps {
     placeholder?: string;
     type?: "input" | "textarea";
     labelPosition?: "top" | "left" | "right";
+    width?: number;
     labelWidth?: number;
     iconLeft?: IconName
     className?: string;
     disabled?: boolean;
+    required?: boolean;
 }
 
 export function InputField({
@@ -34,13 +36,14 @@ export function InputField({
     placeholder,
     type = "input",
     labelPosition = "top",
+    width,
     labelWidth,
     iconLeft,
     className,
-    disabled
+    disabled,
+    required
 }: IInputFieldProps) {
     const _ = useT();
-
     const placeholderDefault = useMemo(() => {
         return _('Input') + ' ' + label;
     }, [_, label]);
@@ -53,7 +56,6 @@ export function InputField({
     }, [placeholder, placeholderDefault, type, iconLeft]);
 
     return (
-
         <FormField
             control={control}
             name={name}
@@ -62,13 +64,15 @@ export function InputField({
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 return (
                     <FormItem
+                        style={{ width: width }}
                         className={cn(isHorizontal
                             ? "relative flex flex-row items-center gap-2"
-                            : "relative flex flex-col gap-1", className)}
+                            : "relative flex flex-col gap-1",
+                            className)}
                     >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="abc">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
+                            <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <FormControl>
                             <InputWrapper>
@@ -82,7 +86,7 @@ export function InputField({
                         </FormControl>
 
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}</FormLabel>
+                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <ErrorMessage />
                     </FormItem>

@@ -71,17 +71,18 @@ export function ButtonField({
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
     }, [btn.hotkey, disabled, isProcessing, handleAction, btn.handleClick, typeButton]);
-
     return (
         <Button
             ref={buttonRef}
             type={btn.buttonType === "submit" ? "submit" : typeButton}
             variant={btn.variant}
+            autoFocus={btn.autoFocus}
             appearance={btn.appearance}
             className={cn(
                 btn.className,
                 className,
-                pressed && "scale-[0.97] transition-all"
+                pressed && "scale-[0.97] transition-all",
+                'min-w-[100px]'
             )}
             disabled={disabled || (isProcessing as boolean)}
             onClick={(e) => {

@@ -10,6 +10,7 @@ interface CheckboxFieldProps {
     labelPosition?: "top" | "left" | "right";
     className?: string;
     disabled?: boolean;
+    width?: number
 }
 
 export function CheckboxField({
@@ -18,7 +19,8 @@ export function CheckboxField({
     label,
     labelPosition = "right",
     className,
-    disabled
+    disabled,
+    width
 }: CheckboxFieldProps) {
     return (
         <FormField
@@ -29,6 +31,7 @@ export function CheckboxField({
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 return (
                     <FormItem
+                        style={{ width: width }}
                         className={cn(isHorizontal ? "flex flex-row items-center space-x-2" : "flex flex-col space-y-1", className)}
                     >
                         {label && labelPosition === "left" && (

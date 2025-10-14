@@ -175,9 +175,21 @@ function DataGridTableRowSpacer() {
 
 function DataGridTableBody({ children }: { children: ReactNode }) {
   const { props } = useDataGrid();
+  const bodyRef = React.useRef<HTMLTableSectionElement>(null);
+
+  React.useEffect(() => {
+    if (!props.autoFocus) return;
+    const timeout = setTimeout(() => {
+      bodyRef.current?.focus();
+    }, 20);
+    return () => clearTimeout(timeout);
+  }, [props.autoFocus]);
 
   return (
     <tbody
+      ref={bodyRef}
+      tabIndex={0}
+      onKeyDown={props.onKeyDown}
       className={cn(
         '[&_tr:last-child]:border-0',
         props.tableLayout?.rowRounded && '[&_td:first-child]:rounded-s-lg [&_td:last-child]:rounded-e-lg',
@@ -256,13 +268,12 @@ const DataGridTableBodyRow = React.forwardRef<
   return (
     <tr
       ref={(node) => {
-        // ⚡ Gộp ref drag-n-drop + ref từ ContextMenuTrigger
         if (typeof ref === "function") ref(node);
         else if (ref) (ref as any).current = node;
         if (typeof dndRef === "function") dndRef(node);
         else if (dndRef && "current" in dndRef) (dndRef as any).current = node;
       }}
-      {...rest} // ✅ Cực quan trọng để Radix nhận onContextMenu, v.v.
+      {...rest}
       style={{ ...(dndStyle ? dndStyle : null) }}
       data-state={
         table.options.enableRowSelection && row.getIsSelected()
@@ -274,7 +285,7 @@ const DataGridTableBodyRow = React.forwardRef<
         props.onDoubleClick && props.onDoubleClick(row.original)
       }
       className={cn(
-        "hover:bg-muted/40 data-[state=selected]:bg-muted/50",
+        "hover:bg-amber-50 data-[state=selected]:bg-amber-50",
         (props.onRowClick || props.onDoubleClick) && "cursor-pointer",
         !props.tableLayout?.stripped &&
         props.tableLayout?.rowBorder &&
@@ -283,6 +294,7 @@ const DataGridTableBodyRow = React.forwardRef<
         props.tableLayout?.stripped &&
         "odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted",
         table.options.enableRowSelection && "[&_>:first-child]:relative",
+        "[&>td]:py-1 [&>td]:align-middle [&>td]:text-sm [&>td]:leading-tight",
         props.tableClassNames?.bodyRow,
         className
       )}

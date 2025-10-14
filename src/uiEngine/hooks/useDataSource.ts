@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IDataSource } from "../interface";
-import { sortTreeFlat } from "@/lib/helpers";
+import { sortTreeFlat, sortTreeNested } from "@/lib/helpers";
 import { api } from "@/api/apiMethods";
 import { useWatch } from "react-hook-form";
 
@@ -36,7 +36,8 @@ export const useDataSource = ({ source, control }: IProgs) => {
 
         if (res.length > 0 && typeof res[0] === "string") res = (res as string[]).map(r => ({ id: r as string, value: r as string }));
 
-        if (configSource.typeData === "tree") res = sortTreeFlat((res as IData[]), configSource.fieldCode);
+        if (configSource.typeView === "tree") res = sortTreeNested((res as IData[]), configSource.fieldCode);
+
         const fields: string[] = configSource.fields || Object.keys(res[0]);
         const isColor = fields.indexOf("color") < 0 && typeof configSource.getColor === "function";
         const result = res.map((item: any) => {

@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { InputWrapper } from "@/components/ui/input";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
+import { useT } from "@/i18n/config";
 
 interface InputNumberFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -15,6 +16,7 @@ interface InputNumberFieldProps {
     placeholder?: string;
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
+    width?: number;
     iconLeft?: IconName;
     className?: string;
     disabled?: boolean;
@@ -22,6 +24,7 @@ interface InputNumberFieldProps {
     decimalSeparator?: string;
     decimalScale?: number;
     allowNegative?: boolean;
+    required?: boolean;
 }
 
 export function InputNumberField({
@@ -31,6 +34,7 @@ export function InputNumberField({
     placeholder,
     labelPosition = "top",
     labelWidth,
+    width,
     iconLeft,
     className,
     disabled,
@@ -38,9 +42,13 @@ export function InputNumberField({
     decimalSeparator = ".",
     decimalScale = 0,
     allowNegative = true,
+    required
 }: InputNumberFieldProps) {
     const isHorizontal = labelPosition === "left" || labelPosition === "right";
-
+    const _ = useT();
+    const placeholderDefault = useMemo(() => {
+        return _('Input') + ' ' + label;
+    }, [_, label]);
     return (
         <FormField
             control={control}
@@ -48,6 +56,7 @@ export function InputNumberField({
             disabled={disabled}
             render={({ field }) => (
                 <FormItem
+                    style={{ width: width }}
                     className={cn(
                         isHorizontal
                             ? "relative flex flex-row items-center gap-2"
@@ -55,10 +64,10 @@ export function InputNumberField({
                         className
                     )}
                 >
-                    {label && labelPosition === "top" && <FormLabel>{label}</FormLabel>}
+                    {label && labelPosition === "top" && <FormLabel>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                     {label && labelPosition === "left" && (
-                        <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : "min-w-[100px]"}>
-                            {label}
+                        <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>
+                            {label}{required && <span className="text-destructive pl-1">*</span>}
                         </FormLabel>
                     )}
 
@@ -70,7 +79,7 @@ export function InputNumberField({
                                 onValueChange={(values) => {
                                     field.onChange(values.floatValue ?? null);
                                 }}
-                                placeholder={placeholder || ""}
+                                placeholder={placeholder || placeholderDefault}
                                 thousandSeparator={thousandSeparator}
                                 decimalSeparator={decimalSeparator}
                                 decimalScale={decimalScale}
@@ -85,7 +94,7 @@ export function InputNumberField({
                         </InputWrapper>
                     </FormControl>
 
-                    {label && labelPosition === "right" && <FormLabel className="ml-2">{label}</FormLabel>}
+                    {label && labelPosition === "right" && <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                     <ErrorMessage />
                 </FormItem>
             )}

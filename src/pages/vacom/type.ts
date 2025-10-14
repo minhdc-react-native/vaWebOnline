@@ -25,6 +25,7 @@ export interface IFieldConfig {
     REF_ID: string | null;
     LIST_COLUMN: string | null;
     FIELD_EXPRESSION: string | null;
+    DISPLAY_FIELD: string | null;
 }
 interface ITabConfig {
     id: string;
@@ -34,6 +35,8 @@ interface ITabConfig {
     INSERT_STORE_PROCEDURE: string | null;
     UPDATE_STORE_PROCEDURE: string | null;
     DELETE_STORE_PROCEDURE: string | null;
+    LEFTSPLIT: number | null;
+    RIGHTSPLIT: number | null;
     Fields: IFieldConfig[]
 }
 export interface IWindowConfig {
@@ -53,7 +56,6 @@ export interface IContentView {
     values: Record<string, any>;
     valueCheck?: Record<string, any>;
 }
-
 export type IFilterVariant = 'textFilter' | 'serverFilter' | 'selectFilter' | 'numberFilter' | 'datepickerFilter' | 'serverDateRangeFilter' |
     'serverSelectFilter' | 'serverNumericFilter' | 'checkboxFilter';
 export type ITypeEditor = 'text' | 'combo' | 'richselect' | 'checkbox' | 'datepicker' | 'autonumeric' | 'treesuggest' | 'gridsuggest' |

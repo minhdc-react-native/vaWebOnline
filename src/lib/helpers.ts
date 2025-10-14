@@ -207,6 +207,34 @@ export function sortTreeFlat(data: IData[], codeField?: string) {
   return result;
 }
 
+export const sortTreeNested = (data: IData[], codeField?: string): IData[] => {
+  const grouped = new Map<string | null, IData[]>();
+  data.forEach(item => {
+    if (!grouped.has(item.parentId)) {
+      grouped.set(item.parentId, []);
+    }
+    grouped.get(item.parentId)!.push(item);
+  });
+  if (codeField) {
+    grouped.forEach(arr => {
+      arr.sort((a, b) => {
+        const codeA = a[codeField] ?? "";
+        const codeB = b[codeField] ?? "";
+        return String(codeA).localeCompare(String(codeB));
+      });
+    });
+  }
+  const buildTree = (parentId: string | null): IData[] => {
+    const children = grouped.get(parentId) || [];
+    return children.map(child => ({
+      ...child,
+      children: buildTree(child.id.toString())
+    }));
+  };
+
+  return buildTree(null);
+}
+
 export function isNotEmpty(value: any): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === "string" && value.trim() === "") return false;
@@ -256,3 +284,11 @@ export const formatDateTime = (value: string | Date | null | undefined) => {
   const date = new Date(value);
   return format(date, "dd/MM/yyyy HH:mm:ss");
 };
+
+export function safeJsonParse<T>(value: string | undefined, fallback: T): T {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}

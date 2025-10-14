@@ -2,41 +2,18 @@ import { useCallback, useMemo } from "react";
 import { IColumnType, IFieldConfig, ITypeEditor, IWindowConfig } from "./type"
 import { ColumnDef } from "@tanstack/react-table";
 import { useT } from "@/i18n/config";
-import { formatDate, formatDateTime, formatNumber } from "@/lib/helpers";
-import { IFieldAll, IFormSchema } from "@/uiEngine/interface";
+import { formatDate, formatDateTime, formatNumber, isNotEmpty, safeJsonParse } from "@/lib/helpers";
+import { IDataSource, IFieldAll, IFormSchema } from "@/uiEngine/interface";
+import { useAuth } from "@/auth/context/auth-context";
+
+const TYPE_NUMBER = ['VC_SOLUONG', 'VC_DONGIA', 'VC_TIEN', 'VC_INT', 'VC_MONTH', 'VC_DAY', 'VC_PT', 'VC_SMALLINT', 'VC_TINYINT', 'VC_TYGIA'];
 
 interface IProgs {
     windowConfig?: IWindowConfig
 }
 export const useMapConfig = ({ windowConfig }: IProgs) => {
     const _ = useT();
-    const sortTreeNested = useCallback((data: IData[], codeField?: string): IData[] => {
-        const grouped = new Map<string | null, IData[]>();
-        data.forEach(item => {
-            if (!grouped.has(item.parentId)) {
-                grouped.set(item.parentId, []);
-            }
-            grouped.get(item.parentId)!.push(item);
-        });
-        if (codeField) {
-            grouped.forEach(arr => {
-                arr.sort((a, b) => {
-                    const codeA = a[codeField] ?? "";
-                    const codeB = b[codeField] ?? "";
-                    return String(codeA).localeCompare(String(codeB));
-                });
-            });
-        }
-        const buildTree = (parentId: string | null): IData[] => {
-            const children = grouped.get(parentId) || [];
-            return children.map(child => ({
-                ...child,
-                children: buildTree(child.id.toString())
-            }));
-        };
 
-        return buildTree(null);
-    }, []);
     const getCellClassName = useCallback((typeEditor: ITypeEditor) => {
         switch (typeEditor) {
             case 'autonumeric':
@@ -65,7 +42,17 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
     const columns = useMemo(() => {
         const tabMaster = windowConfig?.Tabs[0];
         if (!tabMaster) return []
-        const fixColumns: ColumnDef<IData, any>[] = [];
+        const fixColumns: ColumnDef<IData, any>[] = [
+            // {
+            //     id: 'index',
+            //     header: '#',
+            //     cell: ({ row }) => row.index + 1,
+            //     size: 50,
+            //     meta: {
+            //         cellClassName: 'bg-muted/40 text-right'
+            //     }
+            // }
+        ];
         tabMaster.Fields
             .filter(f => !f.HIDE_IN_GRID)
             .map(f => {
@@ -86,53 +73,108 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         return fixColumns;
     }, [_, windowConfig?.Tabs, getCellClassName, getValueCell]);
 
+    const { currentYear, infoDvcs } = useAuth();
+
     const schemaWin: {
         schema: IFormSchema,
+        schemaDelete: IFormSchema,
         width?: number | null;
         defaultValues?: Record<string, any>,
-        dataSource?: string[],
+        columnPinning?: { left: string[], right: string[] }
     } = useMemo(() => {
         const fieldMaster = windowConfig?.Tabs[0].Fields || [];
-        const defaultValue: Record<string, any> = {};
-        const dataSource: string[] = [];
-        const newFieldMaster = fieldMaster.filter(f => !f.HIDDEN).reduce((acc, item) => {
+        const pinning = { left: windowConfig?.Tabs[0].LEFTSPLIT ?? 0, right: windowConfig?.Tabs[0].RIGHTSPLIT ?? 0 }
+        const defaultValues: Record<string, any> = {};
+        const dataSource: IDataSource = {};
+        const columnPinning: any = { left: [], right: [] };
+        // defaultValue
+        const mapValue: Record<string, any> = {
+            DVCS_ID: infoDvcs?.DVCS_ID,
+            NAM: currentYear
+        }
+        fieldMaster.map(item => {
+            if (mapValue[item.COLUMN_NAME]) defaultValues[item.COLUMN_NAME] = mapValue[item.COLUMN_NAME];
+            if (isNotEmpty(item.DEFAULT_VALUE) && (item.DEFAULT_VALUE as string).startsWith('@Default=')) {
+                const valueDefault = (item.DEFAULT_VALUE as string).replace('@Default=', '').trim();
+                defaultValues[item.COLUMN_NAME] = (TYPE_NUMBER.includes(item.COLUMN_TYPE) ? Number(valueDefault) : valueDefault);
+            }
+        });
+        const fieldMasterShow = fieldMaster.filter(f => !f.HIDDEN);
+        for (let i = 0; i < pinning.left; i++) {
+            columnPinning.left.push(fieldMasterShow[i].COLUMN_NAME)
+        }
+        const lenArr = fieldMasterShow.length;
+        for (let i = 0; i < pinning.right; i++) {
+            columnPinning.right.push(fieldMasterShow[lenArr - i].COLUMN_NAME)
+        }
+        const newFieldMaster = fieldMasterShow.reduce((acc, item) => {
             const row = item.ROW ?? 1;
             if (!acc[row]) acc[row] = [];
             acc[row].push(item);
 
-            if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest'].includes(item.TYPE_EDITOR) && item.REF_ID) dataSource.push(item.REF_ID);
+            if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest'].includes(item.TYPE_EDITOR) && item.REF_ID) {
+                dataSource[item.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${item.REF_ID}`, typeView: item.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
+            }
 
             return acc;
         }, {} as Record<number, IFieldConfig[]>);
         const layout: IFieldAll[] = Object.values(newFieldMaster).map((items): IFieldAll => {
             if (items.length === 1) return getConfigView(items[0]);
-            return { type: 'group', layout: "flex", direction: "row", children: items.map((_item): IFieldAll => getConfigView(_item)) };
+            return { type: 'group', layout: "flex", direction: "row", children: items.map((_item): IFieldAll => getConfigView(_item, _item.GRAVITY ?? 1)) };
         });
-        // push button
+        layout.push({ type: "line" })
         layout.push({
             type: "group",
             layout: "flex",
             direction: "row",
-            className: "justify-end",
             children: [
                 { type: "empty", span: 1 },
                 { type: "button", variant: "secondary", appearance: "ghost", label: "HUY", hotkey: "ESC", handleClick: 'onCancel' },
                 { type: "button", variant: "primary", label: "SAVE", hotkey: "F10", buttonType: "submit", handleClick: 'onSubmit' }
             ]
-        })
+        });
         return {
             schema: {
                 type: "group",
                 layout: "flex",
-                children: layout
+                children: layout,
+                dataSource: dataSource
+            },
+            schemaDelete: {
+                type: "group",
+                layout: "flex",
+                children: [
+                    {
+                        type: "alert",
+                        close: false,
+                        icon: { name: "alert-circle", className: 'text-primary' },
+                        titleContent: `Bạn phải cẩn thật trước khi <strong>Xoá</strong>`
+                    },
+                    {
+                        type: "text",
+                        className: 'text-center py-5',
+                        content: _('MUON_XOA')
+                    },
+                    { type: "line" },
+                    {
+                        type: "group",
+                        layout: "flex",
+                        direction: "row",
+                        children: [
+                            { type: "empty", span: 1 },
+                            { type: "button", variant: "secondary", appearance: "ghost", label: "KHONG", handleClick: 'onCancel' },
+                            { type: "button", variant: "primary", label: "CO", buttonType: "submit", handleClick: 'onSubmit' }
+                        ]
+                    }
+                ]
             },
             width: windowConfig?.WIDTH,
-            defaultValue, dataSource
+            defaultValues,
+            columnPinning
         }
-    }, [windowConfig])
+    }, [windowConfig?.Tabs, windowConfig?.WIDTH])
 
     return {
-        sortTreeNested,
         columns,
         schemaWin
     }
@@ -144,10 +186,11 @@ const mapFieldType = {
     datepicker: 'date'
 }
 
-const getConfigView = (field: IFieldConfig): IFieldAll => {
+const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
     const labelPosition: "top" | "left" | "right" = ['top', 'left', 'right'].includes(field.LABEL_POSITION as string) ? (field.LABEL_POSITION as any) : 'left';
-    const listColumn = (field.LIST_COLUMN ? JSON.parse(field.LIST_COLUMN).filter((col: IData) => !col.hidden) : undefined);
-
+    const jsonListColumn = field.LIST_COLUMN ? safeJsonParse(field.LIST_COLUMN, []) : undefined;
+    const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
+    const required = ['isNotEmpty', 'isFieldCode'].includes(field.VALID_RULE ?? "***");
     switch (field.TYPE_EDITOR) {
         case "text":
         case "textarea":
@@ -159,7 +202,10 @@ const getConfigView = (field: IFieldConfig): IFieldAll => {
                 label: (field.CAPTION_FIELD || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
-                labelWidth: field.LABEL_WIDTH ?? undefined
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span
             };
         case "combo":
         case "richselect":
@@ -174,8 +220,36 @@ const getConfigView = (field: IFieldConfig): IFieldAll => {
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,
-                columns: listColumn
+                display: { fDisplay: field.DISPLAY_FIELD || (['combo', 'richselect'].includes(field.TYPE_EDITOR) ? 'value' : 'id') },
+                width: field.WIDTH ?? undefined,
+                columns: listColumn,
+                cleanable: true,
+                rules: { required: required },
+                span
             }
+        case "number":
+        case "autonumeric":
+            return {
+                type: "number",
+                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span
+            }
+        case "colorpicker":
+            return {
+                type: "color",
+                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span
+            };
         default:
             return {
                 type: "field",
@@ -183,7 +257,10 @@ const getConfigView = (field: IFieldConfig): IFieldAll => {
                 label: (field.CAPTION_FIELD || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
-                labelWidth: field.LABEL_WIDTH ?? undefined
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span
             };
     }
 }

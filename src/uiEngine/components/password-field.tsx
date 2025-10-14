@@ -16,9 +16,11 @@ interface PasswordFieldProps {
     placeholder?: string;
     labelPosition?: "top" | "left" | 'right';
     labelWidth?: number;
+    width?: number;
     iconLeft?: IconName;
     className?: string;
     disabled?: boolean;
+    required?: boolean;
 }
 
 export function PasswordField({
@@ -28,9 +30,11 @@ export function PasswordField({
     placeholder,
     labelPosition = "top",
     labelWidth,
+    width,
     iconLeft,
     className,
-    disabled
+    disabled,
+    required
 }: PasswordFieldProps) {
     const [visible, setVisible] = useState(false);
     const _ = useT();
@@ -40,15 +44,15 @@ export function PasswordField({
             name={name}
             disabled={disabled}
             render={({ field, fieldState }) => (
-                <FormItem>
+                <FormItem style={{ width: width }}>
                     <div
                         className={cn(labelPosition === "left"
                             ? "flex items-center gap-2 relative"
                             : "flex flex-col gap-1 relative", className)}
                     >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="abc">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel className={labelWidth ? `w-[${labelWidth}px]` : `min-w-[100px]`}>{label}</FormLabel>
+                            <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <div className="relative w-full">
                             <FormControl>
@@ -75,7 +79,7 @@ export function PasswordField({
                             <ErrorMessage />
                         </div>
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}</FormLabel>
+                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                     </div>
                 </FormItem>

@@ -20,7 +20,8 @@ import { useT } from "@/i18n/config";
 import { DateInputField } from "./components/date-input-field";
 import { InputNumberField } from "./components/number-field";
 import Fieldset from "./components/fieldset-component";
-
+import { ColorPickerField } from "./components/color-picker-field";
+const labelWidthDefault = 100;
 interface IRenderField {
     field: IFieldAll;
     control: any
@@ -54,7 +55,9 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                             className={className}
                             placeholder={field.placeholder}
                             labelPosition={field.labelPosition}
-                            labelWidth={field.labelWidth}
+                            labelWidth={field.labelWidth ?? labelWidthDefault}
+                            width={field.width}
+                            required={!!field.rules?.required}
                         />
                     );
                 case "password":
@@ -68,7 +71,9 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                             className={className}
                             placeholder={field.placeholder}
                             labelPosition={field.labelPosition}
-                            labelWidth={field.labelWidth}
+                            labelWidth={field.labelWidth ?? labelWidthDefault}
+                            width={field.width}
+                            required={!!field.rules?.required}
                         />
                     );
                 case "checkbox":
@@ -79,6 +84,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         label={label}
                         className={className}
                         labelPosition={field.labelPosition}
+                        width={field.width}
                     />;
                 case "radio":
                     return <RadioField
@@ -89,6 +95,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         className={className}
                         options={field.options ?? []}
                         labelPosition={field.labelPosition}
+                        width={field.width}
                     />;
                 case "date":
                     return (
@@ -100,7 +107,10 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                             className={className}
                             placeholder={field.placeholder}
                             labelPosition={field.labelPosition}
-                            labelWidth={field.labelWidth}
+                            labelWidth={field.labelWidth ?? labelWidthDefault}
+                            width={field.width}
+                            required={!!field.rules?.required}
+
                         />
                     );
                 default:
@@ -116,11 +126,14 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 className={className}
                 placeholder={field.placeholder}
                 labelPosition={field.labelPosition}
-                labelWidth={field.labelWidth}
+                labelWidth={field.labelWidth ?? labelWidthDefault}
                 cleanable={field.cleanable}
                 source={dataSource[field.keySource || field.name] || field.source}
                 columns={field.columns}
                 display={field.display}
+                width={field.width}
+                required={!!field.rules?.required}
+
             />
         case "number":
             return <InputNumberField
@@ -132,12 +145,32 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 className={className}
                 placeholder={field.placeholder}
                 labelPosition={field.labelPosition}
-                labelWidth={field.labelWidth}
+                labelWidth={field.labelWidth ?? labelWidthDefault}
+                width={field.width}
                 thousandSeparator={field.thousandSeparator}
                 decimalSeparator={field.decimalSeparator}
                 decimalScale={field.decimalScale}
                 allowNegative={field.allowNegative}
+                required={!!field.rules?.required}
+
             />
+        case "color":
+            return (
+                <ColorPickerField
+                    control={control}
+                    name={field.name}
+                    disabled={disabled}
+                    label={label}
+                    className={className}
+                    placeholder={field.placeholder}
+                    labelPosition={field.labelPosition}
+                    labelWidth={field.labelWidth ?? labelWidthDefault}
+                    width={field.width}
+                    palette={field.palette}
+                    required={!!field.rules?.required}
+
+                />
+            );
         default:
             return null;
     }
@@ -208,6 +241,7 @@ function RenderGroup({
                     case "field":
                     case "select":
                     case "number":
+                    case "color":
                         return (
                             <RenderField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} dataSource={dataSource} />
                         );
