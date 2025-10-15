@@ -9,7 +9,7 @@ import { InputField } from "./components/input-field";
 import { EmptyField } from "./components/empty-field";
 import { ButtonField } from "./components/button-field";
 import { Form } from "@/components/ui/form";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TextField } from "./components/text-field";
 import { cn } from "@/lib/utils";
 import { AlertField } from "./components/alert-field";
@@ -21,6 +21,9 @@ import { DateInputField } from "./components/date-input-field";
 import { InputNumberField } from "./components/number-field";
 import Fieldset from "./components/fieldset-component";
 import { ColorPickerField } from "./components/color-picker-field";
+import { RatingField } from "./components/raiting";
+import { MultiSelectField } from "./components/multi-select/multi-select-field";
+
 const labelWidthDefault = 100;
 interface IRenderField {
     field: IFieldAll;
@@ -83,6 +86,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         disabled={disabled}
                         label={label}
                         className={className}
+                        labelWidth={field.labelWidth ?? labelWidthDefault}
                         labelPosition={field.labelPosition}
                         width={field.width}
                     />;
@@ -95,6 +99,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         className={className}
                         options={field.options ?? []}
                         labelPosition={field.labelPosition}
+                        labelWidth={field.labelWidth ?? labelWidthDefault}
                         width={field.width}
                     />;
                 case "date":
@@ -135,6 +140,21 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 required={!!field.rules?.required}
 
             />
+        case "multiselect":
+            return <MultiSelectField
+                control={control}
+                name={field.name}
+                disabled={disabled}
+                label={label}
+                className={className}
+                placeholder={field.placeholder}
+                labelPosition={field.labelPosition}
+                labelWidth={field.labelWidth ?? labelWidthDefault}
+                source={dataSource[field.keySource || field.name]}
+                display={field.display}
+                width={field.width}
+                required={!!field.rules?.required}
+            />
         case "number":
             return <InputNumberField
                 iconLeft={field.iconLeft}
@@ -171,6 +191,23 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
 
                 />
             );
+        case "rating":
+            return (
+                <RatingField
+                    control={control}
+                    name={field.name}
+                    disabled={disabled}
+                    label={label}
+                    className={className}
+                    labelPosition={field.labelPosition}
+                    labelWidth={field.labelWidth ?? labelWidthDefault}
+                    width={field.width}
+                    required={!!field.rules?.required}
+                    maxStar={field.maxStar}
+                    editable={field.editable}
+                    showValue={field.showValue}
+                />
+            );
         default:
             return null;
     }
@@ -183,7 +220,8 @@ function OtherField({ field, control, valuesCheck, className, handleAction }: IR
     if (!visible) return null;
     switch (field.type) {
         case "button":
-            return <ButtonField btn={field} disabled={disabled} handleAction={handleAction} className={cn(field.className, className)} />;
+            return <ButtonField btn={field} disabled={disabled}
+                handleAction={handleAction} className={cn(field.className, className)} isProcessing={field.buttonType === "submit" ? valuesCheck['isProcessing'] : false} />;
         case "text":
             return <TextField className={cn(field.className, className)} variant={field.variant}
                 size={field.size} weight={field.weight} muted={field.muted}>
@@ -242,6 +280,8 @@ function RenderGroup({
                     case "select":
                     case "number":
                     case "color":
+                    case "rating":
+                    case "multiselect":
                         return (
                             <RenderField key={`${child.type}-${i}`} field={child} control={control} className={_className} valuesCheck={valuesCheck} dataSource={dataSource} />
                         );
@@ -300,6 +340,7 @@ export function SchemaForm({
     headerForm?: React.ReactNode;
     footerForm?: React.ReactNode;
 }) {
+    const [isProcessing, setIsProcessing] = useState(valuesCheck?.loadingRef?.current ?? false);
     const _ = useT();
     const zodSchema = buildZodFromSchema(schema, _);
     const defaultValues = buildDefaultValuesFromSchema(schema);
@@ -307,7 +348,7 @@ export function SchemaForm({
         // mode: "onBlur",
         // reValidateMode: "onBlur",
         resolver: zodResolver(zodSchema),
-        defaultValues: { ...defaultValues, ...values },
+        defaultValues: { ...defaultValues, ...values }
     });
 
     const onSubmit = () => {
@@ -324,13 +365,22 @@ export function SchemaForm({
         Object.entries(values).forEach(([key, value]) => {
             form.setValue(key as any, value);
         });
-    }, [values]);
+    }, [form, values]);
+
+    useEffect(() => {
+        if (!valuesCheck?.loadingRef) return;
+        const interval = setInterval(() => {
+            const newVal = valuesCheck.loadingRef.current;
+            setIsProcessing(newVal);
+        }, 100);
+        return () => clearInterval(interval);
+    }, [valuesCheck]);
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 {headerForm}
-                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={valuesCheck} dataSource={dataSource} />
+                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing }} dataSource={dataSource} />
                 {footerForm}
             </form>
         </Form>

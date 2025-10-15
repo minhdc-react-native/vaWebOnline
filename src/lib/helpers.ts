@@ -235,6 +235,57 @@ export const sortTreeNested = (data: IData[], codeField?: string): IData[] => {
   return buildTree(null);
 }
 
+export function findInTree<T extends Record<string, any>>(
+  items: T[],
+  key: string,
+  value: any
+): T | null {
+  for (const item of items) {
+    if (item[key] === value) return item;
+    if (item.children && item.children.length > 0) {
+      const found: any = findInTree(item.children, key, value);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export function filterTree(nodes: IData[], textSearch: string): IData[] {
+  const search = textSearch.toLowerCase();
+  return nodes
+    .map(node => {
+      const matchSelf = node.valueSearch?.includes(search);
+      const filteredChildren = node.children ? filterTree(node.children, textSearch) : [];
+
+      if (matchSelf || filteredChildren.length > 0) {
+        return {
+          ...node,
+          children: filteredChildren,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean) as IData[];
+}
+
+export function mapTreeWithValueSearch(
+  nodes: IData[],
+  fId: string,
+  fValue: string
+): IData[] {
+  return nodes.map(node => {
+    const valueSearch = `${node[fId] ?? ''} ${node[fValue] ?? ''}`.toLowerCase();
+
+    return {
+      ...node,
+      valueSearch,
+      children: node.children
+        ? mapTreeWithValueSearch(node.children, fId, fValue)
+        : undefined,
+    };
+  });
+}
+
 export function isNotEmpty(value: any): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === "string" && value.trim() === "") return false;

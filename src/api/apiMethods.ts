@@ -39,12 +39,12 @@ export const api = {
             return res.data || res;
         } catch (error: any) {
             if (error.name === 'CanceledError' || error.name === 'AbortError') {
-                console.log('Request cancelled:', link);
+                // console.log('Request cancelled:', link);
                 return;
             }
             const msg = getMessageError(error?.response?.data || error);
             callError?.(msg);
-            console.log('GET error:', error?.response?.data || error);
+            // console.log('GET error:', error?.response?.data || error);
             return Promise.reject(msg);
         } finally {
             setLoading?.(false);

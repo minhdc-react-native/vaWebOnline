@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/auth/context/auth-context';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGlobalDialog } from '@/providers/global-dialog';
@@ -96,8 +96,6 @@ export function SignInPage() {
       case 'forgotPassword':
         onClickFogotPassWord();
         break;
-      case 'processing':
-        return isProcessing;
       default:
         break;
     }
@@ -146,12 +144,17 @@ export function SignInPage() {
     setInfoLogin(info);
   }, [])
 
+  const loadingRef = useRef(isProcessing);
+  useEffect(() => {
+    loadingRef.current = isProcessing;
+  }, [isProcessing]);
+
   return (
     <SchemaForm
       schema={loginSchema}
       onAction={onAction}
       values={infoLogin}
-      valuesCheck={{ errAlert: error, isProcessing }}
+      valuesCheck={{ errAlert: error, loadingRef }}
       headerForm={
         <div className="text-center space-y-1 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight">{_('Sign in')}</h1>

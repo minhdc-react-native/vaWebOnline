@@ -7,7 +7,7 @@ import {
     FormControl,
 } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { InputWrapper, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -69,9 +69,9 @@ export function ColorPickerField({
                             className
                         )}
                     >
-                        {label && labelPosition === "top" && <FormLabel>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="text-sm font-normal">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel style={{ width: labelWidth }} className="min-w-[100px]">
+                            <FormLabel style={{ width: labelWidth }} className="text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap">
                                 {label}{required && <span className="text-destructive pl-1">*</span>}
                             </FormLabel>
                         )}
@@ -83,7 +83,7 @@ export function ColorPickerField({
                                         type="button"
                                         variant="outline"
                                         className={cn(
-                                            "flex items-center justify-between w-full h-9 px-2.5 text-sm leading-tight",
+                                            "flex items-center justify-between w-full text-xs font-normal leading-tight",
                                             "border border-input bg-background rounded-md",
                                             "hover:bg-accent/20",
                                             disabled && "opacity-50 cursor-not-allowed",
@@ -94,7 +94,7 @@ export function ColorPickerField({
                                                 className="w-5 h-5 rounded border border-border"
                                                 style={{ backgroundColor: color || "#fff" }}
                                             />
-                                            <span className="truncate text-xs">{color || placeholder}</span>
+                                            <span className={cn("truncate", !color && 'text-muted-foreground')}>{color || placeholder}</span>
 
                                         </div>
                                         {field.value !== '' && <X onClick={(e) => {
@@ -115,13 +115,13 @@ export function ColorPickerField({
                                                     field.onChange(e.target.value);
                                                     // setOpen(false);
                                                 }}
-                                                className="w-10 h-10 border border-border rounded cursor-pointer"
+                                                className="text-sx font-normal border border-border rounded cursor-pointer"
                                             />
                                             <Input
                                                 value={color}
                                                 onChange={(e) => field.onChange(e.target.value)}
                                                 placeholder="#rrggbb"
-                                                className="text-xs"
+                                                className="text-xs font-normal"
                                             />
                                         </div>
                                         <div className="grid grid-cols-7 gap-1 mt-1">
@@ -148,7 +148,7 @@ export function ColorPickerField({
                         </FormControl>
 
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
+                            <FormLabel className="ml-2 text-sm font-normal">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <ErrorMessage />
                     </FormItem>

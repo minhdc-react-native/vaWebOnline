@@ -60,7 +60,6 @@ export const useDataSource = ({ source, control }: IProgs) => {
         controller?: AbortController;
     } = useCallback(async () => {
         if (!source) return;
-
         if (loadDataBegin.controller) {
             loadDataBegin.controller.abort();
         }
@@ -104,7 +103,7 @@ export const useDataSource = ({ source, control }: IProgs) => {
         });
 
         await Promise.all(promises);
-    }, [fieldsWatch, setSource, source, valuesWatch]);
+    }, [fieldsWatch, setSource, source, JSON.stringify(valuesWatch)]);
 
     useEffect(() => {
         loadDataBegin();

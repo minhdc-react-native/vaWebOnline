@@ -13,7 +13,7 @@ import {
 import { DataGridTree } from "@/components/ui-custom/data-grid-tree";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useTreeWindow } from "./useTreeWindow";
+import { useWindowPage } from "../useWindowPage";
 import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
 import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type";
@@ -41,7 +41,7 @@ export function TreeWindowPage() {
     }, []);
 
     const { columns, data, itemSelected, permission,
-        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning } = useTreeWindow({ window_id, getContentView });
+        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning } = useWindowPage({ window_id, getContentView, type: "tree" });
     const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(pinning);
 
     useEffect(() => {

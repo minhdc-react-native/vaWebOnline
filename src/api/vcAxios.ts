@@ -30,7 +30,11 @@ vcAxios.interceptors.response.use(
         return response.data ?? response;
     },
     async (error) => {
-        console.log("error>>", error);
+        if (error.name === 'CanceledError' || error.name === 'AbortError') {
+            // console.log('Request cancelled:', link);
+            return;
+        }
+        // console.log("error>>", error);
         if (error.response?.status === 401) {
             await removeData(KEY_STORAGE.TOKEN);
         }

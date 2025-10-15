@@ -72,11 +72,39 @@ export function buildZodFromSchema(
                     }
 
                     case "checkbox": {
-                        let field: ZodTypeAny = z.boolean().nullable();
-                        if (node.rules?.required)
-                            field = field.refine((v) => v === true, {
+                        field = z
+                            .union([
+                                z.boolean(),
+                                z.string(),
+                                z.number(),
+                                z.null().optional(),
+                            ])
+                            .transform((val) => {
+                                if (val === null || val === undefined || val === '') return false;
+                                // Default
+                                if (typeof val === 'boolean') return val;
+
+                                // String -> boolean
+                                if (typeof val === 'string') {
+                                    const v = val.toLowerCase().trim();
+                                    if (v === 'c' || v === 'true' || v === '1') return true;
+                                    if (v === 'k' || v === 'false' || v === '0' || v === '') return false;
+                                }
+
+                                // Number -> boolean
+                                if (typeof val === 'number') {
+                                    return val === 1;
+                                }
+
+                                return false;
+                            });
+
+                        if (node.rules?.required) {
+                            field = field.refine((v: any) => v === true, {
                                 message: `${labelMessage} ${_('is required')}`,
                             });
+                        }
+
                         return { [node.name]: field };
                     }
 
@@ -105,7 +133,8 @@ export function buildZodFromSchema(
                 return { [node.name]: field };
             }
 
-            case "select": {
+            case "select":
+            case "multiselect": {
                 field = z.union([z.string(), z.number()]).nullable();
                 if (node.rules?.required)
                     field = field.refine((v: any) => v !== null && v !== "", {
@@ -114,7 +143,8 @@ export function buildZodFromSchema(
                 return { [node.name]: field };
             }
 
-            case "number": {
+            case "number":
+            case "rating": {
                 field = z
                     .union([z.string(), z.number()])
                     .nullable()
@@ -168,7 +198,7 @@ export function buildDefaultValuesFromSchema(schema: IFormSchema): Record<string
                     case "password":
                         return { [node.name]: "" };
                     case "checkbox":
-                        return { [node.name]: false };
+                        return { [node.name]: (node.checkType === "number" ? 0 : (node.checkType === "string" ? 'K' : false)) };
                     case "radio":
                         return { [node.name]: "" };
                     default:
@@ -177,8 +207,10 @@ export function buildDefaultValuesFromSchema(schema: IFormSchema): Record<string
             case "color":
                 return { [node.name]: "" };
             case "select":
+            case "multiselect":
                 return { [node.name]: null };
             case "number":
+            case "rating":
                 return { [node.name]: null };
             default:
                 break;

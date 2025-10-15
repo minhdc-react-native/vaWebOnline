@@ -11,18 +11,19 @@ export function ButtonField({
     btn,
     handleAction,
     className,
-    disabled
+    disabled,
+    isProcessing = false
 }: {
     btn: IButtonSchema;
     handleAction: (action: string) => void;
     className?: string;
     disabled?: boolean;
+    isProcessing?: boolean;
 }) {
     const _ = useT();
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const [pressed, setPressed] = useState(false);
     const typeButton = btn.buttonType || "button";
-    const isProcessing = btn.handleProcessing ? handleAction(btn.handleProcessing) : false;
     const onPressStyle = () => {
         setPressed(true);
         setTimeout(() => setPressed(false), 150);

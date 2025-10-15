@@ -50,9 +50,10 @@ export function PasswordField({
                             ? "flex items-center gap-2 relative"
                             : "flex flex-col gap-1 relative", className)}
                     >
-                        {label && labelPosition === "top" && <FormLabel className="abc">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
+                        {label && labelPosition === "top" && <FormLabel className="text-sm font-normal ">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
-                            <FormLabel style={{ width: labelWidth }} className={`min-w-[100px]`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
+                            <FormLabel style={{ width: labelWidth }}
+                                className={`text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <div className="relative w-full">
                             <FormControl>
@@ -79,7 +80,7 @@ export function PasswordField({
                             <ErrorMessage />
                         </div>
                         {label && labelPosition === "right" && (
-                            <FormLabel className="ml-2">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
+                            <FormLabel className="ml-2 text-sm font-normal ">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                     </div>
                 </FormItem>

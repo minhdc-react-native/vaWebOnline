@@ -101,18 +101,18 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         });
         const fieldMasterShow = fieldMaster.filter(f => !f.HIDDEN);
         for (let i = 0; i < pinning.left; i++) {
-            columnPinning.left.push(fieldMasterShow[i].COLUMN_NAME)
+            // columnPinning.left.push(fieldMasterShow[i].COLUMN_NAME)
         }
         const lenArr = fieldMasterShow.length;
         for (let i = 0; i < pinning.right; i++) {
-            columnPinning.right.push(fieldMasterShow[lenArr - i].COLUMN_NAME)
+            // columnPinning.right.push(fieldMasterShow[lenArr - i].COLUMN_NAME)
         }
         const newFieldMaster = fieldMasterShow.reduce((acc, item) => {
             const row = item.ROW ?? 1;
             if (!acc[row]) acc[row] = [];
             acc[row].push(item);
 
-            if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest'].includes(item.TYPE_EDITOR) && item.REF_ID) {
+            if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest', 'multiselect'].includes(item.TYPE_EDITOR) && item.REF_ID) {
                 dataSource[item.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${item.REF_ID}`, typeView: item.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
             }
 
@@ -183,7 +183,8 @@ const mapFieldType = {
     text: 'input',
     textarea: 'textarea',
     dateedit: 'date',
-    datepicker: 'date'
+    datepicker: 'date',
+    checkbox: 'checkbox'
 }
 
 const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
@@ -196,12 +197,14 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
         case "textarea":
         case 'dateedit':
         case 'datepicker':
+        case 'checkbox':
             return {
                 type: "field",
                 fieldType: (mapFieldType[field.TYPE_EDITOR] as any),
-                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
+                checkType: field.COLUMN_TYPE === "VC_CHAR" ? "string" : (field.COLUMN_TYPE === "VC_BIT" ? undefined : "number"),
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
@@ -216,7 +219,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
             return {
                 type: "select",
                 keySource: field.REF_ID ?? undefined,
-                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,
@@ -227,11 +230,24 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 rules: { required: required },
                 span
             }
+        case "multiselect":
+            return {
+                type: "multiselect",
+                keySource: field.REF_ID ?? undefined,
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                display: { fDisplay: field.DISPLAY_FIELD || 'value' },
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span
+            }
         case "number":
         case "autonumeric":
             return {
                 type: "number",
-                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,
@@ -242,7 +258,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
         case "colorpicker":
             return {
                 type: "color",
-                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,
@@ -250,11 +266,23 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 rules: { required: required },
                 span
             };
+        case "rating":
+            return {
+                type: "rating",
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                span,
+                maxStar: Number(field.DECIMAL_SIZE) ?? undefined
+            };
         default:
             return {
                 type: "field",
                 fieldType: "input",
-                label: (field.CAPTION_FIELD || field.COLUMN_NAME),
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,

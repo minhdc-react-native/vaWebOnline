@@ -25,7 +25,8 @@ export interface IFieldSchema {
     label?: string;
     fieldType?: IFieldType;
     placeholder?: string;
-    options?: { label: string; value: any }[]; // radio
+    options?: { label: string; value: any }[];
+    checkType?: 'string' | 'number';
     rules?: IRule;
     colSpan?: number;
     labelPosition?: "top" | "left" | "right";
@@ -38,7 +39,6 @@ export interface INumberSchema {
     name: string;
     label?: string;
     placeholder?: string;
-    options?: { label: string; value: any }[]; // radio
     rules?: IRule;
     colSpan?: number;
     labelPosition?: "top" | "left" | "right";
@@ -68,6 +68,19 @@ export interface ISelectSchema {
     display?: { fId?: string, fValue?: string, fDisplay?: string };
     expression?: Record<string, string>;
 }
+export interface IMultiSelectSchema {
+    type: "multiselect";
+    name: string;
+    label?: string;
+    placeholder?: string;
+    rules?: IRule;
+    colSpan?: number;
+    labelPosition?: "top" | "left" | "right";
+    labelWidth?: number;
+    className?: string;
+    keySource?: string;
+    display?: { fId?: string, fValue?: string, fDisplay?: string };
+}
 export interface IButtonSchema {
     type: "button";
     label: string;
@@ -79,7 +92,6 @@ export interface IButtonSchema {
     variant?: "secondary" | "primary" | "destructive" | "mono" | "outline" | "dashed" | "ghost" | "dim" | "foreground" | "inverse";
     appearance?: "ghost" | "default";
     handleClick?: string;
-    handleProcessing?: string;
     className?: string
 }
 
@@ -139,17 +151,29 @@ export interface IColorSchema {
     label?: string;
     placeholder?: string;
     rules?: IRule;
-    colSpan?: number;
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
-    iconLeft?: IconName;
     className?: string;
     palette?: string[];
+}
+
+export interface IRatingSchema {
+    type: "rating";
+    name: string;
+    label?: string;
+    rules?: IRule;
+    labelPosition?: "top" | "left" | "right";
+    labelWidth?: number;
+    className?: string;
+    maxStar?: number;
+    editable?: boolean;
+    showValue?: boolean;
 }
 
 export type IFieldAll = IFieldBase & (IFieldSchema
     | INumberSchema
     | ISelectSchema
+    | IMultiSelectSchema
     | IButtonSchema
     | ITextSchema
     | IGroupSchema
@@ -158,6 +182,7 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | IAlertSchema
     | IFieldset
     | IColorSchema
+    | IRatingSchema
 )
 
 export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string>, typeView?: 'table' | 'tree' }>;

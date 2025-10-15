@@ -12,21 +12,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { X } from "lucide-react";
 import { useT } from "@/i18n/config";
+import { filterTree, findInTree, mapTreeWithValueSearch } from "@/lib/helpers";
 
-function findInTree<T extends Record<string, any>>(
-    items: T[],
-    key: string,
-    value: any
-): T | null {
-    for (const item of items) {
-        if (item[key] === value) return item;
-        if (item.children && item.children.length > 0) {
-            const found: any = findInTree(item.children, key, value);
-            if (found) return found;
-        }
-    }
-    return null;
-}
+
 
 export interface IColumn {
     id: string;
@@ -74,12 +62,10 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
 
     const [data, setData] = useState<IData[]>([]);
     const [dataFilter, setDataFilter] = useState<IData[]>([]);
+
     const reloadSource = useCallback(async () => {
         if (Array.isArray(source)) {
-            const dataFix = source.map(s => ({
-                ...s,
-                valueSearch: `${s[display.fId!]} ${s[display.fValue!]}`.toLowerCase()
-            }));
+            const dataFix = mapTreeWithValueSearch(source, display.fId!, display.fValue!);
             setData(dataFix);
             setDataFilter(dataFix);
         }
@@ -117,7 +103,10 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     const onSearch = useMemo(() =>
         debounce((textSearch: string, dataFull: IData[] = data) => {
             if (isConstData) {
-                const filtered = dataFull.filter((u: IData) => u.valueSearch.includes(textSearch.toLowerCase()));
+                const filtered = textSearch
+                    ? filterTree(dataFull, textSearch)
+                    : dataFull; // nếu không search thì giữ nguyên
+
                 setDataFilter(filtered);
             } else {
                 source(textSearch, (options: IData[]) => {
@@ -126,9 +115,11 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         valueSearch: `${s[display.fId!]} ${s[display.fValue!]}`.toLowerCase()
                     }));
                     setDataFilter(dataFix);
-                })
+                });
             }
-        }, 500), [data, display.fId, display.fValue, isConstData, source]);
+        }, 500),
+        [data, display.fId, display.fValue, isConstData, source]
+    );
 
     const [highlightIndex, setHighlightIndex] = useState<number>(-1);
 

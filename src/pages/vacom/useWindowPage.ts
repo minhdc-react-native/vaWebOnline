@@ -1,8 +1,8 @@
 import { useAuth } from "@/auth/context/auth-context";
 import { getCacheItem } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { IContentView, IWindowConfig } from "../type";
-import { useMapConfig } from "../useMapConfig";
+import { IContentView, IWindowConfig } from "./type";
+import { useMapConfig } from "./useMapConfig";
 import { useApiMutation, useApiQuery } from "@/api/useApi";
 import { IconName } from "lucide-react/dynamic";
 import { useGlobalDialog } from "@/providers/global-dialog";
@@ -27,9 +27,10 @@ interface IContextMenu {
 }
 interface IProgs {
     window_id?: string;
-    getContentView: (config: IContentView) => React.ReactNode
+    getContentView: (config: IContentView) => React.ReactNode,
+    type: "tree" | 'window'
 }
-export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
+export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
 
     const { setLoading } = useAuth();
     const [windowConfig, setWindowConfig] = useState<IWindowConfig>();
@@ -44,12 +45,17 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
             method: "post",
             data: {
                 ...baseParams,
+                count: type === "tree" ? 999999999 : 50,
                 window_id: windowConfig?.WINDOW_ID
             },
             select: (response: IData[]) => {
-                const dataAfterSort = sortTreeNested(response);
-                if (dataAfterSort && dataAfterSort.length > 0) setItemSelected(dataAfterSort[0]);
-                return dataAfterSort
+                if (type === "tree") {
+                    const dataAfterSort = sortTreeNested(response);
+                    if (dataAfterSort && dataAfterSort.length > 0) setItemSelected(dataAfterSort[0]);
+                    return dataAfterSort
+                } else {
+                    return response;
+                }
             },
             enabled: !!windowConfig?.WINDOW_ID,
         },
@@ -58,13 +64,22 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
         }
     )
 
-    const createPost = useApiMutation<{ success: boolean }, Record<string, any>>(
+    const [loadingPost, setLoadingPost] = useState<boolean>(false);
+
+    const { mutate: createPost, isPending, isSuccess } = useApiMutation<
+        { success: boolean },
+        Record<string, any>
+    >(
         {
             link: "/api/System/Save",
             method: "post",
         },
         {
+            onMutate: (variables) => {
+                setLoadingPost(true);
+            },
             onSuccess: (data: any, variables) => {
+                setLoadingPost(false);
                 if (data.error) {
                     showToast(data.error, "error");
                     return;
@@ -73,11 +88,16 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                 if (!!variables.closeDialog) closeDialog(true);
                 onRefresh();
             },
-            onError: (error, variables) => {
+            onError: (error) => {
+                setLoadingPost(false);
                 console.error("Lỗi:", error);
             },
         }
     );
+    const loadingRef = useRef(loadingPost);
+    useEffect(() => {
+        loadingRef.current = loadingPost;
+    }, [loadingPost]);
 
     const [itemSelected, setItemSelected] = useState<IData>();
 
@@ -139,7 +159,7 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                 closeDialog();
                 break;
             case 'submit':
-                createPost.mutate({
+                createPost({
                     editmode: editmode.current,
                     windowid: windowConfig?.WINDOW_ID,
                     data: [values],
@@ -158,7 +178,7 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                 break;
             case 'submit':
                 closeDialog(true);
-                createPost.mutate({
+                createPost({
                     editmode: 3,
                     windowid: windowConfig?.WINDOW_ID,
                     data: [{ id: values?.id }]
@@ -168,7 +188,6 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                 break;
         }
     }, [closeDialog, createPost, windowConfig?.WINDOW_ID]);
-
     const handleAction = useCallback((action: string, row?: IData) => {
         switch (action) {
             case 'View':
@@ -185,7 +204,7 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemEdit,
-                        valueCheck: { mode: 2 }
+                        valueCheck: { mode: 2, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -197,14 +216,13 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                 break;
             case 'New':
                 editmode.current = 1;
-                console.log('schemaWin>>', schemaWin);
                 showDialog({
                     title: _('THEM'),
                     content: getContentView({
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: schemaWin.defaultValues ?? {},
-                        valueCheck: { mode: 1 }
+                        valueCheck: { mode: 1, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -239,7 +257,7 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemCopy,
-                        valueCheck: { mode: 1 }
+                        valueCheck: { mode: 1, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -253,7 +271,7 @@ export const useTreeWindow = ({ window_id, getContentView }: IProgs) => {
             default:
                 break;
         }
-    }, [_, getContentView, handleActionDelete, handleActionForm, itemSelected, onRefresh, schemaWin.defaultValues, schemaWin.schema, schemaWin.schemaDelete, schemaWin.width, showDialog, showToast])
+    }, [itemSelected, showDialog, _, getContentView, schemaWin, handleActionForm, onRefresh, handleActionDelete, showToast])
 
     const onContextMenu: IContextMenu = {
         onContext: handleAction,

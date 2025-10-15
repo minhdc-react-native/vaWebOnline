@@ -3,15 +3,12 @@ import {
     FormItem,
     FormLabel
 } from "@/components/ui/form";
-import { Control, FieldValues, useFormContext } from "react-hook-form";
-import { IconName } from "lucide-react/dynamic";
+import { Control, FieldValues } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { ErrorMessage } from "../erro-message";
-import { useCallback, useMemo } from "react";
-import { api } from "@/api/apiMethods";
-import VcComboBox, { IColumn } from "./vc-combobox";
+import { useMemo } from "react";
 import { useT } from "@/i18n/config";
-import { InputWrapper } from "@/components/ui/input";
+import MultiSelect from "./multi-select";
 
 interface ISelectFieldProps {
     control: Control<FieldValues, any, FieldValues>;
@@ -21,18 +18,14 @@ interface ISelectFieldProps {
     labelPosition?: "top" | "left" | "right";
     labelWidth?: number;
     width?: number;
-    iconLeft?: IconName
     className?: string;
     disabled?: boolean;
-    cleanable?: boolean;
-    source?: IData[] | { url: string, keyFilter: string };
-    columns?: IColumn[];
-    expression?: Record<string, string>;
+    source?: IData[];
     display?: { fId?: string, fValue?: string, fDisplay?: string };
     required?: boolean;
 }
 
-export function SelectField({
+export function MultiSelectField({
     control,
     name,
     label,
@@ -40,18 +33,13 @@ export function SelectField({
     labelPosition = "top",
     labelWidth,
     width,
-    iconLeft,
     className,
     disabled,
-    cleanable,
     source = [],
-    expression = {},
-    columns,
     display,
     required
 }: ISelectFieldProps) {
     const _ = useT();
-    const { setValue } = useFormContext();
     const placeholderDefault = useMemo(() => {
         return _('Select') + ' ' + label;
     }, [_, label]);
@@ -59,21 +47,6 @@ export function SelectField({
     const placeholderSearch = useMemo(() => {
         return _('Search') + ' ' + label;
     }, [_, label]);
-
-    const fnApi = useCallback(async (inputValue: string, callback: (options: IData[]) => void) => {
-        if (!Array.isArray(source)) {
-            await api.get({
-                link: source.url.replace(source.keyFilter, inputValue),
-                callBack: (res) => callback(res)
-            });
-        }
-    }, [source]);
-
-    const onSelect = useCallback((item: IData | null) => {
-        Object.keys(expression).map(exp => {
-            setValue?.(exp, item?.[expression[exp]]);
-        })
-    }, [expression, setValue]);
 
     return (
         <FormField
@@ -95,8 +68,8 @@ export function SelectField({
                                 className={`text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
 
-                        <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
-                            columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} onSelect={onSelect} />
+                        <MultiSelect placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch}
+                            {...field} source={source} display={display} />
 
                         {label && labelPosition === "right" && (
                             <FormLabel className="ml-2 text-sm font-normal">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>

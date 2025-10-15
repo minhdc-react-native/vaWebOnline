@@ -294,7 +294,7 @@ const DataGridTableBodyRow = React.forwardRef<
         props.tableLayout?.stripped &&
         "odd:bg-muted/90 hover:bg-transparent odd:hover:bg-muted",
         table.options.enableRowSelection && "[&_>:first-child]:relative",
-        "[&>td]:py-1 [&>td]:align-middle [&>td]:text-sm [&>td]:leading-tight",
+        "[&>td]:py-2 [&>td]:align-middle [&>td]:text-sm [&>td]:leading-tight",
         props.tableClassNames?.bodyRow,
         className
       )}

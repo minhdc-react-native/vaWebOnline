@@ -64,7 +64,7 @@ export const loginSchema: IGroupSchema = {
         {
             type: "button", variant: "primary", label: "Sign in", hotkey: "F10",
             // labelLoading: "Loading...", 
-            buttonType: "submit", handleProcessing: 'processing'
+            buttonType: "submit"
         },
     ],
     dataSource: {
