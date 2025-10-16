@@ -20,7 +20,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
     return (
         <div className="w-full space-y-6">
             <div className="flex flex-wrap items-center lg:items-end justify-between gap-1">
-                <span>{`${currentMenuSelected?.value} (${currentMenuSelected?.details})`}</span>
+                <span className='text-2xl'>{`${currentMenuSelected?.value} (${currentMenuSelected?.details})`}</span>
             </div>
             <div className="flex flex-wrap items-center lg:items-end justify-start gap-1">
                 <ButtonField

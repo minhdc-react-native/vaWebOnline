@@ -22,7 +22,7 @@ interface IProgsCacheItem {
 const keyCacheBegin = 'app-vacom-config:';
 export const getCacheItem = async ({ cacheKey, url, method = "get", onMapRes }: IProgsCacheItem) => {
   const cacheKeyFull = `${keyCacheBegin}${cacheKey}`;
-  const value = null;//getData(cacheKeyFull);
+  const value = getData(cacheKeyFull);
   if (!value) {
     const res = await api[method]({
       link: url
@@ -38,7 +38,8 @@ export const removeAllCacheItem = async (callBack: (isProgress: boolean) => void
   callBack(true);
   try {
     await api.post({
-      link: `/api/System/ClearCache`
+      link: `/api/System/ClearCache`,
+      data: null
     });
   } catch (error) { }
 

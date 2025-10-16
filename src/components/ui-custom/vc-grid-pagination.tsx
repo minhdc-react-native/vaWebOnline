@@ -4,11 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DynamicIcon } from 'lucide-react/dynamic';
 
 export interface VcGridPaginationProps {
     pageIndex: number;
     pageSize: number;
-    pageCount: number;
     recordCount: number;
     isLoading?: boolean;
 
@@ -30,24 +30,22 @@ export interface VcGridPaginationProps {
 export function VcGridPagination({
     pageIndex,
     pageSize,
-    pageCount,
     recordCount,
     isLoading = false,
     onPageChange,
     onPageSizeChange,
-    sizes = [5, 10, 25, 50, 100],
-    sizesLabel = 'Show',
-    sizesDescription = 'per page',
+    sizes = [50, 100, 200, 300, 500],
+    sizesLabel = 'Lấy',
+    sizesDescription = 'dòng',
     sizesSkeleton = <Skeleton className="h-8 w-44" />,
     moreLimit = 5,
-    more = false,
-    info = '{from} - {to} of {count}',
+    info = '{from} - {to} của {count}',
     infoSkeleton = <Skeleton className="h-8 w-60" />,
     className
 }: VcGridPaginationProps) {
     const btnBaseClasses = 'size-7 p-0 text-sm';
     const btnArrowClasses = btnBaseClasses + ' rtl:transform rtl:rotate-180';
-
+    const pageCount = Math.ceil(recordCount / pageSize);
     const from = recordCount === 0 ? 0 : pageIndex * pageSize + 1;
     const to = Math.min((pageIndex + 1) * pageSize, recordCount);
 
@@ -111,7 +109,7 @@ export function VcGridPagination({
         <div
             data-slot="data-grid-pagination"
             className={cn(
-                'flex flex-wrap flex-col sm:flex-row justify-between items-center gap-2.5 py-2.5 sm:py-0 grow',
+                'flex flex-wrap flex-col sm:flex-row justify-end items-center gap-2.5 py-2.5 sm:py-0 grow font-bold',
                 className,
             )}
         >
@@ -152,6 +150,17 @@ export function VcGridPagination({
 
                         {pageCount > 1 && (
                             <div className="flex items-center space-x-1 order-1 sm:order-2">
+                                {pageCount > paginationMoreLimit && <Button
+                                    size="sm"
+                                    mode="icon"
+                                    variant="ghost"
+                                    className={btnArrowClasses}
+                                    onClick={() => onPageChange?.(0)}
+                                    disabled={pageIndex <= 0}
+                                >
+                                    <span className="sr-only">Previous</span>
+                                    <DynamicIcon name='chevrons-left' className="size-4" strokeWidth={3} />
+                                </Button>}
                                 <Button
                                     size="sm"
                                     mode="icon"
@@ -161,7 +170,7 @@ export function VcGridPagination({
                                     disabled={pageIndex <= 0}
                                 >
                                     <span className="sr-only">Previous</span>
-                                    <ChevronLeftIcon className="size-4" />
+                                    <ChevronLeftIcon className="size-4" strokeWidth={3} />
                                 </Button>
 
                                 {renderEllipsisPrevButton()}
@@ -177,8 +186,19 @@ export function VcGridPagination({
                                     disabled={pageIndex >= pageCount - 1}
                                 >
                                     <span className="sr-only">Next</span>
-                                    <ChevronRightIcon className="size-4" />
+                                    <ChevronRightIcon className="size-4" strokeWidth={3} />
                                 </Button>
+                                {pageCount > paginationMoreLimit && <Button
+                                    size="sm"
+                                    mode="icon"
+                                    variant="ghost"
+                                    className={btnArrowClasses}
+                                    onClick={() => onPageChange?.(pageCount - 1)}
+                                    disabled={pageIndex === pageCount - 1}
+                                >
+                                    <span className="sr-only">Next</span>
+                                    <DynamicIcon name='chevrons-right' className="size-4" strokeWidth={3} />
+                                </Button>}
                             </div>
                         )}
                     </>

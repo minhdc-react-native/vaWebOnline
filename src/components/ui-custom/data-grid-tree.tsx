@@ -15,15 +15,13 @@ import { useDataGrid } from "@/components/ui/data-grid";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { FilterColumn } from "./filter-columns";
 import { RowContextMenu } from "@/pages/vacom/row-context-menu";
-interface IProgs {
-    itemSelected?: IData
-}
+
 interface TreeRow<T> {
     id: string | number;
     children?: T[];
 }
 
-export function DataGridTree<TData extends TreeRow<TData>>({ itemSelected }: IProgs) {
+export function DataGridTree<TData extends TreeRow<TData>>() {
     const { table, props } = useDataGrid();
     const [expanded, setExpanded] = React.useState<Record<string | number, boolean>>({});
 
@@ -42,7 +40,7 @@ export function DataGridTree<TData extends TreeRow<TData>>({ itemSelected }: IPr
                 <RowContextMenu<TData> row={row.original}>
                     <DataGridTableBodyRow
                         row={row}
-                        className={cn((row.getIsSelected() || itemSelected?.id === row.original.id) && 'selected bg-amber-50', hasChildren && 'font-bold')}
+                        className={cn((row.getIsSelected() || props.itemSelected?.id === row.original.id) && 'selected bg-amber-100', hasChildren && 'font-bold')}
                     >
                         {row.getVisibleCells().map((cell, colIndex) => {
                             const content = flexRender(cell.column.columnDef.cell, cell.getContext());

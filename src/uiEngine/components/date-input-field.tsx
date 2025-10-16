@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { DateInput, DateField } from '@/components/ui/datefield';
 import { ErrorMessage } from "./erro-message";
 import { CalendarDays, X } from "lucide-react";
-import { DateValue, parseDate } from '@internationalized/date';
+import { DateValue, parseDate, parseDateTime } from '@internationalized/date';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
@@ -55,6 +55,7 @@ export function DateInputField({
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 // const fixDate = field.value ? parseDate(field.value) : undefined;
                 // setValue(fixDate);
+                const fixValue = field.value.split(/[ T]/)[0];
                 return (
                     <FormItem
                         style={{ width: width }}
@@ -69,14 +70,14 @@ export function DateInputField({
                         )}
                         <FormControl>
                             <InputWrapper>
-                                <DateIconPicker value={field.value ? new Date(field.value) : undefined}
+                                <DateIconPicker value={fixValue ? new Date(fixValue) : undefined}
                                     onSelect={(date) => field.onChange(format(date, 'yyyy-MM-dd'))} />
                                 <DateField
-                                    value={field.value ? parseDate(field.value) : null}
+                                    value={fixValue ? parseDate(fixValue) : null}
                                     onChange={(val) => field.onChange(toDateString(val))}>
                                     <DateInput />
                                 </DateField>
-                                {isNotEmpty(field.value) && <X onClick={() => field.onChange(null)} />}
+                                {isNotEmpty(fixValue) && <X onClick={() => field.onChange(null)} />}
                             </InputWrapper>
                         </FormControl>
 
@@ -104,7 +105,7 @@ function DateIconPicker({ value, onSelect }: { value?: Date, onSelect?: (date: D
                 <CalendarDays />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={value} onSelect={onSelectDate} autoFocus required />
+                <Calendar mode="single" selected={value} onSelect={onSelectDate} defaultMonth={value} autoFocus required />
             </PopoverContent>
         </Popover>
     );

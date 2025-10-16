@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { IColumnType, IFieldConfig, ITypeEditor, IWindowConfig } from "./type"
+import { IColumnType, IFieldConfig, ITabConfig, ITypeEditor, IWindowConfig } from "./type"
 import { ColumnDef } from "@tanstack/react-table";
 import { useT } from "@/i18n/config";
 import { formatDate, formatDateTime, formatNumber, isNotEmpty, safeJsonParse } from "@/lib/helpers";
@@ -38,10 +38,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             default:
                 return value;
         }
-    }, [])
-    const columns = useMemo(() => {
-        const tabMaster = windowConfig?.Tabs[0];
-        if (!tabMaster) return []
+    }, []);
+    const getColumnConfig = useCallback((tab: ITabConfig, isMaster: boolean): IData => {
         const fixColumns: ColumnDef<IData, any>[] = [
             // {
             //     id: 'index',
@@ -53,25 +51,33 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             //     }
             // }
         ];
-        tabMaster.Fields
+        tab.Fields
             .filter(f => !f.HIDE_IN_GRID)
             .map(f => {
                 fixColumns.push({
                     accessorKey: f.COLUMN_NAME,
                     cell: ({ getValue }) => getValueCell(getValue(), (f.TYPE_EDITOR as any), (f.COLUMN_TYPE as any)),
-                    size: f.COLUMN_WIDTH || 350,
+                    size: f.COLUMN_WIDTH || 400,
                     header: _(f.CAPTION || f.COLUMN_NAME),
                     meta: {
                         filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
                         typeEditor: (f.TYPE_EDITOR as any),
                         columnType: (f.COLUMN_TYPE as any),
                         classCellName: getCellClassName((f.TYPE_EDITOR as any)),
-                        headerClassName: "font-bold",
+                        headerClassName: "font-bold"
                     }
                 })
             });
-        return fixColumns;
-    }, [_, windowConfig?.Tabs, getCellClassName, getValueCell]);
+        return {
+            id: tab.id,
+            TAB_ID: tab.TAB_ID,
+            TAB_NAME: tab.TAB_NAME,
+            HIDDEN: !!tab.HIDDEN,
+            WINDOW_ID: windowConfig?.WINDOW_ID,
+            TAB_TABLE: tab.TAB_TABLE,
+            columns: fixColumns
+        };
+    }, [windowConfig?.WINDOW_ID])
 
     const { currentYear, infoDvcs } = useAuth();
 
@@ -80,10 +86,16 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         schemaDelete: IFormSchema,
         width?: number | null;
         defaultValues?: Record<string, any>,
-        columnPinning?: { left: string[], right: string[] }
+        columnPinning?: { left: string[], right: string[] };
+        subTabs: IData[]
     } = useMemo(() => {
-        const fieldMaster = windowConfig?.Tabs[0].Fields || [];
-        const pinning = { left: windowConfig?.Tabs[0].LEFTSPLIT ?? 0, right: windowConfig?.Tabs[0].RIGHTSPLIT ?? 0 }
+        const tabAll: ITabConfig[] = windowConfig?.Tabs || [];
+        const subTabs: IData[] = [];
+        for (let index = 0; index < tabAll.length; index++) {
+            subTabs.push(getColumnConfig(tabAll[index], index === 0));
+        }
+        const fieldMaster = tabAll?.[0]?.Fields || [];
+        const pinning = { left: tabAll?.[0]?.LEFTSPLIT ?? 0, right: tabAll?.[0]?.RIGHTSPLIT ?? 0 }
         const defaultValues: Record<string, any> = {};
         const dataSource: IDataSource = {};
         const columnPinning: any = { left: [], right: [] };
@@ -170,13 +182,18 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             },
             width: windowConfig?.WIDTH,
             defaultValues,
-            columnPinning
+            columnPinning,
+            subTabs
         }
     }, [windowConfig?.Tabs, windowConfig?.WIDTH])
 
+    const columns = useMemo(() => {
+        return schemaWin.subTabs?.[0]?.columns || [];;
+    }, [schemaWin.subTabs]);
     return {
-        columns,
-        schemaWin
+        columns: columns,
+        schemaWin,
+        isExpand: (schemaWin.subTabs || []).length > 1
     }
 }
 const mapFieldType = {

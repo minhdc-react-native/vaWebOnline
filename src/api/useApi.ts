@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { getMessageError } from "@/lib/helpers";
 import { api } from "./apiMethods";
+import { AxiosRequestConfig } from "axios";
 
 type ApiRequest = {
     link: string;
     data?: any;
-    config?: any;
+    config?: AxiosRequestConfig<any>;
     select?: (data: any) => any;
+    isDataPage?: boolean
 }
 
 type ApiRequestQuery = ApiRequest & {
@@ -25,13 +27,13 @@ export const useApiQuery = <IData = any>(
     return useQuery<IData, Error>({
         queryKey: key,
         queryFn: async () => {
-            const { link, data, method = "get", config, select } = request;
+            const { link, data, method = "get", config, select, isDataPage } = request;
 
             const res =
                 method === "get"
                     ? await api.get({ link, config })
                     : await api.post({ link, data, config });
-            const result = res?.data ?? res;
+            const result = isDataPage ? res : (res.data || res);
             return select ? select(result) : result;
         },
         enabled: request.enabled ?? true,

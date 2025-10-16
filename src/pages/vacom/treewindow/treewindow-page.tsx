@@ -18,6 +18,7 @@ import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
 import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type";
 import { SchemaForm } from "@/uiEngine/schema-form";
+import { Card, CardHeader, CardToolbar } from "@/components/ui/card";
 
 declare module '@tanstack/react-table' {
     interface ColumnMeta<TData extends RowData, TValue> {
@@ -74,6 +75,10 @@ export function TreeWindowPage() {
         enableMultiRowSelection: false
     });
 
+    const totalWidth = useMemo(() => {
+        return columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
+    }, [columns]);
+
     const ctxWinValue = useMemo<IWinContext>(
         () => ({
             handleAction
@@ -85,23 +90,22 @@ export function TreeWindowPage() {
         <Fragment>
             <Container className="flex flex-col h-full">
                 <WinContext.Provider value={ctxWinValue}>
-                    <div className="flex flex-col h-full space-y-2.5">
+                    <div className="flex flex-col h-full space-y-2.5 pb-5">
                         <HeaderWin permission={permission} />
                         <div className="flex-1 min-h-0">
                             <DataGrid table={table} tableLayout={{ columnsPinnable: true, headerSticky: true, columnsResizable: true }}
-                                autoFocus={true} onKeyDown={onKeyDown}
+                                autoFocus={true} onKeyDown={onKeyDown} itemSelected={itemSelected}
                                 onRowClick={setItemSelected} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu}
                                 recordCount={data?.length || 0}>
                                 <DataGridContainer className="h-full">
                                     <ScrollArea>
-                                        <DataGridTree itemSelected={itemSelected} />
+                                        <div style={{ width: totalWidth + 10 }}>
+                                            <DataGridTree />
+                                        </div>
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </DataGridContainer>
                             </DataGrid>
-                        </div>
-                        <div>
-                            <span className="text-black text-lg">FOOTER: {window_id}</span>
                         </div>
                     </div>
                 </WinContext.Provider>

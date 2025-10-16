@@ -28,8 +28,10 @@ export interface IFieldConfig {
     DISPLAY_FIELD: string | null;
     DECIMAL_SIZE: number | null;
 }
-interface ITabConfig {
+export interface ITabConfig {
     id: string;
+    WINDOW_ID: string;
+    TAB_TABLE: string;
     HIDDEN: boolean;
     TAB_ID: string;
     TAB_NAME: string;

@@ -53,6 +53,7 @@ export interface DataGridProps<TData extends object> {
   children?: ReactNode;
   autoFocus?: boolean;
   onKeyDown?: React.KeyboardEventHandler<HTMLTableSectionElement>;
+  itemSelected?: TData;
   onRowClick?: (row: TData) => void;
   onDoubleClick?: (row: TData) => void;
   onContextMenu?: {

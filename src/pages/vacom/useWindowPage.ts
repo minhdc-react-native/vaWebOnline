@@ -8,6 +8,12 @@ import { IconName } from "lucide-react/dynamic";
 import { useGlobalDialog } from "@/providers/global-dialog";
 import { useT } from "@/i18n/config";
 import { sortTreeNested } from "@/lib/helpers";
+interface IResponce {
+    data: IData[],
+    pos: number,
+    total_count: number;
+}
+const infoPageBase = { pageIndex: 0, pageSize: 50, recordCount: 500, isLoading: false };
 const baseParams = {
     start: 0,
     count: 999999999,
@@ -35,34 +41,49 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
     const { setLoading } = useAuth();
     const [windowConfig, setWindowConfig] = useState<IWindowConfig>();
     const _ = useT();
-    const { columns, schemaWin } = useMapConfig({ windowConfig });
+    const { columns, schemaWin, isExpand } = useMapConfig({ windowConfig });
 
     const { showDialog, closeDialog, showToast } = useGlobalDialog();
 
-    const { data, isLoading, error, isFetching, refetch: onRefresh } = useApiQuery<IData[]>([windowConfig?.WINDOW_ID],
+    const [infoPage, setInfoPage] = useState({ ...infoPageBase });
+
+    useEffect(() => {
+        setInfoPage({ ...infoPageBase });
+    }, [window_id]);
+
+    const { data, isLoading, error, isFetching, refetch: onRefresh } = useApiQuery<IData[]>(
+        ['GetDataByWindowNo', window_id],
         {
             link: `/api/System/GetDataByWindowNo`,
             method: "post",
             data: {
                 ...baseParams,
-                count: type === "tree" ? 999999999 : 50,
-                window_id: windowConfig?.WINDOW_ID
+                count: type === "tree" ? 999999999 : infoPage.pageSize,
+                start: type === "tree" ? 0 : infoPage.pageSize * infoPage.pageIndex,
+                window_id: window_id
             },
-            select: (response: IData[]) => {
+            select: (response: IResponce) => {
                 if (type === "tree") {
-                    const dataAfterSort = sortTreeNested(response);
+                    const dataAfterSort = sortTreeNested(response.data);
                     if (dataAfterSort && dataAfterSort.length > 0) setItemSelected(dataAfterSort[0]);
-                    return dataAfterSort
+                    return dataAfterSort;
                 } else {
-                    return response;
+                    if (infoPage.pageIndex === 0) setInfoPage(prev => ({ ...prev, recordCount: response.total_count }));
+                    const dataMap = response.data;
+                    if (dataMap && dataMap.length > 0) setItemSelected(dataMap[0]);
+                    return dataMap;
                 }
             },
-            enabled: !!windowConfig?.WINDOW_ID,
+            enabled: !!window_id,
+            isDataPage: true
         },
         {
             refetchOnWindowFocus: false
         }
     )
+    useEffect(() => {
+        onRefresh();
+    }, [infoPage.pageIndex, infoPage.pageSize]);
 
     const [loadingPost, setLoadingPost] = useState<boolean>(false);
 
@@ -288,12 +309,16 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         data,
         itemSelected,
         permission,
+        infoPage,
+        setInfoPage,
         onKeyDown,
         onDoubleClick,
         onContextMenu,
         setItemSelected,
         onRefresh,
         handleAction,
-        columnPinning: schemaWin.columnPinning || { left: [], right: [] }
+        columnPinning: schemaWin.columnPinning || { left: [], right: [] },
+        isExpand,
+        subTabs: schemaWin.subTabs
     }
 }
