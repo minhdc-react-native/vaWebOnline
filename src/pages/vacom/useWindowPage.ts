@@ -225,7 +225,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemEdit,
-                        valueCheck: { mode: 2, loadingRef }
+                        valueCheck: { mode: 2, window_id, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -243,7 +243,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: schemaWin.defaultValues ?? {},
-                        valueCheck: { mode: 1, loadingRef }
+                        valueCheck: { mode: 1, window_id, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -278,7 +278,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemCopy,
-                        valueCheck: { mode: 1, loadingRef }
+                        valueCheck: { mode: 1, window_id, loadingRef }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,

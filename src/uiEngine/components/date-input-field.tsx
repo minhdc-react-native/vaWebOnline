@@ -55,7 +55,7 @@ export function DateInputField({
                 const isHorizontal = labelPosition === "left" || labelPosition === "right";
                 // const fixDate = field.value ? parseDate(field.value) : undefined;
                 // setValue(fixDate);
-                const fixValue = field.value.split(/[ T]/)[0];
+                const fixValue = field.value ? field.value.split(/[ T]/)[0] : field.value;
                 return (
                     <FormItem
                         style={{ width: width }}

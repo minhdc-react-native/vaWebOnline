@@ -7,11 +7,8 @@ import {
     ColumnFiltersState,
     useReactTable,
     getExpandedRowModel,
-    RowData,
     ColumnPinningState,
     ColumnDef,
-    getSortedRowModel,
-    getPaginationRowModel,
     ExpandedState,
 } from '@tanstack/react-table';
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
@@ -19,7 +16,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useWindowPage } from "../useWindowPage";
 import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
-import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type";
+import { IContentView } from "../type";
 import { SchemaForm } from "@/uiEngine/schema-form";
 import { VcGridPagination } from "@/components/ui-custom/vc-grid-pagination";
 import { VcDataGrid } from "@/components/ui-custom/vc-data-grid";
@@ -29,20 +26,7 @@ import { DataGridTable } from "@/components/ui/data-grid-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiQuery } from "@/api/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/i18n/config";
-import { useSettings } from "@/providers/settings-provider";
-import { Column } from "react-aria-components";
-import { Card, CardHeader, CardHeading, CardTable, CardToolbar } from "@/components/ui/card";
-
-declare module '@tanstack/react-table' {
-    interface ColumnMeta<TData extends RowData, TValue> {
-        filterVariant?: IFilterVariant,
-        typeEditor?: ITypeEditor,
-        classCellName?: string,
-        columnType?: IColumnType
-    }
-}
 
 export function WindowPage() {
     const { window_id } = useParams();
@@ -120,9 +104,11 @@ export function WindowPage() {
 
     const ctxWinValue = useMemo<IWinContext>(
         () => ({
-            handleAction
+            handleAction,
+            itemSelected: itemSelected!,
+            window_id: window_id!
         }),
-        [handleAction]
+        [handleAction, itemSelected, window_id]
     );
 
     const totalWidth = useMemo(() => {
@@ -176,11 +162,11 @@ const ItemsSubContent = ({ row, subTabs, window_id }: { row: IData, subTabs: IDa
             <Tabs
                 defaultValue={activeTab?.toString()}
                 onValueChange={setActiveTab}
-                className="h-full flex flex-col overflow-hidden"
+                className="h-full flex flex-col overflow-hidden gap-0"
             >
-                <TabsList>
+                <TabsList className="p-0 m-0 gap-0">
                     {subTabs.map((tab) => (
-                        <TabsTrigger key={tab.id} value={tab.id.toString()}>
+                        <TabsTrigger key={tab.id} value={tab.id.toString()} className="border-1 border-b-0 rounded-bl-none rounded-br-none aria-[selected=true]:border-border aria-[selected=false]:border-transparent">
                             {_(tab.TAB_NAME)}
                         </TabsTrigger>
                     ))}
@@ -189,7 +175,7 @@ const ItemsSubContent = ({ row, subTabs, window_id }: { row: IData, subTabs: IDa
                     <TabsContent
                         key={tab.id}
                         value={tab.id.toString()}
-                        className="h-full"
+                        className="h-full mt-0"
                     >
                         <ItemsSubTable
                             rowId={row.id.toString()}
@@ -199,35 +185,6 @@ const ItemsSubContent = ({ row, subTabs, window_id }: { row: IData, subTabs: IDa
                         />
                     </TabsContent>
                 ))}
-                {/* <Card className="flex-1 flex flex-col overflow-hidden">
-                    <CardHeader className="py-0 shrink-0">
-                        <CardToolbar>
-                            <TabsList>
-                                {subTabs.map((tab) => (
-                                    <TabsTrigger key={tab.id} value={tab.id.toString()}>
-                                        {_(tab.TAB_NAME)}
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-                        </CardToolbar>
-                    </CardHeader>
-                    <div className="flex-1 overflow-auto">
-                        {subTabs.map((tab) => (
-                            <TabsContent
-                                key={tab.id}
-                                value={tab.id.toString()}
-                                className="h-full"
-                            >
-                                <ItemsSubTable
-                                    rowId={row.id.toString()}
-                                    tab={tab}
-                                    isActive={tab.id === activeTab?.toString()}
-                                    window_id={window_id}
-                                />
-                            </TabsContent>
-                        ))}
-                    </div>
-                </Card> */}
             </Tabs>
         </div>
     );
@@ -275,16 +232,10 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
                         headerBorder: true,
                     }}
                 >
-                    <DataGridContainer className="h-full bg-background">
+                    <DataGridContainer className="h-full bg-background rounded-tl-none">
                         <ScrollArea>
                             <div style={{ width: totalWidth + 10 }}>
-                                {table.getRowModel().rows.length > 0 ? (
-                                    <DataGridTable />
-                                ) : (
-                                    <div className="text-sm text-muted-foreground p-4">
-                                        Không có dữ liệu
-                                    </div>
-                                )}
+                                <DataGridTable />
                             </div>
                             <ScrollBar orientation="horizontal" />
                         </ScrollArea>

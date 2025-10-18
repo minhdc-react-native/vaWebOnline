@@ -130,10 +130,33 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
 
             return acc;
         }, {} as Record<number, IFieldConfig[]>);
-        const layout: IFieldAll[] = Object.values(newFieldMaster).map((items): IFieldAll => {
-            if (items.length === 1) return getConfigView(items[0]);
-            return { type: 'group', layout: "flex", direction: "row", children: items.map((_item): IFieldAll => getConfigView(_item, _item.GRAVITY ?? 1)) };
-        });
+        let isInsertTabsDetail = false;
+        const layout = Object.values(newFieldMaster).reduce((acc, items, idx) => {
+            if (windowConfig?.ROW_TAB && subTabs.length > 1 && windowConfig?.ROW_TAB < idx - 1) {
+                acc.push({
+                    type: "tabs",
+                    height: windowConfig?.HEIGHT || undefined,
+                    tabs: [...subTabs].slice(1)
+                });
+                isInsertTabsDetail = true;
+            }
+            if (items.length === 1) {
+                acc.push(getConfigView(items[0]));
+            } else {
+                acc.push({
+                    type: 'group', layout: "flex", direction: "row",
+                    children: items.map((_item): IFieldAll => getConfigView(_item, _item.GRAVITY ?? 1))
+                })
+            }
+            return acc;
+        }, [] as IFieldAll[]);
+        if (!isInsertTabsDetail && subTabs.length > 1) {
+            layout.push({
+                type: "tabs",
+                height: windowConfig?.HEIGHT ? windowConfig?.HEIGHT + 50 : undefined,
+                tabs: [...subTabs].slice(1)
+            });
+        }
         layout.push({ type: "line" })
         layout.push({
             type: "group",
@@ -149,6 +172,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             schema: {
                 type: "group",
                 layout: "flex",
+                className: 'h-full flex-1',
                 children: layout,
                 dataSource: dataSource
             },
@@ -185,7 +209,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             columnPinning,
             subTabs
         }
-    }, [windowConfig?.Tabs, windowConfig?.WIDTH])
+    }, [windowConfig?.Tabs, windowConfig?.WIDTH, windowConfig?.ROW_TAB, windowConfig?.HEIGHT])
 
     const columns = useMemo(() => {
         return schemaWin.subTabs?.[0]?.columns || [];;

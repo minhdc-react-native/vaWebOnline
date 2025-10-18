@@ -20,14 +20,14 @@ export function App() {
   const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <GlobalDialogProvider>
-          <AuthProvider>
-            <SettingsProvider>
-              <ThemeProvider>
-                <HelmetProvider>
-                  <TooltipsProvider>
-                    <QueryProvider>
+      <QueryProvider>
+        <I18nProvider>
+          <GlobalDialogProvider>
+            <AuthProvider>
+              <SettingsProvider>
+                <ThemeProvider>
+                  <HelmetProvider>
+                    <TooltipsProvider>
                       <LoadingBarContainer>
                         <BrowserRouter basename={BASE_URL}>
                           <Toaster />
@@ -36,14 +36,14 @@ export function App() {
                           </ModulesProvider>
                         </BrowserRouter>
                       </LoadingBarContainer>
-                    </QueryProvider>
-                  </TooltipsProvider>
-                </HelmetProvider>
-              </ThemeProvider>
-            </SettingsProvider>
-          </AuthProvider>
-        </GlobalDialogProvider>
-      </I18nProvider>
+                    </TooltipsProvider>
+                  </HelmetProvider>
+                </ThemeProvider>
+              </SettingsProvider>
+            </AuthProvider>
+          </GlobalDialogProvider>
+        </I18nProvider>
+      </QueryProvider>
     </QueryClientProvider>
   );
 }

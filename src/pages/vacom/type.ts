@@ -50,6 +50,8 @@ export interface IWindowConfig {
     WIDTH: number | null;
     URL_HELP: string | null;
     URL_VIDEO: string | null;
+    HEIGHT: number | null;
+    ROW_TAB: number | null;
     Tabs: ITabConfig[]
 }
 

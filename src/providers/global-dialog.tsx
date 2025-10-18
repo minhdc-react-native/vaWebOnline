@@ -179,7 +179,7 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                     <DialogContent
                         // style={{ width: view.width }}
                         className={cn(
-                            view.fullWidth ? "w-screen max-w-screen h-screen max-h-screen rounded-[0px]" : "w-auto max-w-none",
+                            view.fullWidth ? "w-screen flex max-w-screen h-screen max-h-screen rounded-[0px]" : "w-auto max-w-none",
                             view.classNameContent
                         )}>
                         <DialogHeader className="pb-2 m-0">
@@ -193,7 +193,9 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                             )}
                         </DialogHeader>
                         <span className="w-full border-t mb-2" />
-                        {view.content}
+                        <div className="flex flex-1">
+                            {view.content}
+                        </div>
                     </DialogContent>
                 </Dialog>
             ))}

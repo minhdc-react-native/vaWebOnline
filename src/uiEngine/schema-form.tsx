@@ -23,6 +23,7 @@ import Fieldset from "./components/fieldset-component";
 import { ColorPickerField } from "./components/color-picker-field";
 import { RatingField } from "./components/raiting";
 import { MultiSelectField } from "./components/multi-select/multi-select-field";
+import { ITabsField } from "./components/tabs-details";
 
 const labelWidthDefault = 100;
 interface IRenderField {
@@ -306,6 +307,8 @@ function RenderGroup({
                                 />
                             </Fieldset>
                         );
+                    case "tabs":
+                        return (<ITabsField height={child.height} tabs={child.tabs} valuesCheck={valuesCheck} />)
                     default:
                         break;
                 }

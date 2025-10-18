@@ -36,7 +36,7 @@ export function VcGridPagination({
     onPageSizeChange,
     sizes = [50, 100, 200, 300, 500],
     sizesLabel = 'Lấy',
-    sizesDescription = 'dòng',
+    sizesDescription = 'dòng/trang',
     sizesSkeleton = <Skeleton className="h-8 w-44" />,
     moreLimit = 5,
     info = '{from} - {to} của {count}',

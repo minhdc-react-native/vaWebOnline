@@ -170,6 +170,12 @@ export interface IRatingSchema {
     showValue?: boolean;
 }
 
+interface ITabs {
+    type: 'tabs';
+    height?: number;
+    tabs: IData[];
+}
+
 export type IFieldAll = IFieldBase & (IFieldSchema
     | INumberSchema
     | ISelectSchema
@@ -183,6 +189,7 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | IFieldset
     | IColorSchema
     | IRatingSchema
+    | ITabs
 )
 
 export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string>, typeView?: 'table' | 'tree' }>;

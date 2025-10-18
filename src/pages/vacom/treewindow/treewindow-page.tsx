@@ -7,7 +7,6 @@ import {
     ColumnFiltersState,
     useReactTable,
     getExpandedRowModel,
-    RowData,
     ColumnPinningState
 } from '@tanstack/react-table';
 import { DataGridTree } from "@/components/ui-custom/data-grid-tree";
@@ -16,18 +15,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useWindowPage } from "../useWindowPage";
 import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
-import { IColumnType, IContentView, IFilterVariant, ITypeEditor } from "../type";
+import { IContentView } from "../type";
 import { SchemaForm } from "@/uiEngine/schema-form";
-import { Card, CardHeader, CardToolbar } from "@/components/ui/card";
-
-declare module '@tanstack/react-table' {
-    interface ColumnMeta<TData extends RowData, TValue> {
-        filterVariant?: IFilterVariant,
-        typeEditor?: ITypeEditor,
-        classCellName?: string,
-        columnType?: IColumnType
-    }
-}
 
 export function TreeWindowPage() {
     const { window_id } = useParams();
@@ -81,9 +70,11 @@ export function TreeWindowPage() {
 
     const ctxWinValue = useMemo<IWinContext>(
         () => ({
-            handleAction
+            handleAction,
+            itemSelected: itemSelected!,
+            window_id: window_id!
         }),
-        [handleAction]
+        [handleAction, itemSelected, window_id]
     );
 
     return (

@@ -29,7 +29,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                             type: "button",
                             label: _('REFRESH'),
                             iconLeft: "refresh-ccw",
-                            variant: "outline",
+                            variant: "ghost",
                             hotkey: "F5",
                             handleClick: "Refresh"
                         }
@@ -43,7 +43,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 type: "button",
                                 label: _('THEM'),
                                 iconLeft: "plus",
-                                variant: "outline",
+                                variant: "ghost",
                                 hotkey: "F4",
                                 handleClick: "New"
                             }
@@ -57,7 +57,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 type: "button",
                                 label: _('SUA'),
                                 iconLeft: "edit",
-                                variant: "outline",
+                                variant: "ghost",
                                 hotkey: "F3",
                                 handleClick: "Edit"
                             }
@@ -71,7 +71,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 type: "button",
                                 label: _('XOA'),
                                 iconLeft: "delete",
-                                variant: "outline",
+                                variant: "ghost",
                                 hotkey: "F8",
                                 handleClick: "Delete"
                             }
@@ -85,7 +85,7 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                                 type: "button",
                                 label: _('COPY'),
                                 iconLeft: "copy",
-                                variant: "outline",
+                                variant: "ghost",
                                 hotkey: "F9",
                                 handleClick: "Copy"
                             }
