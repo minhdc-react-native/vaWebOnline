@@ -222,7 +222,7 @@ function OtherField({ field, control, valuesCheck, className, handleAction }: IR
     switch (field.type) {
         case "button":
             return <ButtonField btn={field} disabled={disabled}
-                handleAction={handleAction} className={cn(field.className, className)} isProcessing={field.buttonType === "submit" ? valuesCheck['isProcessing'] : false} />;
+                handleAction={handleAction} className={cn(field.className, className)} isProcessing={field.isProcessing ? valuesCheck['isProcessing'] : false} />;
         case "text":
             return <TextField className={cn(field.className, className)} variant={field.variant}
                 size={field.size} weight={field.weight} muted={field.muted}>
@@ -337,13 +337,13 @@ export function SchemaForm({
     footerForm
 }: {
     schema: IFieldBase & IFormSchema;
-    onAction?: (action: string, values?: Record<string, any>) => void;
+    onAction?: (action: string, values?: Record<string, any>, setIsProcessing?: (isProcessing: boolean) => void) => void;
     values?: Record<string, any>;
     valuesCheck?: Record<string, any>;
     headerForm?: React.ReactNode;
     footerForm?: React.ReactNode;
 }) {
-    const [isProcessing, setIsProcessing] = useState(valuesCheck?.loadingRef?.current ?? false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const _ = useT();
     const zodSchema = buildZodFromSchema(schema, _);
     const defaultValues = buildDefaultValuesFromSchema(schema);
@@ -355,11 +355,15 @@ export function SchemaForm({
     });
 
     const onSubmit = () => {
-        handleAction('submit');
+        handleAction('onSubmit');
     }
 
-    const handleAction = (action: string) => {
-        if (onAction) return onAction(action, form.getValues());
+    const handleAction = async (action: string) => {
+        if (action === 'onSubmit') {
+            const isValid = await form.trigger();
+            if (!isValid) return;
+        }
+        if (onAction) return onAction(action, form.getValues(), setIsProcessing);
     };
 
     const { dataSource } = useDataSource({ source: schema.dataSource, control: form.control });
@@ -369,21 +373,11 @@ export function SchemaForm({
             form.setValue(key as any, value);
         });
     }, [form, values]);
-
-    useEffect(() => {
-        if (!valuesCheck?.loadingRef) return;
-        const interval = setInterval(() => {
-            const newVal = valuesCheck.loadingRef.current;
-            setIsProcessing(newVal);
-        }, 100);
-        return () => clearInterval(interval);
-    }, [valuesCheck]);
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 {headerForm}
-                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing }} dataSource={dataSource} />
+                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing: valuesCheck.isProcessing !== undefined ? valuesCheck.isProcessing : isProcessing }} dataSource={dataSource} />
                 {footerForm}
             </form>
         </Form>

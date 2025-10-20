@@ -37,7 +37,7 @@ export function DataGridTree<TData extends TreeRow<TData>>() {
         const isExpanded = expanded[row.id] !== undefined ? expanded[row.id] : true;
         return (
             <Fragment key={row.id}>
-                <RowContextMenu<TData> row={row.original}>
+                <RowContextMenu<TData> row={row.original} index={row.index}>
                     <DataGridTableBodyRow
                         row={row}
                         className={cn((row.getIsSelected() || props.itemSelected?.id === row.original.id) && 'selected bg-amber-100', hasChildren && 'font-bold')}

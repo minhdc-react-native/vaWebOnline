@@ -28,7 +28,8 @@ interface IViewDialog {
 type DialogContextType = {
     showDialog: (node: IViewDialog) => void;
     closeDialog: (isSubmit?: boolean) => void;
-    showToast: (title: string | React.ReactNode, type?: 'success' | 'warning' | 'error' | 'info') => void
+    showToast: (title: string | React.ReactNode, type?: 'success' | 'warning' | 'error' | 'info') => void;
+    isDialogOpen: boolean;
 };
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
@@ -166,7 +167,7 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <DialogContext.Provider value={{ showDialog, closeDialog, showToast }}>
+        <DialogContext.Provider value={{ showDialog, closeDialog, showToast, isDialogOpen: dialogs.length > 0 }}>
             {children}
             {dialogs.map((view, i) => (
                 <Dialog

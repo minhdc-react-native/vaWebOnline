@@ -10,9 +10,11 @@ import { useT } from "@/i18n/config";
 import { DynamicIcon } from "lucide-react/dynamic";
 
 export function RowContextMenu<T extends IData>({
+  index,
   row,
   children,
 }: {
+  index: number,
   row: T;
   children: React.ReactNode;
 }) {
@@ -21,7 +23,7 @@ export function RowContextMenu<T extends IData>({
   const { onContext, permission, addMenu } = (props.onContextMenu || {});
   return (
     <ContextMenu>
-      <ContextMenuTrigger onContextMenu={() => props.onRowClick?.(row)} asChild>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger onContextMenu={() => props.onRowClick?.(row, index)} asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-40">
         <ContextMenuItem onClick={() => onContext?.('Refresh', row)}>
           <DynamicIcon name="refresh-ccw" className="pr-2" />

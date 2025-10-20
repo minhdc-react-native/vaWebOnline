@@ -6,6 +6,7 @@ import { useT } from "@/i18n/config";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { useGlobalDialog } from "@/providers/global-dialog";
 
 export function ButtonField({
     btn,
@@ -28,9 +29,11 @@ export function ButtonField({
         setPressed(true);
         setTimeout(() => setPressed(false), 150);
     }
+    const { isDialogOpen } = useGlobalDialog();
     useEffect(() => {
         if (!btn.hotkey) return;
         const handler = (e: KeyboardEvent) => {
+
             const key = e.key?.toLowerCase();
             const hk = btn.hotkey!.toLowerCase();
             const match =
@@ -44,7 +47,11 @@ export function ButtonField({
             const button = buttonRef.current;
             if (!button) return;
             const form = button.closest("form");
+
             const activeForm = document.activeElement?.closest("form");
+
+            if (isDialogOpen && (!form || form.offsetParent === null)) return;
+
             const isInForm = !!form;
             if (form && activeForm && form !== activeForm) return;
 

@@ -91,6 +91,7 @@ export interface IButtonSchema {
     buttonType?: IButtonType;
     variant?: "secondary" | "primary" | "destructive" | "mono" | "outline" | "dashed" | "ghost" | "dim" | "foreground" | "inverse";
     appearance?: "ghost" | "default";
+    isProcessing?: boolean;
     handleClick?: string;
     className?: string
 }

@@ -55,6 +55,7 @@ function DialogContent({
   children,
   close = true,
   overlay = true,
+  tabIndex = undefined,
   variant,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> &
@@ -68,6 +69,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(dialogContentVariants({ variant }), className)}
+        tabIndex={tabIndex}
         {...props}
       >
         {children}

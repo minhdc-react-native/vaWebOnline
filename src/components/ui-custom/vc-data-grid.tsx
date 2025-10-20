@@ -69,9 +69,9 @@ export function VcDataGrid<TData extends TableRow<TData>>() {
                     table.getRowModel().rows.map((row: Row<TData>, index) => {
                         return (
                             <Fragment key={row.id}>
-                                <RowContextMenu<TData> row={row.original}>
+                                {props.onContextMenu ? <RowContextMenu<TData> row={row.original} index={row.index}>
                                     <DataGridTableBodyRow
-                                        className={cn((row.getIsSelected() || props.itemSelected?.id === row.original.id) && 'selected bg-amber-100')}
+                                        className={cn((row.getIsSelected() || props.itemSelected?.id === row.original.id || (props.itemSelected?.rowId !== undefined && props.itemSelected?.rowId === (row.original as any).rowId)) && 'selected bg-amber-100')}
                                         row={row} key={index}>
                                         {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
                                             return (
@@ -81,7 +81,18 @@ export function VcDataGrid<TData extends TableRow<TData>>() {
                                             );
                                         })}
                                     </DataGridTableBodyRow>
-                                </RowContextMenu>
+                                </RowContextMenu> :
+                                    <DataGridTableBodyRow
+                                        className={cn((row.getIsSelected() || props.itemSelected?.id === row.original.id || (props.itemSelected?.rowId !== undefined && props.itemSelected?.rowId === (row.original as any).rowId)) && 'selected bg-amber-100')}
+                                        row={row} key={index}>
+                                        {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                                            return (
+                                                <DataGridTableBodyRowCell cell={cell} key={colIndex}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </DataGridTableBodyRowCell>
+                                            );
+                                        })}
+                                    </DataGridTableBodyRow>}
                                 {row.getIsExpanded() && <DataGridTableBodyRowExpandded row={row} />}
                             </Fragment>
                         );

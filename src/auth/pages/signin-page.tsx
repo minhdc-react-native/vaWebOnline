@@ -87,7 +87,7 @@ export function SignInPage() {
   // Handle Action
   const onAction = (action: string, values?: Record<string, any>) => {
     switch (action) {
-      case 'submit':
+      case 'onSubmit':
         onSubmit(values || {});
         break;
       case 'closeAlert':
@@ -104,7 +104,7 @@ export function SignInPage() {
   // Handle Action
   const onActionAlert = useCallback((action: string, values?: Record<string, any>) => {
     switch (action) {
-      case 'submit':
+      case 'onSubmit':
         console.log('values>', values);
         setDataDialog(prev => ({ ...prev, ...(values || {}) }))
         closeDialog();
@@ -144,17 +144,12 @@ export function SignInPage() {
     setInfoLogin(info);
   }, [])
 
-  const loadingRef = useRef(isProcessing);
-  useEffect(() => {
-    loadingRef.current = isProcessing;
-  }, [isProcessing]);
-
   return (
     <SchemaForm
       schema={loginSchema}
       onAction={onAction}
       values={infoLogin}
-      valuesCheck={{ errAlert: error, loadingRef }}
+      valuesCheck={{ errAlert: error, isProcessing }}
       headerForm={
         <div className="text-center space-y-1 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight">{_('Sign in')}</h1>

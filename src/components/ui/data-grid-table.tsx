@@ -280,7 +280,7 @@ const DataGridTableBodyRow = React.forwardRef<
           ? "selected"
           : undefined
       }
-      onClick={() => props.onRowClick && props.onRowClick(row.original)}
+      onClick={() => props.onRowClick && props.onRowClick(row.original, row.index)}
       onDoubleClick={() =>
         props.onDoubleClick && props.onDoubleClick(row.original)
       }

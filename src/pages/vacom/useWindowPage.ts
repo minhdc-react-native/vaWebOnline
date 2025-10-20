@@ -8,6 +8,7 @@ import { IconName } from "lucide-react/dynamic";
 import { useGlobalDialog } from "@/providers/global-dialog";
 import { useT } from "@/i18n/config";
 import { sortTreeNested } from "@/lib/helpers";
+import { api } from "@/api/apiMethods";
 interface IResponce {
     data: IData[],
     pos: number,
@@ -97,10 +98,10 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         },
         {
             onMutate: (variables) => {
-                setLoadingPost(true);
+                if (variables.setIsProcessing) variables.setIsProcessing(true);
             },
             onSuccess: (data: any, variables) => {
-                setLoadingPost(false);
+                if (variables.setIsProcessing) variables.setIsProcessing(false);
                 if (data.error) {
                     showToast(data.error, "error");
                     return;
@@ -109,16 +110,13 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                 if (!!variables.closeDialog) closeDialog(true);
                 onRefresh();
             },
-            onError: (error) => {
-                setLoadingPost(false);
+            onError: (error, variables) => {
+                if (variables.setIsProcessing) variables.setIsProcessing(false);
+                // setLoadingPost(false);
                 console.error("Lỗi:", error);
             },
         }
     );
-    const loadingRef = useRef(loadingPost);
-    useEffect(() => {
-        loadingRef.current = loadingPost;
-    }, [loadingPost]);
 
     const [itemSelected, setItemSelected] = useState<IData>();
 
@@ -174,17 +172,18 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         handleAction('View', row);
     }
     const editmode = useRef(0);
-    const handleActionForm = useCallback((action: string, values?: Record<string, any>) => {
+    const handleActionForm = useCallback((action: string, values?: Record<string, any>, setIsProcessing?: (isProcessing: boolean) => void) => {
         switch (action) {
             case 'onCancel':
                 closeDialog();
                 break;
-            case 'submit':
+            case 'onSubmit':
                 createPost({
                     editmode: editmode.current,
                     windowid: windowConfig?.WINDOW_ID,
                     data: [values],
-                    closeDialog: true
+                    closeDialog: true,
+                    setIsProcessing: setIsProcessing
                 });
                 break;
             default:
@@ -192,24 +191,56 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         }
     }, [closeDialog, createPost, windowConfig?.WINDOW_ID]);
 
-    const handleActionDelete = useCallback((action: string, values?: Record<string, any>) => {
+    const handleActionDelete = useCallback((action: string, values?: Record<string, any>, setIsProcessing?: (isProcessing: boolean) => void) => {
         switch (action) {
             case 'onCancel':
                 closeDialog();
                 break;
-            case 'submit':
-                closeDialog(true);
+            case 'onSubmit':
                 createPost({
                     editmode: 3,
                     windowid: windowConfig?.WINDOW_ID,
-                    data: [{ id: values?.id }]
+                    data: [{ id: values?.id }],
+                    closeDialog: true,
+                    setIsProcessing: setIsProcessing
                 });
                 break;
             default:
                 break;
         }
     }, [closeDialog, createPost, windowConfig?.WINDOW_ID]);
-    const handleAction = useCallback((action: string, row?: IData) => {
+    const getDataDetail = useCallback(async (itemSelected: IData, isNew?: boolean) => {
+        if (schemaWin.subTabs.length > 1) {
+            itemSelected.details = [];
+            const tabDetails = [...schemaWin.subTabs].slice(1);
+            setLoading(true);
+            const promises = tabDetails.map(async (tab, idx) => {
+                if (!isNew) {
+                    await api.get({
+                        link: `/api/System/GetDataDetailsByTabTable?window_id=${window_id}&id=${itemSelected.id}&tab_table=${tab.TAB_TABLE}`,
+                        callBack: (res: IData[]) => {
+                            itemSelected.details.push({
+                                TAB_ID: tab.TAB_ID,
+                                TAB_TABLE: tab.TAB_TABLE,
+                                data: res.map(item => ({ ...item, rowId: item.id }))
+                            })
+                        },
+                        setLoading
+                    })
+                } else {
+                    itemSelected.details.push({
+                        TAB_ID: tab.TAB_ID,
+                        TAB_TABLE: tab.TAB_TABLE,
+                        data: []
+                    })
+                }
+            })
+            await Promise.all(promises);
+            setLoading(false);
+        }
+    }, [schemaWin.subTabs, window_id]);
+
+    const handleAction = useCallback(async (action: string, row?: IData) => {
         switch (action) {
             case 'View':
             case 'Edit':
@@ -219,13 +250,14 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                     return;
                 }
                 editmode.current = 2;
+                await getDataDetail(itemEdit);
                 showDialog({
                     title: _('SUA'),
                     content: getContentView({
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemEdit,
-                        valueCheck: { mode: 2, window_id, loadingRef }
+                        valueCheck: { mode: 2, window_id }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -236,14 +268,16 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                 onRefresh();
                 break;
             case 'New':
+                const itemNew: IData = { ...(schemaWin.defaultValues ?? {}), id: crypto.randomUUID() };
                 editmode.current = 1;
+                await getDataDetail(itemNew, true);
                 showDialog({
                     title: _('THEM'),
                     content: getContentView({
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
-                        values: schemaWin.defaultValues ?? {},
-                        valueCheck: { mode: 1, window_id, loadingRef }
+                        values: itemNew,
+                        valueCheck: { mode: 1, window_id }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -271,6 +305,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                     showToast(_('NO_CHOISE_COPY'), "warning");
                     return;
                 }
+                await getDataDetail(itemCopy);
                 editmode.current = 1;
                 showDialog({
                     title: _('COPY'),
@@ -278,7 +313,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
                         schema: schemaWin.schema,
                         handleAction: handleActionForm,
                         values: itemCopy,
-                        valueCheck: { mode: 1, window_id, loadingRef }
+                        valueCheck: { mode: 1, window_id }
                     }),
                     fullWidth: !schemaWin.width,
                     width: schemaWin.width ?? undefined,
@@ -292,7 +327,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
             default:
                 break;
         }
-    }, [itemSelected, showDialog, _, getContentView, schemaWin, handleActionForm, onRefresh, handleActionDelete, showToast])
+    }, [itemSelected, showDialog, _, getContentView, schemaWin, handleActionForm, onRefresh, handleActionDelete, showToast, getDataDetail])
 
     const onContextMenu: IContextMenu = {
         onContext: handleAction,

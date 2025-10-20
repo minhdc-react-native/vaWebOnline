@@ -40,6 +40,22 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         }
     }, []);
     const getColumnConfig = useCallback((tab: ITabConfig, isMaster: boolean): IData => {
+        const defaultValues: Record<string, any> = {};
+        const mapValue: Record<string, any> = {
+            DVCS_ID: infoDvcs?.DVCS_ID,
+            NAM: currentYear
+        }
+        tab.Fields.map(item => {
+            if (mapValue[item.COLUMN_NAME]) defaultValues[item.COLUMN_NAME] = mapValue[item.COLUMN_NAME];
+            if (isNotEmpty(item.DEFAULT_VALUE) && (item.DEFAULT_VALUE as string).startsWith('@Default=')) {
+                const valueDefault = (item.DEFAULT_VALUE as string).replace('@Default=', '').trim();
+                defaultValues[item.COLUMN_NAME] = (TYPE_NUMBER.includes(item.COLUMN_TYPE) ? Number(valueDefault) : valueDefault);
+            } else {
+                if (!isMaster) {
+                    defaultValues[item.COLUMN_NAME] = null;
+                }
+            }
+        });
         const fixColumns: ColumnDef<IData, any>[] = [
             // {
             //     id: 'index',
@@ -75,7 +91,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             HIDDEN: !!tab.HIDDEN,
             WINDOW_ID: windowConfig?.WINDOW_ID,
             TAB_TABLE: tab.TAB_TABLE,
-            columns: fixColumns
+            columns: fixColumns,
+            defaultValues
         };
     }, [windowConfig?.WINDOW_ID])
 
@@ -96,21 +113,9 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         }
         const fieldMaster = tabAll?.[0]?.Fields || [];
         const pinning = { left: tabAll?.[0]?.LEFTSPLIT ?? 0, right: tabAll?.[0]?.RIGHTSPLIT ?? 0 }
-        const defaultValues: Record<string, any> = {};
         const dataSource: IDataSource = {};
         const columnPinning: any = { left: [], right: [] };
-        // defaultValue
-        const mapValue: Record<string, any> = {
-            DVCS_ID: infoDvcs?.DVCS_ID,
-            NAM: currentYear
-        }
-        fieldMaster.map(item => {
-            if (mapValue[item.COLUMN_NAME]) defaultValues[item.COLUMN_NAME] = mapValue[item.COLUMN_NAME];
-            if (isNotEmpty(item.DEFAULT_VALUE) && (item.DEFAULT_VALUE as string).startsWith('@Default=')) {
-                const valueDefault = (item.DEFAULT_VALUE as string).replace('@Default=', '').trim();
-                defaultValues[item.COLUMN_NAME] = (TYPE_NUMBER.includes(item.COLUMN_TYPE) ? Number(valueDefault) : valueDefault);
-            }
-        });
+
         const fieldMasterShow = fieldMaster.filter(f => !f.HIDDEN);
         for (let i = 0; i < pinning.left; i++) {
             // columnPinning.left.push(fieldMasterShow[i].COLUMN_NAME)
@@ -165,7 +170,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             children: [
                 { type: "empty", span: 1 },
                 { type: "button", variant: "secondary", appearance: "ghost", label: "HUY", hotkey: "ESC", handleClick: 'onCancel' },
-                { type: "button", variant: "primary", label: "SAVE", hotkey: "F10", buttonType: "submit", handleClick: 'onSubmit' }
+                { type: "button", variant: "primary", label: "SAVE", hotkey: "F10", handleClick: 'onSubmit', isProcessing: true }
             ]
         });
         return {
@@ -199,13 +204,13 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                         children: [
                             { type: "empty", span: 1 },
                             { type: "button", variant: "secondary", appearance: "ghost", label: "KHONG", handleClick: 'onCancel' },
-                            { type: "button", variant: "primary", label: "CO", buttonType: "submit", handleClick: 'onSubmit' }
+                            { type: "button", variant: "primary", label: "CO", buttonType: "submit", handleClick: 'onSubmit', isProcessing: true }
                         ]
                     }
                 ]
             },
             width: windowConfig?.WIDTH,
-            defaultValues,
+            defaultValues: subTabs[0]?.defaultValues || {},
             columnPinning,
             subTabs
         }
