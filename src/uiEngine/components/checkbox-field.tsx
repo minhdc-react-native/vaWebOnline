@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { isNotEmpty } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { Control, FieldValues } from "react-hook-form";
 
@@ -65,10 +66,10 @@ export function CheckboxField({
                         )}
                     >
                         {!isNotSpace && <div style={{ width: labelWidth }} />}
-                        {label && labelPosition === "top" && (
+                        {isNotEmpty(label) && labelPosition === "top" && (
                             <FormLabel className="text-sm font-normal">{label}</FormLabel>
                         )}
-                        {label && labelPosition === "left" && (
+                        {isNotEmpty(label) && labelPosition === "left" && (
                             <FormLabel
                                 style={{ width: labelWidth }}
                                 className="text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap"
@@ -80,7 +81,7 @@ export function CheckboxField({
                             <Checkbox checked={checked} onCheckedChange={handleChange} />
                         </FormControl>
 
-                        {label && labelPosition === "right" && (
+                        {isNotEmpty(label) && labelPosition === "right" && (
                             <FormLabel className="text-sm font-normal">{label}</FormLabel>
                         )}
                         <FormMessage />
