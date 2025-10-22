@@ -27,6 +27,7 @@ export interface IFieldConfig {
     FIELD_EXPRESSION: string | null;
     DISPLAY_FIELD: string | null;
     DECIMAL_SIZE: number | null;
+    READONLY: string | null;
 }
 export interface ITabConfig {
     id: string;

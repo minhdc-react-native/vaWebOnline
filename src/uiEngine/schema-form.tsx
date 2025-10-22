@@ -23,7 +23,7 @@ import Fieldset from "./components/fieldset-component";
 import { ColorPickerField } from "./components/color-picker-field";
 import { RatingField } from "./components/raiting";
 import { MultiSelectField } from "./components/multi-select/multi-select-field";
-import { ITabsField } from "./components/tabs-details";
+import { ITabsField } from "./components/tabs-details/tabs-details";
 
 const labelWidthDefault = 100;
 interface IRenderField {
@@ -136,6 +136,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                 cleanable={field.cleanable}
                 source={dataSource[field.keySource || field.name] || field.source}
                 columns={field.columns}
+                expression={field.expression}
                 display={field.display}
                 width={field.width}
                 required={!!field.rules?.required}

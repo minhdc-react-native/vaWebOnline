@@ -238,6 +238,14 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
     const jsonListColumn = field.LIST_COLUMN ? safeJsonParse(field.LIST_COLUMN, []) : undefined;
     const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
     const required = ['isNotEmpty', 'isFieldCode'].includes(field.VALID_RULE ?? "***");
+    const expression: Record<string, any> = {};
+    const param: any[] = field.FIELD_EXPRESSION?.split(';') || [];
+    const disabled = !!field.READONLY?.includes('C');
+    param.forEach(p => {
+        const [fValue, fParam, isNotReplace] = p.replace(/[{}]/g, "").split(":");
+        expression[fParam] = fValue;
+    });
+
     switch (field.TYPE_EDITOR) {
         case "text":
         case "textarea":
@@ -254,6 +262,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             };
         case "combo":
@@ -272,8 +281,27 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 display: { fDisplay: field.DISPLAY_FIELD || (['combo', 'richselect'].includes(field.TYPE_EDITOR) ? 'value' : 'id') },
                 width: field.WIDTH ?? undefined,
                 columns: listColumn,
+                expression: expression,
                 cleanable: true,
                 rules: { required: required },
+                conditions: { disabled: disabled },
+                span
+            }
+        case "gridsuggest":
+            return {
+                type: "select",
+                source: { url: `/api/System/GetDataByReferencesId?id=${field.REF_ID}&filtervalue=#filterValue#`, keyFilter: '#filterValue#' },
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                display: { fDisplay: field.DISPLAY_FIELD || (['combo', 'richselect'].includes(field.TYPE_EDITOR) ? 'value' : 'id') },
+                width: field.WIDTH ?? undefined,
+                columns: listColumn,
+                expression: expression,
+                cleanable: true,
+                rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             }
         case "multiselect":
@@ -287,6 +315,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 display: { fDisplay: field.DISPLAY_FIELD || 'value' },
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             }
         case "number":
@@ -299,6 +328,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             }
         case "colorpicker":
@@ -310,6 +340,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             };
         case "rating":
@@ -321,6 +352,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span,
                 maxStar: Number(field.DECIMAL_SIZE) ?? undefined
             };
@@ -334,6 +366,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 labelWidth: field.LABEL_WIDTH ?? undefined,
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
+                conditions: { disabled: disabled },
                 span
             };
     }

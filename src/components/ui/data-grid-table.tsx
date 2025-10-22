@@ -323,12 +323,14 @@ function DataGridTableBodyRowCell<TData>({
   children,
   cell,
   dndRef,
-  dndStyle
+  dndStyle,
+  className
 }: {
   children: ReactNode;
   cell: Cell<TData, unknown>;
   dndRef?: React.Ref<HTMLTableCellElement>;
   dndStyle?: CSSProperties;
+  className?: string;
 }) {
   const { props } = useDataGrid();
 
@@ -363,6 +365,7 @@ function DataGridTableBodyRowCell<TData>({
         column.getIndex() === 0 || column.getIndex() === row.getVisibleCells().length - 1
           ? props.tableClassNames?.edgeCell
           : '',
+        className
       )}
     >
       {children}

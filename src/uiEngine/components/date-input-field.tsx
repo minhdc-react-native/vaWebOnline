@@ -77,7 +77,7 @@ export function DateInputField({
                                     onChange={(val) => field.onChange(toDateString(val))}>
                                     <DateInput />
                                 </DateField>
-                                {isNotEmpty(fixValue) && <X onClick={() => field.onChange(null)} />}
+                                {isNotEmpty(fixValue) && !disabled && <X onClick={() => field.onChange(null)} />}
                             </InputWrapper>
                         </FormControl>
 

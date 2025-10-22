@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CellContext, ColumnDef, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Delete, Plus } from "lucide-react";
 import { VcDataGrid } from "@/components/ui-custom/vc-data-grid";
@@ -84,7 +84,6 @@ function ItemsSubTable({ rowId, tab, tabIndex, window_id }: { rowId: string, tab
 
     const [rows, setRows] = useState<IData[]>(form.getValues(`details.${tabIndex}.data`));
 
-    console.log('re-render>>>', rows);
 
     const [itemSelected, setItemSelected] = useState<IData>();
     const defaultColumn: Partial<ColumnDef<IData>> = {
@@ -93,7 +92,7 @@ function ItemsSubTable({ rowId, tab, tabIndex, window_id }: { rowId: string, tab
     const fixColumn = tab.columns.map((col: IData) => ({
         ...col,
         meta: { ...col.meta, cellClassName: 'py-0 px-2' },
-        cell: (props: any) => <EditableCell {...props} setItemSelected={setItemSelected} itemSelected={itemSelected} />
+        // cell: (props: any) => <EditableCell {...props} setItemSelected={setItemSelected} itemSelected={itemSelected} />
     }));
 
     const totalWidth = useMemo(() => {

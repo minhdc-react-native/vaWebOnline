@@ -63,7 +63,7 @@ export function SelectField({
     const fnApi = useCallback(async (inputValue: string, callback: (options: IData[]) => void) => {
         if (!Array.isArray(source)) {
             await api.get({
-                link: source.url.replace(source.keyFilter, inputValue),
+                link: source.url.replace(source.keyFilter, encodeURIComponent(inputValue)),
                 callBack: (res) => callback(res)
             });
         }
@@ -71,7 +71,7 @@ export function SelectField({
 
     const onSelect = useCallback((item: IData | null) => {
         Object.keys(expression).map(exp => {
-            setValue?.(exp, item?.[expression[exp]]);
+            setValue(exp, item?.[expression[exp]]);
         })
     }, [expression, setValue]);
 

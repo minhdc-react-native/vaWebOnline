@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiQuery } from "@/api/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/i18n/config";
+import { VcDataGridVirtualizer } from "@/components/ui-custom/data-grid-virtualizer";
 
 export function WindowPage() {
     const { window_id } = useParams();
@@ -227,6 +228,7 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
                     tableLayout={{
                         // cellBorder: true,
                         // headerSticky: true, // lỗi bị đè lên header chính
+                        columnsResizable: true,
                         rowBorder: true,
                         headerBackground: true,
                         headerBorder: true,
@@ -235,7 +237,7 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
                     <DataGridContainer className="h-full bg-background rounded-tl-none">
                         <ScrollArea>
                             <div style={{ width: totalWidth + 10 }}>
-                                <DataGridTable />
+                                <VcDataGridVirtualizer />
                             </div>
                             <ScrollBar orientation="horizontal" />
                         </ScrollArea>

@@ -88,7 +88,7 @@ export function InputNumberField({
                                 className={field.value < 0 ? 'text-destructive' : undefined}
                                 customInput={CustomInput}
                             />
-                            {field.value !== "" && field.value != null && (
+                            {field.value !== "" && field.value != null && !disabled && (
                                 <X onClick={() => field.onChange("")} className="cursor-pointer" />
                             )}
                         </InputWrapper>

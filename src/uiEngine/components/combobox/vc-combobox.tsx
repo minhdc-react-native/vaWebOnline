@@ -10,11 +10,10 @@ import {
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useT } from "@/i18n/config";
 import { filterTree, findInTree, mapTreeWithValueSearch } from "@/lib/helpers";
-
-
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export interface IColumn {
     id: string;
@@ -99,7 +98,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         return columns.reduce((sum: number, col: any) => sum + (col?.width ?? 100), 0);
     }, [columns]);
 
-
+    const [txtSearch, setTxtSearch] = useState("");
     const onSearch = useMemo(() =>
         debounce((textSearch: string, dataFull: IData[] = data) => {
             if (isConstData) {
@@ -189,17 +188,20 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                             {itemSelected?.[display.fDisplay!] || placeholder}
                         </span>
                     </div>
-                    {itemSelected?.[display.fDisplay!] && cleanable ? <ButtonArrow icon={X} className="text-destructive"
+                    {itemSelected?.[display.fDisplay!] && cleanable && !disabled ? <ButtonArrow icon={X} className="text-destructive"
                         onClick={(e) => {
                             e.stopPropagation();
                             setItemSelected(null);
                         }
-                        } /> : <ButtonArrow />}
+                        } /> : <ButtonArrow icon={isConstData ? undefined : Search} />}
                 </Button>
             </PopoverTrigger>
             <PopoverContent style={{ width: totalWidth, minWidth: popoverWidth }} className="p-0">
                 <Command>
-                    <CommandInput placeholder={placeholderSearch} onValueChange={onSearch} />
+                    <CommandInput value={txtSearch} placeholder={placeholderSearch} onValueChange={(value) => {
+                        setTxtSearch(value);
+                        onSearch(value);
+                    }} />
                     <CommandList>
                         <CustomMenuList itemSelected={itemSelected} fId={display.fId!} columns={columns} data={dataFilter} onSelect={(item) => {
                             onChangeSelected(item);
@@ -221,33 +223,48 @@ interface IMenuList {
 }
 const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1 }: IMenuList) => {
     const _ = useT();
+    const parentRef = useRef<HTMLDivElement>(null);
+    const rowVirtualizer = useVirtualizer({
+        count: data.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 32, // chiều cao ước tính của mỗi dòng (px) ~ <td>:h-8
+        overscan: 20, // render thêm các dòng ngoài vùng nhìn
+    });
     return (
-        <table className="w-full border-collapse table-fixed">
-            <colgroup>
-                {columns.map((col: any) => (
-                    <col key={col.id} style={{ width: col.width }} />
-                ))}
-            </colgroup>
-            <thead className="bg-muted text-xs font-medium text-muted-foreground sticky top-[0px] z-10">
-                <tr>
+        <div ref={parentRef} className="max-h-[300px] overflow-auto border-t">
+            <table className="w-full border-collapse table-fixed relative">
+                <colgroup>
                     {columns.map((col: any) => (
-                        <th
-                            key={col.id}
-                            className="px-3 py-2 text-left border-b border-border"
-                        >
-                            {_(col.label || col.id)}
-                        </th>
+                        <col key={col.id} style={{ width: col.width }} />
                     ))}
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((item, idx) => {
-                    return (
-                        <CustomOption key={item[fId]} columns={columns} item={item} itemSelected={itemSelected} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
-                    );
-                })}
-            </tbody>
-        </table>
+                </colgroup>
+                <thead className="bg-muted text-xs font-medium text-muted-foreground sticky top-[0px] z-10">
+                    <tr>
+                        {columns.map((col: any) => (
+                            <th
+                                key={col.id}
+                                className="px-3 py-2 text-left border-b border-border"
+                            >
+                                {_(col.label || col.id)}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody
+                // style={{
+                //     position: 'relative',
+                //     height: `${rowVirtualizer.getTotalSize()}px`,
+                // }}
+                >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow, idx) => {
+                        const item = data[virtualRow.index];
+                        return (
+                            <CustomOption key={item[fId]} columns={columns} item={item} itemSelected={itemSelected} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 };
 interface IOption {

@@ -82,7 +82,7 @@ export function InputField({
                                     size={18}
                                 />}
                                 {renderInput(field)}
-                                {field.value !== '' && <X onClick={() => field.onChange("")} />}
+                                {field.value !== '' && !disabled && <X onClick={() => field.onChange("")} />}
                             </InputWrapper>
                         </FormControl>
 
