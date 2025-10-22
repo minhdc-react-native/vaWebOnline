@@ -68,7 +68,7 @@ export function DateInputField({
                             <FormLabel style={{ width: labelWidth }}
                                 className={`text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
-                        <FormControl>
+                        <FormControl style={{ width: labelPosition === "left" && width ? width - (labelWidth ?? 0) : undefined }}>
                             <InputWrapper>
                                 <DateIconPicker value={fixValue ? new Date(fixValue) : undefined}
                                     onSelect={(date) => field.onChange(format(date, 'yyyy-MM-dd'))} />

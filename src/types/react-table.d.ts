@@ -8,6 +8,7 @@ declare module '@tanstack/react-table' {
     interface ColumnMeta<TData extends RowData, TValue> {
         filterVariant?: IFilterVariant,
         typeEditor?: ITypeEditor,
+        refId?: string | null;
         classCellName?: string,
         columnType?: IColumnType
     }

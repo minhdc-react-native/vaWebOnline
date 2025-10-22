@@ -215,26 +215,22 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
             const tabDetails = [...schemaWin.subTabs].slice(1);
             setLoading(true);
             const promises = tabDetails.map(async (tab, idx) => {
+                itemSelected.details.push({
+                    TAB_ID: tab.TAB_ID,
+                    TAB_TABLE: tab.TAB_TABLE,
+                    data: []
+                });
                 if (!isNew) {
                     await api.get({
                         link: `/api/System/GetDataDetailsByTabTable?window_id=${window_id}&id=${itemSelected.id}&tab_table=${tab.TAB_TABLE}`,
                         callBack: (res: IData[]) => {
-                            itemSelected.details.push({
-                                TAB_ID: tab.TAB_ID,
-                                TAB_TABLE: tab.TAB_TABLE,
-                                data: res.map(item => ({ ...item, rowId: item.id }))
-                            })
+                            itemSelected.details[idx].data = res;
                         },
                         setLoading
                     })
-                } else {
-                    itemSelected.details.push({
-                        TAB_ID: tab.TAB_ID,
-                        TAB_TABLE: tab.TAB_TABLE,
-                        data: []
-                    })
                 }
-            })
+            });
+
             await Promise.all(promises);
             setLoading(false);
         }
@@ -354,6 +350,7 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         handleAction,
         columnPinning: schemaWin.columnPinning || { left: [], right: [] },
         isExpand,
-        subTabs: schemaWin.subTabs
+        subTabs: schemaWin.subTabs,
+        schema: schemaWin.schema
     }
 }

@@ -5,6 +5,7 @@ import { useT } from "@/i18n/config";
 import { formatDate, formatDateTime, formatNumber, isNotEmpty, safeJsonParse } from "@/lib/helpers";
 import { IDataSource, IFieldAll, IFormSchema } from "@/uiEngine/interface";
 import { useAuth } from "@/auth/context/auth-context";
+import { useMapSource } from "@/uiEngine/hooks/useMapSource";
 
 const TYPE_NUMBER = ['VC_SOLUONG', 'VC_DONGIA', 'VC_TIEN', 'VC_INT', 'VC_MONTH', 'VC_DAY', 'VC_PT', 'VC_SMALLINT', 'VC_TINYINT', 'VC_TYGIA'];
 
@@ -27,18 +28,6 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         }
     }, []);
 
-    const getValueCell = useCallback((value: any, typeEditor: ITypeEditor, columnType: IColumnType) => {
-        switch (typeEditor) {
-            case 'autonumeric':
-            case 'number':
-                return formatNumber(value);
-            case 'dateedit':
-            case 'datepicker':
-                return columnType === "VC_DATE" ? formatDate(value) : formatDateTime(value);
-            default:
-                return value;
-        }
-    }, []);
     const getColumnConfig = useCallback((tab: ITabConfig, isMaster: boolean): IData => {
         const defaultValues: Record<string, any> = {};
         const mapValue: Record<string, any> = {
@@ -72,13 +61,13 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             .map(f => {
                 fixColumns.push({
                     accessorKey: f.COLUMN_NAME,
-                    cell: ({ getValue }) => getValueCell(getValue(), (f.TYPE_EDITOR as any), (f.COLUMN_TYPE as any)),
                     size: f.COLUMN_WIDTH || 400,
                     header: _(f.CAPTION || f.COLUMN_NAME),
                     meta: {
                         filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
                         typeEditor: (f.TYPE_EDITOR as any),
                         columnType: (f.COLUMN_TYPE as any),
+                        refId: f.REF_ID,
                         classCellName: getCellClassName((f.TYPE_EDITOR as any)),
                         headerClassName: "font-bold"
                     }
@@ -130,14 +119,14 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             acc[row].push(item);
 
             if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest', 'multiselect'].includes(item.TYPE_EDITOR) && item.REF_ID) {
-                dataSource[item.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${item.REF_ID}`, typeView: item.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
+                dataSource[item.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${item.REF_ID}`, refId: item.REF_ID, typeEditor: item.TYPE_EDITOR, typeView: item.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
             }
 
             return acc;
         }, {} as Record<number, IFieldConfig[]>);
         let isInsertTabsDetail = false;
         const layout = Object.values(newFieldMaster).reduce((acc, items, idx) => {
-            if (windowConfig?.ROW_TAB && subTabs.length > 1 && windowConfig?.ROW_TAB < idx - 1) {
+            if (windowConfig?.ROW_TAB && subTabs.length > 1 && windowConfig?.ROW_TAB === idx + 1) {
                 acc.push({
                     type: "tabs",
                     height: windowConfig?.HEIGHT || undefined,
@@ -145,12 +134,17 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                 });
                 isInsertTabsDetail = true;
             }
-            if (items.length === 1) {
+            if (items.length === 1 && !['BEFORE', 'AFTER'].includes(items[0].SPACE ?? '***')) {
                 acc.push(getConfigView(items[0]));
             } else {
                 acc.push({
                     type: 'group', layout: "flex", direction: "row",
-                    children: items.map((_item): IFieldAll => getConfigView(_item, _item.GRAVITY ?? 1))
+                    children: items.reduce((_acc, _item, _idx) => {
+                        if (_item.SPACE === "BEFORE") _acc.push({ type: "empty", span: 1 });
+                        _acc.push(getConfigView(_item, _item.GRAVITY ?? 1));
+                        if (_item.SPACE === "AFTER") _acc.push({ type: "empty", span: 1 });
+                        return _acc;
+                    }, [] as IFieldAll[])
                 })
             }
             return acc;
@@ -219,8 +213,9 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
     const columns = useMemo(() => {
         return schemaWin.subTabs?.[0]?.columns || [];;
     }, [schemaWin.subTabs]);
+
     return {
-        columns: columns,
+        columns,
         schemaWin,
         isExpand: (schemaWin.subTabs || []).length > 1
     }
@@ -263,7 +258,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             };
         case "combo":
         case "richselect":
@@ -285,7 +280,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 cleanable: true,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             }
         case "gridsuggest":
             return {
@@ -302,7 +297,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 cleanable: true,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             }
         case "multiselect":
             return {
@@ -316,7 +311,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             }
         case "number":
         case "autonumeric":
@@ -329,7 +324,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             }
         case "colorpicker":
             return {
@@ -341,7 +336,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             };
         case "rating":
             return {
@@ -353,8 +348,22 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span,
+                span: !!field.WIDTH ? undefined : span,
                 maxStar: Number(field.DECIMAL_SIZE) ?? undefined
+            };
+        case "radio":
+            return {
+                type: "field",
+                fieldType: "radio",
+                label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
+                options: listColumn,
+                name: field.COLUMN_NAME,
+                labelPosition: labelPosition,
+                labelWidth: field.LABEL_WIDTH ?? undefined,
+                width: field.WIDTH ?? undefined,
+                rules: { required: required },
+                conditions: { disabled: disabled },
+                span: !!field.WIDTH ? undefined : span
             };
         default:
             return {
@@ -367,7 +376,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 width: field.WIDTH ?? undefined,
                 rules: { required: required },
                 conditions: { disabled: disabled },
-                span
+                span: !!field.WIDTH ? undefined : span
             };
     }
 }

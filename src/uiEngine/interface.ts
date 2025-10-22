@@ -3,6 +3,7 @@ import { IFontWeight, ITextSize, IVariant } from "./components/text-field";
 import { IAlertAppearance, IAlertSize, IAlertVariant } from "./components/alert-field";
 import { IConditions } from "./hooks/useNodeConditions";
 import { IColumn } from "./components/combobox/vc-combobox";
+import { ITypeEditor } from "@/pages/vacom/type";
 
 export type IFieldType =
     | "input"
@@ -25,8 +26,9 @@ export interface IFieldSchema {
     label?: string;
     fieldType?: IFieldType;
     placeholder?: string;
-    options?: { label: string; value: any }[];
+    options?: { id: string; value: any }[];
     checkType?: 'string' | 'number';
+    isNotSpace?: boolean; // check
     rules?: IRule;
     colSpan?: number;
     labelPosition?: "top" | "left" | "right";
@@ -193,7 +195,7 @@ export type IFieldAll = IFieldBase & (IFieldSchema
     | ITabs
 )
 
-export type IDataSource = Record<string, IData[] | { url: string, mapKey?: Record<string, string>, typeView?: 'table' | 'tree' }>;
+export type IDataSource = Record<string, IData[] | { url: string, refId: string, mapKey?: Record<string, string>, typeEditor: ITypeEditor, typeView?: 'table' | 'tree' }>;
 export interface IGroupSchema {
     type: "group";
     label?: string;

@@ -74,7 +74,7 @@ export function SelectField({
             setValue(exp, item?.[expression[exp]]);
         })
     }, [expression, setValue]);
-
+    const widthControl = labelPosition === "left" && width ? width - (labelWidth ?? 0) : undefined;
     return (
         <FormField
             control={control}
@@ -95,7 +95,7 @@ export function SelectField({
                                 className={`text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
 
-                        <VcComboBox placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
+                        <VcComboBox width={widthControl} placeholder={placeholder || placeholderDefault} placeholderSearch={placeholderSearch} {...field} source={Array.isArray(source) ? source : fnApi}
                             columns={columns} cleanable={cleanable} iconLeft={iconLeft} display={display} onSelect={onSelect} />
 
                         {label && labelPosition === "right" && (

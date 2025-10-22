@@ -12,6 +12,7 @@ interface CheckboxFieldProps {
     className?: string;
     disabled?: boolean;
     width?: number;
+    isNotSpace?: boolean
 }
 
 export function CheckboxField({
@@ -23,6 +24,7 @@ export function CheckboxField({
     className,
     disabled,
     width,
+    isNotSpace
 }: CheckboxFieldProps) {
     return (
         <FormField
@@ -62,6 +64,7 @@ export function CheckboxField({
                             className
                         )}
                     >
+                        {!isNotSpace && <div style={{ width: labelWidth }} />}
                         {label && labelPosition === "top" && (
                             <FormLabel className="text-sm font-normal">{label}</FormLabel>
                         )}
@@ -73,7 +76,6 @@ export function CheckboxField({
                                 {label}
                             </FormLabel>
                         )}
-
                         <FormControl>
                             <Checkbox checked={checked} onCheckedChange={handleChange} />
                         </FormControl>

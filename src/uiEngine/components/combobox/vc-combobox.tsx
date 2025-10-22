@@ -49,10 +49,11 @@ interface IProgs {
     className?: string;
     onChange?: React.ChangeEventHandler<HTMLInputElement>;
     onSelect?: (itemSelected: IData | null) => void;
+    width?: number
 }
 export default function VcComboBox({ value, source, iconLeft, columns = columnDefault,
     placeholder, placeholderSearch, disabled, cleanable, display = {}, className,
-    onChange, onSelect
+    onChange, onSelect, width
 }: IProgs) {
 
     display = { ...display, fId: display.fId ?? 'id', fValue: display.fValue ?? 'value', fDisplay: display.fDisplay ?? 'value' };
@@ -171,7 +172,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     );
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild style={{ width }}>
                 <Button
                     ref={triggerRef}
                     variant="outline"

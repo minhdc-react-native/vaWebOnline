@@ -24,6 +24,7 @@ export const useDataSource = ({ source, control }: IProgs) => {
     });
 
     const [dataSource, setDataSource] = useState<Record<string, any[]>>({});
+
     const setSource = useCallback((res: IData[] | string[], source: any, key: string) => {
         if (res.length === 0) {
             setDataSource(prev => ({
@@ -49,6 +50,7 @@ export const useDataSource = ({ source, control }: IProgs) => {
             }
             return obj;
         });
+
         setDataSource(prev => ({
             ...prev,
             [key]: result

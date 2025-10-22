@@ -17,6 +17,7 @@ import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
 import { IContentView } from "../type";
 import { SchemaForm } from "@/uiEngine/schema-form";
+import { useMapSource } from "@/uiEngine/hooks/useMapSource";
 
 export function TreeWindowPage() {
     const { window_id } = useParams();
@@ -31,7 +32,10 @@ export function TreeWindowPage() {
     }, []);
 
     const { columns, data, itemSelected, permission,
-        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning } = useWindowPage({ window_id, getContentView, type: "tree" });
+        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning, schema } = useWindowPage({ window_id, getContentView, type: "tree" });
+
+    const { mapValueSource } = useMapSource({ source: schema.dataSource });
+
     const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(pinning);
 
     useEffect(() => {
@@ -72,9 +76,10 @@ export function TreeWindowPage() {
         () => ({
             handleAction,
             itemSelected: itemSelected!,
-            window_id: window_id!
+            window_id: window_id!,
+            mapValueSource
         }),
-        [handleAction, itemSelected, window_id]
+        [handleAction, itemSelected, window_id, mapValueSource]
     );
 
     return (
@@ -102,6 +107,5 @@ export function TreeWindowPage() {
                 </WinContext.Provider>
             </Container>
         </Fragment>
-
     );
 }

@@ -4,8 +4,9 @@ import { Control, FieldValues } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
 interface RadioOption {
-    label: string;
+    id: string;
     value: string;
+    vertical?: boolean
 }
 
 interface RadioFieldProps {
@@ -31,6 +32,7 @@ export function RadioField({
     disabled,
     width
 }: RadioFieldProps) {
+    const vertical = options[0]?.vertical !== undefined ? true : options[0]?.vertical;
     return (
         <FormField
             control={control}
@@ -42,7 +44,7 @@ export function RadioField({
                     <FormItem style={{ width }}
                         className={cn(
                             isHorizontal
-                                ? "relative flex flex-row items-center gap-2"
+                                ? "relative flex flex-row items-start gap-2"
                                 : "relative flex flex-col gap-1",
                             className
                         )}>
@@ -57,26 +59,18 @@ export function RadioField({
                                 {label}
                             </FormLabel>
                         )}
+                        {!label && <div style={{ width: labelWidth }} />}
                         <FormControl>
-                            <RadioGroup onValueChange={field.onChange} value={field.value}>
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className={cn('flex', vertical ? 'flex-row' : 'flex-col')}>
                                 {options.map((opt) => (
                                     <FormItem
-                                        key={opt.value}
-                                        className={`${labelPosition === "left" || labelPosition === "right"
-                                            ? "flex flex-row items-center space-x-2"
-                                            : "flex flex-col space-y-1"
-                                            }`}
+                                        key={opt.id}
+                                        className={`flex flex-row items-center space-x-2`}
                                     >
-                                        {label && labelPosition === "top" && <FormLabel className="text-sm font-normal">{label}</FormLabel>}
-                                        {labelPosition === "left" && (
-                                            <FormLabel style={{ width: labelWidth }} className="text-sm font-normal flex-shrink-0 inline-block">{opt.label}</FormLabel>
-                                        )}
                                         <FormControl>
-                                            <RadioGroupItem value={opt.value} />
+                                            <RadioGroupItem value={opt.id} />
                                         </FormControl>
-                                        {labelPosition === "right" && (
-                                            <FormLabel className="text-sm font-normal">{opt.label}</FormLabel>
-                                        )}
+                                        <FormLabel className="text-sm font-normal">{opt.value}</FormLabel>
                                     </FormItem>
                                 ))}
                             </RadioGroup>

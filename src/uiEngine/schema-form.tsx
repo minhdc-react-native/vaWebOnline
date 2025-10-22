@@ -87,6 +87,7 @@ function RenderField({ field, control, valuesCheck, dataSource = {}, className }
                         disabled={disabled}
                         label={label}
                         className={className}
+                        isNotSpace={field.isNotSpace}
                         labelWidth={field.labelWidth ?? labelWidthDefault}
                         labelPosition={field.labelPosition}
                         width={field.width}
@@ -276,6 +277,7 @@ function RenderGroup({
     return (
         <div style={{ width: schema.width }} className={cn(layoutClass, schema.className)}>
             {schema.children.map((child, i) => {
+
                 const _className = spanClass(child.span);
                 switch (child.type) {
                     case "field":
@@ -376,7 +378,7 @@ export function SchemaForm({
     }, [form, values]);
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-4">
                 {headerForm}
                 <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing: valuesCheck.isProcessing !== undefined ? valuesCheck.isProcessing : isProcessing }} dataSource={dataSource} />
                 {footerForm}

@@ -71,7 +71,7 @@ export function InputNumberField({
                         </FormLabel>
                     )}
 
-                    <FormControl>
+                    <FormControl style={{ width: labelPosition === "left" && width ? width - (labelWidth ?? 0) : undefined }}>
                         <InputWrapper>
                             {iconLeft && <DynamicIcon name={iconLeft} size={18} />}
                             <NumericFormat
@@ -79,6 +79,7 @@ export function InputNumberField({
                                 onValueChange={(values) => {
                                     field.onChange(values.floatValue ?? null);
                                 }}
+                                disabled={disabled}
                                 placeholder={placeholder || placeholderDefault}
                                 thousandSeparator={thousandSeparator}
                                 decimalSeparator={decimalSeparator}

@@ -56,7 +56,8 @@ export const loginSchema: IGroupSchema = {
                     type: "field",
                     fieldType: "checkbox",
                     name: 'remember',
-                    label: 'Remember me'
+                    label: 'Remember me',
+                    isNotSpace: true
                 },
                 { type: "button", variant: "destructive", appearance: "ghost", hotkey: "F2", label: "Forgot password?", handleClick: 'forgotPassword' }
             ]
@@ -68,6 +69,6 @@ export const loginSchema: IGroupSchema = {
         },
     ],
     dataSource: {
-        dvcs: { url: '/api/System/GetDvcsByUser?username=#USER_NAME#', mapKey: { '#USER_NAME#': 'username' } }
+        dvcs: { url: '/api/System/GetDvcsByUser?username=#USER_NAME#', refId: '', mapKey: { '#USER_NAME#': 'username' }, typeEditor: "combo" }
     }
 }

@@ -50,11 +50,10 @@ export function InputField({
 
     const renderInput = useCallback((field: ControllerRenderProps<FieldValues, string>) => {
         return type === "input" ?
-            (<Input placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "border-none" : undefined} />)
+            (<Input placeholder={placeholder || placeholderDefault} {...field} className={"border-none"} />)
             :
             (<Textarea placeholder={placeholder || placeholderDefault} {...field} className={iconLeft ? "pl-8" : undefined} />)
     }, [placeholder, placeholderDefault, type, iconLeft]);
-
     return (
         <FormField
             control={control}
@@ -68,22 +67,23 @@ export function InputField({
                         className={cn(isHorizontal
                             ? "relative flex flex-row items-center gap-2"
                             : "relative flex flex-col gap-1",
-                            className)}
+                            className
+                        )}
                     >
                         {label && labelPosition === "top" && <FormLabel className="text-sm font-normal">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>}
                         {label && labelPosition === "left" && (
                             <FormLabel style={{ width: labelWidth }}
                                 className="text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap">{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
-                        <FormControl>
-                            <InputWrapper>
+                        <FormControl style={{ width: labelPosition === "left" && width ? width - (labelWidth ?? 0) : undefined }}>
+                            {type === "input" ? <InputWrapper>
                                 {iconLeft && <DynamicIcon
                                     name={iconLeft}
                                     size={18}
                                 />}
                                 {renderInput(field)}
                                 {field.value !== '' && !disabled && <X onClick={() => field.onChange("")} />}
-                            </InputWrapper>
+                            </InputWrapper> : renderInput(field)}
                         </FormControl>
 
                         {label && labelPosition === "right" && (

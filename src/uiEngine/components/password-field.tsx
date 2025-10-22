@@ -56,7 +56,7 @@ export function PasswordField({
                                 className={`text-sm font-normal flex-shrink-0 inline-block overflow-hidden text-ellipsis whitespace-nowrap`}>{label}{required && <span className="text-destructive pl-1">*</span>}</FormLabel>
                         )}
                         <div className="relative w-full">
-                            <FormControl>
+                            <FormControl style={{ width: labelPosition === "left" && width ? width - (labelWidth ?? 0) : undefined }}>
                                 <InputWrapper>
                                     {iconLeft && <DynamicIcon
                                         name={iconLeft}

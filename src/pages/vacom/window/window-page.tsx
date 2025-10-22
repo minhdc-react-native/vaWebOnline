@@ -16,18 +16,19 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useWindowPage } from "../useWindowPage";
 import HeaderWin from "../header-win";
 import { IWinContext, WinContext } from "../win-context";
-import { IContentView } from "../type";
+import { IColumnType, IContentView, ITypeEditor } from "../type";
 import { SchemaForm } from "@/uiEngine/schema-form";
 import { VcGridPagination } from "@/components/ui-custom/vc-grid-pagination";
 import { VcDataGrid } from "@/components/ui-custom/vc-data-grid";
 import { Button } from "@/components/ui/button";
 import { SquareMinus, SquarePlus } from "lucide-react";
-import { DataGridTable } from "@/components/ui/data-grid-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiQuery } from "@/api/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/i18n/config";
 import { VcDataGridVirtualizer } from "@/components/ui-custom/data-grid-virtualizer";
+import { useMapSource } from "@/uiEngine/hooks/useMapSource";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/helpers";
 
 export function WindowPage() {
     const { window_id } = useParams();
@@ -42,8 +43,26 @@ export function WindowPage() {
     }, []);
     const { columns, data, itemSelected, permission, isExpand, subTabs,
         setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning,
-        infoPage, setInfoPage } = useWindowPage({ window_id, getContentView, type: "window" });
+        infoPage, setInfoPage, schema } = useWindowPage({ window_id, getContentView, type: "window" });
     const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(pinning);
+
+    const { mapValueSource } = useMapSource({ source: schema.dataSource });
+
+    const getValueCell = useCallback((value: any, typeEditor: ITypeEditor, columnType: IColumnType, refId: string | null) => {
+        switch (typeEditor) {
+            case 'autonumeric':
+            case 'number':
+                return formatNumber(value);
+            case 'dateedit':
+            case 'datepicker':
+                return columnType === "VC_DATE" ? formatDate(value) : formatDateTime(value);
+            case "combo":
+            case "richselect":
+                return refId ? mapValueSource[refId]?.get(value) : value;
+            default:
+                return value;
+        }
+    }, [mapValueSource]);
 
     const [expandedRows, setExpandedRows] = useState<ExpandedState>({});
 
@@ -76,11 +95,20 @@ export function WindowPage() {
         }
     }, [subTabs, window_id]);
 
+    const fixColumns = useMemo(() => {
+        const cols = columns.map((f: ColumnDef<IData, any>) => ({
+            ...f,
+            cell: ({ getValue }: any) =>
+                getValueCell(getValue(), f.meta?.typeEditor, f.meta?.columnType, f.meta?.refId ?? null)
+        }));
+        return isExpand ? [colExpand, ...cols] : cols;
+    }, [isExpand, colExpand, columns, getValueCell]);
+
     const table = useReactTable({
-        columns: isExpand ? [colExpand, ...columns] : columns,
+        columns: fixColumns,
         data: data || [],
         getRowId: (row: IData) => row.id.toString(),
-        getRowCanExpand: (row) => isExpand,
+        getRowCanExpand: (row) => { return isExpand },
         columnResizeMode: 'onChange',
         getExpandedRowModel: getExpandedRowModel(),
         getCoreRowModel: getCoreRowModel(),
@@ -107,9 +135,10 @@ export function WindowPage() {
         () => ({
             handleAction,
             itemSelected: itemSelected!,
-            window_id: window_id!
+            window_id: window_id!,
+            mapValueSource
         }),
-        [handleAction, itemSelected, window_id]
+        [handleAction, itemSelected, window_id, mapValueSource]
     );
 
     const totalWidth = useMemo(() => {
