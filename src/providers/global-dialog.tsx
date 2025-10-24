@@ -165,7 +165,6 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
             },
         ]);
     };
-
     return (
         <DialogContext.Provider value={{ showDialog, closeDialog, showToast, isDialogOpen: dialogs.length > 0 }}>
             {children}
@@ -194,7 +193,7 @@ export const GlobalDialogProvider = ({ children }: { children: ReactNode }) => {
                             )}
                         </DialogHeader>
                         <span className="w-full border-t mb-2" />
-                        <div className="flex flex-1">
+                        <div style={{ width: view.width }} className={cn("flex flex-1 h-full max-w-full", view.fullWidth && 'pb-10')}>
                             {view.content}
                         </div>
                     </DialogContent>

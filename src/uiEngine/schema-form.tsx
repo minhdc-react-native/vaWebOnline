@@ -378,7 +378,7 @@ export function SchemaForm({
     }, [form, values]);
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 h-full max-w-full space-y-4">
                 {headerForm}
                 <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing: valuesCheck.isProcessing !== undefined ? valuesCheck.isProcessing : isProcessing }} dataSource={dataSource} />
                 {footerForm}

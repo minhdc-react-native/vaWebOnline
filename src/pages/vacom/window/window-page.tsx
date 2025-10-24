@@ -239,6 +239,12 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
         return tab.columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
     }, [tab.columns]);
 
+    const [itemSelected, setItemSelected] = useState<IData>();
+
+    const onRowClick = useCallback((item: IData, index: number) => {
+        setItemSelected(item);
+    }, []);
+
     const table = useReactTable({
         data: data || [],
         columns: fixColumn,
@@ -254,6 +260,8 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
                     table={table}
                     recordCount={(data || []).length}
                     isLoading={isFetching}
+                    itemSelected={itemSelected}
+                    onRowClick={onRowClick}
                     tableLayout={{
                         // cellBorder: true,
                         // headerSticky: true, // lỗi bị đè lên header chính

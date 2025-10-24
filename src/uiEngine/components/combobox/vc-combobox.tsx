@@ -197,7 +197,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         } /> : <ButtonArrow icon={isConstData ? undefined : Search} />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent style={{ width: totalWidth, minWidth: popoverWidth }} className="p-0">
+            <PopoverContent style={{ width: totalWidth, minWidth: popoverWidth }} className="p-0" align="start">
                 <Command>
                     <CommandInput value={txtSearch} placeholder={placeholderSearch} onValueChange={(value) => {
                         setTxtSearch(value);
@@ -207,7 +207,7 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                         <CustomMenuList itemSelected={itemSelected} fId={display.fId!} columns={columns} data={dataFilter} onSelect={(item) => {
                             onChangeSelected(item);
                             setOpen(false);
-                        }} highlightIndex={highlightIndex} />
+                        }} highlightIndex={highlightIndex} totalWidth={totalWidth} />
                     </CommandList>
                 </Command>
             </PopoverContent>
@@ -221,8 +221,9 @@ interface IMenuList {
     data: IData[];
     onSelect: (item: IData) => void;
     highlightIndex?: number;
+    totalWidth: number;
 }
-const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1 }: IMenuList) => {
+const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1, totalWidth }: IMenuList) => {
     const _ = useT();
     const parentRef = useRef<HTMLDivElement>(null);
     const rowVirtualizer = useVirtualizer({

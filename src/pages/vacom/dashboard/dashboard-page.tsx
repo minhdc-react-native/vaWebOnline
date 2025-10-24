@@ -7,7 +7,7 @@ export function DashboardPage() {
     return (
         <Fragment>
             <Container>
-                <span className="text-black text-lg">DashboardPage: {window_id}</span>
+                <span className="text-black text-lg">Dashboard: {window_id}</span>
             </Container>
         </Fragment>
     );
