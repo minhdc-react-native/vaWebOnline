@@ -24,6 +24,7 @@ import { ColorPickerField } from "./components/color-picker-field";
 import { RatingField } from "./components/raiting";
 import { MultiSelectField } from "./components/multi-select/multi-select-field";
 import { ITabsField } from "./components/tabs-details/tabs-details";
+import { FormContext, IFormContext } from "./hooks/useFormContext";
 
 const labelWidthDefault = 100;
 interface IRenderField {
@@ -371,6 +372,13 @@ export function SchemaForm({
 
     const { dataSource } = useDataSource({ source: schema.dataSource, control: form.control });
 
+    const ctxFormValue = useMemo<IFormContext>(
+        () => ({
+            dataSource
+        }),
+        [dataSource]
+    );
+
     useEffect(() => {
         Object.entries(values).forEach(([key, value]) => {
             form.setValue(key as any, value);
@@ -378,11 +386,13 @@ export function SchemaForm({
     }, [form, values]);
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 h-full max-w-full space-y-4">
-                {headerForm}
-                <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing: valuesCheck.isProcessing !== undefined ? valuesCheck.isProcessing : isProcessing }} dataSource={dataSource} />
-                {footerForm}
-            </form>
+            <FormContext.Provider value={ctxFormValue}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 h-full max-w-full space-y-4">
+                    {headerForm}
+                    <RenderGroup schema={schema} control={form.control} handleAction={handleAction} valuesCheck={{ ...valuesCheck, isProcessing: valuesCheck.isProcessing !== undefined ? valuesCheck.isProcessing : isProcessing }} dataSource={dataSource} />
+                    {footerForm}
+                </form>
+            </FormContext.Provider>
         </Form>
     );
 }

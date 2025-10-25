@@ -2,10 +2,9 @@ import { useCallback, useMemo } from "react";
 import { IColumnType, IFieldConfig, ITabConfig, ITypeEditor, IWindowConfig } from "./type"
 import { ColumnDef } from "@tanstack/react-table";
 import { useT } from "@/i18n/config";
-import { formatDate, formatDateTime, formatNumber, isNotEmpty, safeJsonParse } from "@/lib/helpers";
+import { isNotEmpty, safeJsonParse } from "@/lib/helpers";
 import { IDataSource, IFieldAll, IFormSchema } from "@/uiEngine/interface";
 import { useAuth } from "@/auth/context/auth-context";
-import { useMapSource } from "@/uiEngine/hooks/useMapSource";
 
 const TYPE_NUMBER = ['VC_SOLUONG', 'VC_DONGIA', 'VC_TIEN', 'VC_INT', 'VC_MONTH', 'VC_DAY', 'VC_PT', 'VC_SMALLINT', 'VC_TINYINT', 'VC_TYGIA'];
 
@@ -45,6 +44,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                 }
             }
         });
+        const dataSource: IDataSource = {};
         const fixColumns: ColumnDef<IData, any>[] = [
             // {
             //     id: 'index',
@@ -57,21 +57,30 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             // }
         ];
         tab.Fields
-            .filter(f => !f.HIDE_IN_GRID)
+            .filter(f => !f.HIDE_IN_GRID || !f.HIDDEN)
             .map(f => {
-                fixColumns.push({
-                    accessorKey: f.COLUMN_NAME,
-                    size: f.COLUMN_WIDTH || 400,
-                    header: _(f.CAPTION || f.COLUMN_NAME),
-                    meta: {
-                        filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
-                        typeEditor: (f.TYPE_EDITOR as any),
-                        columnType: (f.COLUMN_TYPE as any),
-                        refId: f.REF_ID,
-                        classCellName: getCellClassName((f.TYPE_EDITOR as any)),
-                        headerClassName: "font-bold"
-                    }
-                })
+                if (f.COLUMN_NAME === 'CACH_TINH') console.log('f>>', f);
+                if (!f.HIDE_IN_GRID) {
+                    const jsonListColumn = f.LIST_COLUMN ? safeJsonParse(f.LIST_COLUMN, []) : undefined;
+                    const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
+                    fixColumns.push({
+                        accessorKey: f.COLUMN_NAME,
+                        size: f.COLUMN_WIDTH || 400,
+                        header: _(f.CAPTION || f.COLUMN_NAME),
+                        meta: {
+                            filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
+                            typeEditor: (f.TYPE_EDITOR as any),
+                            columnType: (f.COLUMN_TYPE as any),
+                            listColumn: (listColumn as any),
+                            refId: f.REF_ID,
+                            classCellName: getCellClassName((f.TYPE_EDITOR as any)),
+                            headerClassName: "font-bold"
+                        }
+                    });
+                }
+                if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest', 'multiselect'].includes(f.TYPE_EDITOR) && f.REF_ID) {
+                    dataSource[f.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${f.REF_ID}`, refId: f.REF_ID, typeEditor: f.TYPE_EDITOR, typeView: f.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
+                }
             });
         return {
             id: tab.id,
@@ -81,7 +90,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             WINDOW_ID: windowConfig?.WINDOW_ID,
             TAB_TABLE: tab.TAB_TABLE,
             columns: fixColumns,
-            defaultValues
+            defaultValues,
+            dataSource
         };
     }, [windowConfig?.WINDOW_ID])
 
@@ -102,7 +112,11 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         }
         const fieldMaster = tabAll?.[0]?.Fields || [];
         const pinning = { left: tabAll?.[0]?.LEFTSPLIT ?? 0, right: tabAll?.[0]?.RIGHTSPLIT ?? 0 }
-        const dataSource: IDataSource = {};
+
+        const dataSource: IDataSource = Object.assign({}, ...subTabs.map(t => t.dataSource));
+
+        console.log('subTabs>>', subTabs);
+
         const columnPinning: any = { left: [], right: [] };
 
         const fieldMasterShow = fieldMaster.filter(f => !f.HIDDEN);
@@ -117,11 +131,6 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             const row = item.ROW ?? 1;
             if (!acc[row]) acc[row] = [];
             acc[row].push(item);
-
-            if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest', 'multiselect'].includes(item.TYPE_EDITOR) && item.REF_ID) {
-                dataSource[item.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${item.REF_ID}`, refId: item.REF_ID, typeEditor: item.TYPE_EDITOR, typeView: item.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
-            }
-
             return acc;
         }, {} as Record<number, IFieldConfig[]>);
         let isInsertTabsDetail = false;

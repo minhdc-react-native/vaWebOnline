@@ -8,44 +8,19 @@ import {
     getPaginationRowModel,
     flexRender,
     Cell,
+    CellContext,
 } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button';
 import { Delete, Plus } from 'lucide-react';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 // Give our default column cell renderer editing superpowers!
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Input } from '@/components/ui/input';
-
-function EditableCell({
-    getValue,
-    row: { index },
-    column: { id },
-    table,
-}: any) {
-    const initialValue = getValue();
-    const [value, setValue] = React.useState(initialValue);
-
-    const onBlur = () => {
-        table.options.meta?.updateData(index, id, value);
-    };
-
-    // Đồng bộ khi giá trị ban đầu thay đổi từ bên ngoài
-    React.useEffect(() => {
-        setValue(initialValue);
-    }, [initialValue]);
-
-    return (
-        <input
-            value={value ?? ""}
-            onChange={(e) => setValue(e.target.value)}
-            onBlur={onBlur}
-            style={{ width: "100%" }}
-        />
-    );
-}
+import { EditableCell } from './editable-cell';
 
 export const defaultColumn: Partial<ColumnDef<IData>> = {
-    cell: (props) => <EditableCell {...props} />,
+    cell: (props) => {
+        return <EditableCell {...props} />
+    },
 };
 
 function useSkipper() {
@@ -164,7 +139,7 @@ export function DataGridEdit({ data, columns, updateData }: IProgsDataGridEdit) 
                                             <td
                                                 key={cell.id}
                                                 style={{ width: cell.column.getSize() }}
-                                                className="border p-2"
+                                                className="border p-1"
                                             >
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </td>

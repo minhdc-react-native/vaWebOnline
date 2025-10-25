@@ -67,7 +67,6 @@ export const useDataSource = ({ source, control }: IProgs) => {
         }
         const controller = new AbortController();
         loadDataBegin.controller = controller;
-
         const promises = Object.keys(source).map(async (key: any) => {
             const configSource: any = source[key];
             if (Array.isArray(configSource)) {

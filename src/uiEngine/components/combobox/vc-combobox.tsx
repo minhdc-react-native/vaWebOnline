@@ -36,7 +36,6 @@ type IFormatNumber = {
 export type IAsyncData = (inputValue: string, callback: (options: IData[]) => void) => Promise<void>;
 
 interface IProgs {
-    name: string;
     value: string | number;
     source: IData[] | IAsyncData;
     iconLeft?: IconName;
@@ -79,12 +78,12 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
 
     const onChangeSelected = useCallback((item: IData | null) => {
         setItemSelected(item);
-        if (isConstData) setDataFilter(data);
+        // // if (isConstData) setDataFilter(data);
         onChange?.(item?.[display.fId!] || null);
         onSelect?.(item);
         // expression...
 
-    }, [data, display.fId, isConstData, onChange, onSelect]);
+    }, [display.fId, onChange, onSelect]);
 
     useEffect(() => {
         if (!!value && !itemSelected && Array.isArray(data)) {
@@ -170,6 +169,9 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         () => Math.max(triggerWidth, totalWidth),
         [triggerWidth, totalWidth]
     );
+
+    const fixValue = isConstData ? itemSelected?.[display.fDisplay!] : value;
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild style={{ width }}>
@@ -181,15 +183,15 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
                     placeholder={!value}
                     disabled={disabled}
                     aria-expanded={open}
-                    className={cn("flex items-center justify-between w-full", className)}
+                    className={cn("flex items-center justify-between w-full text-xs", className)}
                 >
                     <div className="flex items-center gap-2 overflow-hidden">
                         {iconLeft && <DynamicIcon name={iconLeft} className="absolute left-2.5 top-1/2 w-4 h-4 shrink-0 opacity-70 text-gray-400" />}
-                        <span className={cn("truncate", iconLeft ? "ml-5" : "", !itemSelected && "text-muted-foreground")}>
-                            {itemSelected?.[display.fDisplay!] || placeholder}
+                        <span className={cn("truncate", iconLeft ? "ml-5" : "", !fixValue && "text-muted-foreground")}>
+                            {fixValue || placeholder}
                         </span>
                     </div>
-                    {itemSelected?.[display.fDisplay!] && cleanable && !disabled ? <ButtonArrow icon={X} className="text-destructive"
+                    {fixValue && cleanable && !disabled ? <ButtonArrow icon={X} className="text-destructive"
                         onClick={(e) => {
                             e.stopPropagation();
                             setItemSelected(null);
