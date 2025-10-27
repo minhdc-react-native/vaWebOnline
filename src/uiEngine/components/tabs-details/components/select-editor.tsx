@@ -49,7 +49,7 @@ export const SelectEditor: React.FC<ISelectEditorProps> = ({
             update[exp] = item?.[expression[exp]];
         });
         onUpdate?.(update);
-    }, [display?.fValue, expression, onChange, onUpdate]);
+    }, [display?.fId, expression, onChange, onUpdate]);
 
     return (
         <div

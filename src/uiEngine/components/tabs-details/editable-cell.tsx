@@ -26,6 +26,9 @@ export function EditableCell({
         setValue(value);
         table.options.meta?.updateData(index, id, value);
     }
+    const onUpdateExpression = (values: Record<string, any>) => {
+        table.options.meta?.updateRow(index, values);
+    }
     // Đồng bộ khi giá trị ban đầu thay đổi từ bên ngoài
     React.useEffect(() => {
         setValue(initialValue);
@@ -55,6 +58,8 @@ export function EditableCell({
                 onChange={onChangeUpdate}
                 display={{ fDisplay: ['combo', 'rechselect'].includes(typeEditor) ? 'value' : 'id' }}
                 columns={columnDef.meta?.listColumn || undefined}
+                expression={columnDef.meta?.expression}
+                onUpdate={onUpdateExpression}
                 source={dataSource[columnDef.meta!.refId!]}
             />
         case "gridsuggest":
@@ -63,6 +68,8 @@ export function EditableCell({
                 onChange={onChangeUpdate}
                 display={{ fId: 'id' }}
                 columns={columnDef.meta?.listColumn || undefined}
+                expression={columnDef.meta?.expression}
+                onUpdate={onUpdateExpression}
                 source={{ url: `/api/System/GetDataByReferencesId?id=${columnDef.meta!.refId!}&filtervalue=#filterValue#`, keyFilter: '#filterValue#' }}
             />
         case "number":
@@ -82,7 +89,6 @@ export function EditableCell({
             return <RatingEditor
                 value={value}
                 onChange={setValue}
-                onBlur={onBlur}
             />
         default:
             return <InputEditor

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { DataGridEdit } from "./data-grid-edit";
 export interface ITabsProg {
     height?: number;
@@ -74,12 +74,28 @@ const ItemsSubContent = ({ rowId, subTabs, window_id }: { rowId: string, subTabs
 
 function ItemsSubTable({ rowId, tab, tabIndex, window_id }: { rowId: string, tab: IData, tabIndex: number, window_id: string }) {
     const form = useFormContext();
-
-    const [rows, setRows] = useState<IData[]>(form.getValues(`details.${tabIndex}.data`));
-    const updateData = (rowIndex: number, columnId: string, value: unknown) => {
-
+    const { fields, append, remove, update } = useFieldArray({
+        control: form.control,
+        name: `details.${tabIndex}.data`
+    });
+    const handleAction = {
+        updateData: (rowIndex: number, updates: Record<string, any>) => {
+            const currentRow = fields[rowIndex];
+            if (!currentRow) return;
+            update(rowIndex, {
+                ...currentRow,
+                ...updates,
+            });
+        },
+        addRow: () => {
+            append(tab.defaultValues);
+        },
+        deleteRow: (rowIndex: number) => {
+            remove(rowIndex);
+        }
     }
+
     return (
-        <DataGridEdit data={rows} columns={tab.columns} updateData={updateData} />
+        <DataGridEdit data={fields} columns={tab.columns} handleAction={handleAction} />
     );
 }

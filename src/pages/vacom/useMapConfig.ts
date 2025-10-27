@@ -63,6 +63,14 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                 if (!f.HIDE_IN_GRID) {
                     const jsonListColumn = f.LIST_COLUMN ? safeJsonParse(f.LIST_COLUMN, []) : undefined;
                     const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
+                    const expression: Record<string, string> = {};
+                    if (isNotEmpty(f.FIELD_EXPRESSION)) {
+                        const param: any[] = f.FIELD_EXPRESSION!.split(';');
+                        param.forEach(p => {
+                            const [fValue, fParam, isNotReplace] = p.replace(/[{}]/g, "").split(":");
+                            expression[fParam] = fValue;
+                        });
+                    }
                     fixColumns.push({
                         accessorKey: f.COLUMN_NAME,
                         size: f.COLUMN_WIDTH || 400,
@@ -73,6 +81,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                             columnType: (f.COLUMN_TYPE as any),
                             listColumn: (listColumn as any),
                             refId: f.REF_ID,
+                            expression: expression,
                             classCellName: getCellClassName((f.TYPE_EDITOR as any)),
                             headerClassName: "font-bold"
                         }
@@ -114,8 +123,6 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         const pinning = { left: tabAll?.[0]?.LEFTSPLIT ?? 0, right: tabAll?.[0]?.RIGHTSPLIT ?? 0 }
 
         const dataSource: IDataSource = Object.assign({}, ...subTabs.map(t => t.dataSource));
-
-        console.log('subTabs>>', subTabs);
 
         const columnPinning: any = { left: [], right: [] };
 

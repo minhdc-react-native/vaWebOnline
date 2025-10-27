@@ -41,25 +41,15 @@ function useSkipper() {
 interface IProgsDataGridEdit {
     data: IData[],
     columns: ColumnDef<IData>[],
-    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
-}
-export function DataGridEdit({ data, columns, updateData }: IProgsDataGridEdit) {
-
-    const [rows, setRows] = useState<IData[]>(data);
-    const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
-
-    const handleAction = (action: 'add' | 'delete') => {
-        switch (action) {
-            case "add":
-
-                break;
-            case "delete":
-
-                break;
-            default:
-                break;
-        }
+    handleAction: {
+        updateData: (rowIndex: number, updates: Record<string, any>) => void;
+        addRow: () => void;
+        deleteRow: (rowIndex: number) => void
     }
+}
+export function DataGridEdit({ data, columns, handleAction }: IProgsDataGridEdit) {
+
+    const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
 
     const parentRef = useRef<HTMLDivElement | null>(null);
     const [parentHeight, setParentHeight] = useState(0);
@@ -75,7 +65,7 @@ export function DataGridEdit({ data, columns, updateData }: IProgsDataGridEdit) 
     }, []);
 
     const table = useReactTable({
-        data: rows,
+        data: data,
         columns,
         defaultColumn,
         getCoreRowModel: getCoreRowModel(),
@@ -84,9 +74,13 @@ export function DataGridEdit({ data, columns, updateData }: IProgsDataGridEdit) 
         autoResetPageIndex,
         meta: {
             updateData: (rowIndex, columnId, value) => {
-                skipAutoResetPageIndex()
-                updateData(rowIndex, columnId, value);
+                if (value === data[rowIndex][columnId]) return;
+                skipAutoResetPageIndex();
+                handleAction.updateData(rowIndex, { [columnId]: value });
             },
+            updateRow: (rowIndex, updates) => {
+                handleAction.updateData(rowIndex, updates);
+            }
         },
         debugTable: true,
     })
@@ -157,13 +151,13 @@ export function DataGridEdit({ data, columns, updateData }: IProgsDataGridEdit) 
     )
 }
 
-const ToolbarTableDetail = ({ handleAction }: { handleAction: (action: 'add' | 'delete') => void }) => {
+const ToolbarTableDetail = ({ handleAction }: { handleAction: { addRow: () => void, deleteRow: (rowIndex: number) => void } }) => {
     return (
         <div className="gap-2 items-center p-1 rounded-tr-lg">
-            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction("add")}>
+            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction.addRow()}>
                 <Plus className="text-green-900" />
             </Button>
-            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction("delete")}>
+            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction.deleteRow(0)}>
                 <Delete className="text-red-900" />
             </Button>
         </div>
