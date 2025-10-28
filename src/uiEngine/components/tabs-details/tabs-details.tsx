@@ -4,6 +4,7 @@ import { useT } from "@/i18n/config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { DataGridEdit } from "./data-grid-edit";
+import { useGlobalDialog } from "@/providers/global-dialog";
 export interface ITabsProg {
     height?: number;
     valuesCheck: Record<string, any>;
@@ -78,6 +79,8 @@ function ItemsSubTable({ rowId, tab, tabIndex, window_id }: { rowId: string, tab
         control: form.control,
         name: `details.${tabIndex}.data`
     });
+    const [itemSelected, setItemSelected] = useState<IData>();
+    const { showToast } = useGlobalDialog();
     const handleAction = {
         updateData: (rowIndex: number, updates: Record<string, any>) => {
             const currentRow = fields[rowIndex];
@@ -90,12 +93,17 @@ function ItemsSubTable({ rowId, tab, tabIndex, window_id }: { rowId: string, tab
         addRow: () => {
             append(tab.defaultValues);
         },
-        deleteRow: (rowIndex: number) => {
-            remove(rowIndex);
+        deleteRow: () => {
+            if (!itemSelected) {
+                showToast('Ban chua chon dong can xoa!');
+                return;
+            }
+            remove(fields.findIndex(f => f.id === itemSelected?.id));
+            setItemSelected(undefined);
         }
     }
 
     return (
-        <DataGridEdit data={fields} columns={tab.columns} handleAction={handleAction} />
+        <DataGridEdit tab={tab} data={fields} columns={tab.columns} handleAction={handleAction} itemSelected={itemSelected} setItemSelected={setItemSelected} />
     );
 }

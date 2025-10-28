@@ -14,6 +14,7 @@ declare module '@tanstack/react-table' {
         refId?: string | null;
         expression?: Record<string, string>,
         classCellName?: string,
-        columnType?: IColumnType
+        columnType?: IColumnType,
+        readonly?: boolean
     }
 }

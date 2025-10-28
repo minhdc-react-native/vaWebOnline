@@ -9,6 +9,7 @@ import { NumberEditor } from "./components/number-editor";
 import { ColorEditor } from "./components/color-editor";
 import { RatingEditor } from "./components/rating-editor";
 import { useFormContext } from "@/uiEngine/hooks/useFormContext";
+import { TextCellTable } from "./components/text-cell-table";
 export function EditableCell({
     getValue,
     row: { index },
@@ -34,6 +35,9 @@ export function EditableCell({
         setValue(initialValue);
     }, [initialValue]);
     const typeEditor: ITypeEditor = columnDef.meta?.typeEditor;
+
+    if (columnDef.meta?.readonly) return <TextCellTable value={value} typeEditor={columnDef.meta.typeEditor} />
+
     switch (typeEditor) {
         case 'dateedit':
         case 'datepicker':
@@ -55,7 +59,7 @@ export function EditableCell({
         case "treesuggest":
             return <SelectEditor
                 value={value}
-                onChange={onChangeUpdate}
+                name={id}
                 display={{ fDisplay: ['combo', 'rechselect'].includes(typeEditor) ? 'value' : 'id' }}
                 columns={columnDef.meta?.listColumn || undefined}
                 expression={columnDef.meta?.expression}
@@ -65,7 +69,7 @@ export function EditableCell({
         case "gridsuggest":
             return <SelectEditor
                 value={value}
-                onChange={onChangeUpdate}
+                name={id}
                 display={{ fId: 'id' }}
                 columns={columnDef.meta?.listColumn || undefined}
                 expression={columnDef.meta?.expression}

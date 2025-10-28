@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { IColumnType, IFieldConfig, ITabConfig, ITypeEditor, IWindowConfig } from "./type"
+import { IFieldConfig, ITabConfig, ITypeEditor, IWindowConfig } from "./type"
 import { ColumnDef } from "@tanstack/react-table";
 import { useT } from "@/i18n/config";
 import { isNotEmpty, safeJsonParse } from "@/lib/helpers";
@@ -82,6 +82,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                             listColumn: (listColumn as any),
                             refId: f.REF_ID,
                             expression: expression,
+                            readonly: (f.READONLY === 'C'),
                             classCellName: getCellClassName((f.TYPE_EDITOR as any)),
                             headerClassName: "font-bold"
                         }
@@ -134,43 +135,102 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         for (let i = 0; i < pinning.right; i++) {
             // columnPinning.right.push(fieldMasterShow[lenArr - i].COLUMN_NAME)
         }
-        const newFieldMaster = fieldMasterShow.reduce((acc, item) => {
-            const row = item.ROW ?? 1;
-            if (!acc[row]) acc[row] = [];
-            acc[row].push(item);
-            return acc;
-        }, {} as Record<number, IFieldConfig[]>);
-        let isInsertTabsDetail = false;
-        const layout = Object.values(newFieldMaster).reduce((acc, items, idx) => {
-            if (windowConfig?.ROW_TAB && subTabs.length > 1 && windowConfig?.ROW_TAB === idx + 1) {
-                acc.push({
+        let layout: any[] = [];
+        const layoutDetail = windowConfig?.LAYOUT_DETAIL;
+        if (isNotEmpty(layoutDetail)) {
+            let layoutJson: any[] = [];
+            if (layoutDetail!.startsWith('@JS=')) {
+                const args = ["_"];
+                const fn = Function(...args, layoutDetail!.replace('@JS=', ''));
+                layoutJson = fn(_).elements;
+            } else {
+                layoutJson = JSON.parse(layoutDetail!).elements;
+            }
+            const mapFieldConfig = fieldMasterShow.reduce((acc, item) => {
+                acc[item.COLUMN_NAME] = item;
+                return acc;
+            }, {} as Record<string, IFieldConfig>);
+            const getLayout = (item: IFieldConfig): IFieldAll => {
+                if (item.cols || item.rows) {
+                    return {
+                        type: 'group', layout: "flex", direction: (item.cols ? "row" : undefined),
+                        children: ((item.cols || item.rows) as IFieldConfig[]).filter(f => f.hidden !== true).reduce((_acc, _item, _idx) => {
+                            _acc.push(getLayout(_item));
+                            return _acc;
+                        }, [] as IFieldAll[])
+                    }
+                } else if (item.view === 'fieldset') {
+                    return {
+                        type: 'fieldset',
+                        title: _(item.label),
+                        className: item.width ? '' : 'flex-1',
+                        width: item.width,
+                        children: {
+                            type: "group",
+                            layout: "flex",
+                            direction: item.body.cols ? "row" : undefined,
+                            children: ((item.body.cols || item.body.rows) as IFieldConfig[]).filter(f => f.hidden !== true).reduce((_acc, _item, _idx) => {
+                                _acc.push(getLayout(_item));
+                                return _acc;
+                            }, [] as IFieldAll[])
+                        }
+                    };
+                } else {
+                    const fixItem: IFieldConfig = mapFieldConfig[item.name] || item;
+                    return getConfigView(fixItem, fixItem.GRAVITY ?? 1);
+                }
+            }
+            layout = layoutJson.filter(f => f.hidden !== true).map((item, idx) => {
+                if (item.id === "tab_replace") {
+                    return {
+                        type: "tabs",
+                        height: windowConfig?.HEIGHT || undefined,
+                        tabs: [...subTabs].slice(1)
+                    };
+                } else {
+                    return getLayout(item);
+                }
+            });
+
+        } else {
+            const newFieldMaster = fieldMasterShow.reduce((acc, item) => {
+                const row = item.ROW ?? 1;
+                if (!acc[row]) acc[row] = [];
+                acc[row].push(item);
+                return acc;
+            }, {} as Record<number, IFieldConfig[]>);
+            let isInsertTabsDetail = false;
+            layout = Object.values(newFieldMaster).reduce((acc, items, idx) => {
+                if (windowConfig?.ROW_TAB && subTabs.length > 1 && windowConfig?.ROW_TAB === idx + 1) {
+                    acc.push({
+                        type: "tabs",
+                        height: windowConfig?.HEIGHT || undefined,
+                        tabs: [...subTabs].slice(1)
+                    });
+                    isInsertTabsDetail = true;
+                }
+                if (items.length === 1 && !['BEFORE', 'AFTER'].includes(items[0].SPACE ?? '***')) {
+                    acc.push(getConfigView(items[0]));
+                } else {
+                    acc.push({
+                        type: 'group', layout: "flex", direction: "row",
+                        children: items.reduce((_acc, _item, _idx) => {
+                            if (_item.SPACE === "BEFORE") _acc.push({ type: "empty", span: 1 });
+                            _acc.push(getConfigView(_item, _item.GRAVITY ?? 1));
+                            if (_item.SPACE === "AFTER") _acc.push({ type: "empty", span: 1 });
+                            return _acc;
+                        }, [] as IFieldAll[])
+                    })
+                }
+                return acc;
+            }, [] as IFieldAll[]);
+            if (!isInsertTabsDetail && subTabs.length > 1) {
+                layout.push({
                     type: "tabs",
-                    height: windowConfig?.HEIGHT || undefined,
+                    height: windowConfig?.HEIGHT ? windowConfig?.HEIGHT : undefined,
                     tabs: [...subTabs].slice(1)
                 });
-                isInsertTabsDetail = true;
             }
-            if (items.length === 1 && !['BEFORE', 'AFTER'].includes(items[0].SPACE ?? '***')) {
-                acc.push(getConfigView(items[0]));
-            } else {
-                acc.push({
-                    type: 'group', layout: "flex", direction: "row",
-                    children: items.reduce((_acc, _item, _idx) => {
-                        if (_item.SPACE === "BEFORE") _acc.push({ type: "empty", span: 1 });
-                        _acc.push(getConfigView(_item, _item.GRAVITY ?? 1));
-                        if (_item.SPACE === "AFTER") _acc.push({ type: "empty", span: 1 });
-                        return _acc;
-                    }, [] as IFieldAll[])
-                })
-            }
-            return acc;
-        }, [] as IFieldAll[]);
-        if (!isInsertTabsDetail && subTabs.length > 1) {
-            layout.push({
-                type: "tabs",
-                height: windowConfig?.HEIGHT ? windowConfig?.HEIGHT + 50 : undefined,
-                tabs: [...subTabs].slice(1)
-            });
         }
         layout.push({ type: "line" })
         layout.push({
@@ -224,7 +284,7 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             columnPinning,
             subTabs
         }
-    }, [windowConfig?.Tabs, windowConfig?.WIDTH, windowConfig?.ROW_TAB, windowConfig?.HEIGHT])
+    }, [windowConfig])
 
     const columns = useMemo(() => {
         return schemaWin.subTabs?.[0]?.columns || [];;
@@ -241,7 +301,7 @@ const mapFieldType = {
     textarea: 'textarea',
     dateedit: 'date',
     datepicker: 'date',
-    checkbox: 'checkbox'
+    checkbox: 'checkbox',
 }
 
 const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
@@ -257,7 +317,9 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
         expression[fParam] = fValue;
     });
 
-    switch (field.TYPE_EDITOR) {
+    if (field.COLUMN_NAME === 'STATUS') console.log('field status>>', field)
+    const typoeEditor = field.TYPE_EDITOR || 'empty';
+    switch (typoeEditor) {
         case "text":
         case "textarea":
         case 'dateedit':
@@ -265,7 +327,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
         case 'checkbox':
             return {
                 type: "field",
-                fieldType: (mapFieldType[field.TYPE_EDITOR] as any),
+                fieldType: (mapFieldType[typoeEditor] as any),
                 label: (field.CAPTION_FIELD || field.CAPTION || field.COLUMN_NAME),
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
@@ -381,6 +443,9 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 conditions: { disabled: disabled },
                 span: !!field.WIDTH ? undefined : span
             };
+        case "empty":
+            const width = field.WIDTH || field.width;
+            return { type: "empty", width: width || undefined, span: !!width ? undefined : span }
         default:
             return {
                 type: "field",

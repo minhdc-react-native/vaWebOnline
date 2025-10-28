@@ -41,7 +41,7 @@ function TimeField<T extends TimeValueRa>({ className, children, ...props }: Tim
   );
 }
 
-function DateSegment({ className, ...props }: DateSegmentProps) {
+function DateSegmentBack({ className, ...props }: DateSegmentProps) {
   return (
     <DateSegmentRa
       className={composeRenderProps(className, (className) =>
@@ -59,6 +59,35 @@ function DateSegment({ className, ...props }: DateSegmentProps) {
       {...props}
       data-invalid
     />
+  );
+}
+
+function DateSegment({ className, segment, ...props }: DateSegmentProps) {
+  const text =
+    (segment.type === "day" || segment.type === "month") && segment.text.length === 1
+      ? `0${segment.text}`
+      : segment.text;
+
+  return (
+    <DateSegmentRa
+      {...props}
+      segment={segment}
+      className={composeRenderProps(className, (className) =>
+        cn(
+          `
+          text-foreground inline-flex rounded px-0.5 caret-transparent outline-hidden
+          data-[type=literal]:text-muted-foreground/70 data-[type=literal]:px-0
+          data-placeholder:text-muted-foreground/70
+          data-invalid:data-focused:bg-destructive data-invalid:text-destructive
+          data-focused:bg-accent data-focused:text-foreground
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
+          `,
+          className,
+        ),
+      )}
+    >
+      {text}
+    </DateSegmentRa>
   );
 }
 

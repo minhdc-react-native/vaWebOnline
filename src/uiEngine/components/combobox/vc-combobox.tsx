@@ -231,7 +231,7 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightI
     const rowVirtualizer = useVirtualizer({
         count: data.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 32, // chiều cao ước tính của mỗi dòng (px) ~ <td>:h-8
+        estimateSize: () => 14, // chiều cao ước tính của mỗi dòng (px) ~ <td>:h-8
         overscan: 20, // render thêm các dòng ngoài vùng nhìn
     });
     return (
@@ -255,10 +255,10 @@ const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightI
                     </tr>
                 </thead>
                 <tbody
-                // style={{
-                //     position: 'relative',
-                //     height: `${rowVirtualizer.getTotalSize()}px`,
-                // }}
+                    style={{
+                        position: 'relative',
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                    }}
                 >
                     {rowVirtualizer.getVirtualItems().map((virtualRow, idx) => {
                         const item = data[virtualRow.index];

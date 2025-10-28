@@ -16,6 +16,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 // Give our default column cell renderer editing superpowers!
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { EditableCell } from './editable-cell';
+import { cn } from '@/lib/utils';
+import { useCellEditStop } from './useCellEditStop';
 
 export const defaultColumn: Partial<ColumnDef<IData>> = {
     cell: (props) => {
@@ -39,17 +41,22 @@ function useSkipper() {
     return [shouldSkip, skip] as const
 }
 interface IProgsDataGridEdit {
+    tab: IData,
     data: IData[],
     columns: ColumnDef<IData>[],
+    itemSelected?: IData;
+    setItemSelected: (item: IData) => void;
     handleAction: {
         updateData: (rowIndex: number, updates: Record<string, any>) => void;
         addRow: () => void;
-        deleteRow: (rowIndex: number) => void
+        deleteRow: () => void
     }
 }
-export function DataGridEdit({ data, columns, handleAction }: IProgsDataGridEdit) {
+export function DataGridEdit({ tab, data, columns, itemSelected, setItemSelected, handleAction }: IProgsDataGridEdit) {
 
     const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
+
+    const { cellEditStop } = useCellEditStop(tab);
 
     const parentRef = useRef<HTMLDivElement | null>(null);
     const [parentHeight, setParentHeight] = useState(0);
@@ -76,7 +83,8 @@ export function DataGridEdit({ data, columns, handleAction }: IProgsDataGridEdit
             updateData: (rowIndex, columnId, value) => {
                 if (value === data[rowIndex][columnId]) return;
                 skipAutoResetPageIndex();
-                handleAction.updateData(rowIndex, { [columnId]: value });
+                const updates = { [columnId]: value, ...cellEditStop(data[rowIndex], columnId, value) }
+                handleAction.updateData(rowIndex, updates);
             },
             updateRow: (rowIndex, updates) => {
                 handleAction.updateData(rowIndex, updates);
@@ -127,7 +135,7 @@ export function DataGridEdit({ data, columns, handleAction }: IProgsDataGridEdit
                         {rowVirtualizer.getVirtualItems().map((virtualRow, index) => {
                             const row = table.getRowModel().rows[virtualRow.index];
                             return (
-                                <tr key={row.id}>
+                                <tr key={row.id} onClick={() => setItemSelected(row.original)} className={cn(itemSelected?.id === row.original.id && 'border-2 border-amber-100')}>
                                     {row.getVisibleCells().map((cell: Cell<IData, unknown>, colIndex) => {
                                         return (
                                             <td
@@ -151,13 +159,13 @@ export function DataGridEdit({ data, columns, handleAction }: IProgsDataGridEdit
     )
 }
 
-const ToolbarTableDetail = ({ handleAction }: { handleAction: { addRow: () => void, deleteRow: (rowIndex: number) => void } }) => {
+const ToolbarTableDetail = ({ handleAction }: { handleAction: { addRow: () => void, deleteRow: () => void } }) => {
     return (
         <div className="gap-2 items-center p-1 rounded-tr-lg">
             <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction.addRow()}>
                 <Plus className="text-green-900" />
             </Button>
-            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction.deleteRow(0)}>
+            <Button type="button" variant="ghost" mode="icon" onClick={() => handleAction.deleteRow()}>
                 <Delete className="text-red-900" />
             </Button>
         </div>

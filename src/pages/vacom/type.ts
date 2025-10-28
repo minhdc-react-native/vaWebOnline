@@ -28,6 +28,7 @@ export interface IFieldConfig {
     DISPLAY_FIELD: string | null;
     DECIMAL_SIZE: number | null;
     READONLY: string | null;
+    [key: string]: any;
 }
 export interface ITabConfig {
     id: string;
@@ -53,6 +54,7 @@ export interface IWindowConfig {
     URL_VIDEO: string | null;
     HEIGHT: number | null;
     ROW_TAB: number | null;
+    LAYOUT_DETAIL?: string | null;
     Tabs: ITabConfig[]
 }
 
@@ -66,7 +68,7 @@ export type IFilterVariant = 'textFilter' | 'serverFilter' | 'selectFilter' | 'n
     'serverSelectFilter' | 'serverNumericFilter' | 'checkboxFilter';
 export type ITypeEditor = 'text' | 'combo' | 'richselect' | 'checkbox' | 'datepicker' | 'autonumeric' | 'treesuggest' | 'gridsuggest' |
     'gridcombo' | 'textarea' | 'radio' | 'multiselect' | 'dateedit' | 'treeplus' | 'gridplus' | 'reftemp' | 'list_time' | 'colorpicker' | 'rating' |
-    'password' | 'number' | 'ckeditor' | 'linkedit' | 'template';
+    'password' | 'number' | 'ckeditor' | 'linkedit' | 'template' | 'empty';
 export type IColumnType = 'VC_BIT' | 'VC_CHAR' | 'VC_CODE' | 'VC_CODE_LG' | 'VC_CODE_SM' | 'VC_CODE_XS' | 'VC_DATE' | 'VC_DATETIME' | 'VC_DAY' |
     'VC_DONGIA' | 'VC_ID_GUI' | 'VC_INFO' | 'VC_INFO_LG' | 'VC_INFO_SM' | 'VC_INFO_XS' | 'VC_INT' | 'VC_MONTH' | 'VC_PT' | 'VC_REC' | 'VC_SMALLINT' | 'VC_SOLUONG' |
     'VC_TIEN' | 'VC_TINYINT' | 'VC_TYGIA' | 'VC_YEAR'        

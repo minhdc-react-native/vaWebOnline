@@ -4,8 +4,8 @@ import { api } from "@/api/apiMethods";
 import VcComboBox, { IColumn } from "../../combobox/vc-combobox";
 
 interface ISelectEditorProps {
+    name: string;
     value: any;
-    onChange: (value: any) => void;
     placeholder?: string;
     disabled?: boolean;
     cleanable?: boolean;
@@ -18,8 +18,8 @@ interface ISelectEditorProps {
 }
 
 export const SelectEditor: React.FC<ISelectEditorProps> = ({
+    name,
     value,
-    onChange,
     placeholder,
     disabled,
     cleanable,
@@ -43,13 +43,12 @@ export const SelectEditor: React.FC<ISelectEditorProps> = ({
     );
 
     const onSelect = useCallback((item: IData | null) => {
-        onChange(item?.[display?.fId ?? "value"]);
-        const update: Record<string, any> = {};
+        const update: Record<string, any> = { [name]: item?.[display?.fId ?? "value"] };
         Object.keys(expression).map(exp => {
             update[exp] = item?.[expression[exp]];
         });
         onUpdate?.(update);
-    }, [display?.fId, expression, onChange, onUpdate]);
+    }, [display?.fId, expression, name, onUpdate]);
 
     return (
         <div
