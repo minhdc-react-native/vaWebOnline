@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { IFieldConfig, ITabConfig, ITypeEditor, IWindowConfig } from "./type"
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { useT } from "@/i18n/config";
 import { isNotEmpty, safeJsonParse } from "@/lib/helpers";
 import { IDataSource, IFieldAll, IFormSchema } from "@/uiEngine/interface";
@@ -44,6 +44,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
                 }
             }
         });
+        const columnVisibility: VisibilityState = {};
+        const columnVisibilityEdit: VisibilityState = {};
         const dataSource: IDataSource = {};
         const fixColumns: ColumnDef<IData, any>[] = [
             // {
@@ -57,41 +59,47 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             // }
         ];
         tab.Fields
-            .filter(f => !f.HIDE_IN_GRID || !f.HIDDEN)
+            ?.slice()
+            // .filter((f => !f.HIDE_IN_GRID))
+            .sort((a, b) => (a.STT ?? 0) - (b.STT ?? 0))
             .map(f => {
-                if (f.COLUMN_NAME === 'CACH_TINH') console.log('f>>', f);
-                if (!f.HIDE_IN_GRID) {
-                    const jsonListColumn = f.LIST_COLUMN ? safeJsonParse(f.LIST_COLUMN, []) : undefined;
-                    const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
-                    const expression: Record<string, string> = {};
-                    if (isNotEmpty(f.FIELD_EXPRESSION)) {
-                        const param: any[] = f.FIELD_EXPRESSION!.split(';');
-                        param.forEach(p => {
-                            const [fValue, fParam, isNotReplace] = p.replace(/[{}]/g, "").split(":");
-                            expression[fParam] = fValue;
-                        });
-                    }
-                    fixColumns.push({
-                        accessorKey: f.COLUMN_NAME,
-                        size: f.COLUMN_WIDTH || 400,
-                        header: _(f.CAPTION || f.COLUMN_NAME),
-                        meta: {
-                            filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
-                            typeEditor: (f.TYPE_EDITOR as any),
-                            columnType: (f.COLUMN_TYPE as any),
-                            listColumn: (listColumn as any),
-                            refId: f.REF_ID,
-                            expression: expression,
-                            readonly: (f.READONLY === 'C'),
-                            classCellName: getCellClassName((f.TYPE_EDITOR as any)),
-                            headerClassName: "font-bold"
-                        }
+
+                columnVisibility[f.COLUMN_NAME!] = (!f.HIDE_IN_GRID);
+                columnVisibilityEdit[f.COLUMN_NAME!] = (!f.HIDDEN);
+
+                const jsonListColumn = f.LIST_COLUMN ? safeJsonParse(f.LIST_COLUMN, []) : undefined;
+                const listColumn = (jsonListColumn && jsonListColumn.length > 0 ? jsonListColumn.filter((col: IData) => !col.hidden) : undefined);
+                const expression: Record<string, string> = {};
+                if (isNotEmpty(f.FIELD_EXPRESSION)) {
+                    const param: any[] = f.FIELD_EXPRESSION!.split(';');
+                    param.forEach(p => {
+                        const [fValue, fParam, isNotReplace] = p.replace(/[{}]/g, "").split(":");
+                        expression[fParam] = fValue;
                     });
                 }
+                fixColumns.push({
+                    accessorKey: f.COLUMN_NAME,
+                    size: f.COLUMN_WIDTH || 400,
+                    header: _(f.CAPTION || f.COLUMN_NAME),
+                    meta: {
+                        filterVariant: f.TYPE_FILTER ? (f.TYPE_FILTER as any) : undefined,
+                        typeEditor: (f.TYPE_EDITOR as any),
+                        columnType: (f.COLUMN_TYPE as any),
+                        listColumn: (listColumn as any),
+                        refId: f.REF_ID,
+                        expression: expression,
+                        displayField: f.DISPLAY_FIELD,
+                        readonly: (f.READONLY === 'C'),
+                        classCellName: getCellClassName((f.TYPE_EDITOR as any)),
+                        headerClassName: "font-bold"
+                    }
+                });
+
                 if (['combo', 'richselect', 'gridcombo', 'treeplus', 'gridplus', 'treesuggest', 'multiselect'].includes(f.TYPE_EDITOR) && f.REF_ID) {
                     dataSource[f.REF_ID] = { url: `/api/System/GetDataByReferencesId?id=${f.REF_ID}`, refId: f.REF_ID, typeEditor: f.TYPE_EDITOR, typeView: f.TYPE_EDITOR.startsWith('tree') ? 'tree' : 'table' };
                 }
             });
+
         return {
             id: tab.id,
             TAB_ID: tab.TAB_ID,
@@ -101,7 +109,9 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             TAB_TABLE: tab.TAB_TABLE,
             columns: fixColumns,
             defaultValues,
-            dataSource
+            dataSource,
+            columnVisibility,
+            columnVisibilityEdit
         };
     }, [windowConfig?.WINDOW_ID])
 
@@ -113,6 +123,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
         width?: number | null;
         defaultValues?: Record<string, any>,
         columnPinning?: { left: string[], right: string[] };
+        columnVisibility?: VisibilityState,
+        columnVisibilityEdit?: VisibilityState
         subTabs: IData[]
     } = useMemo(() => {
         const tabAll: ITabConfig[] = windowConfig?.Tabs || [];
@@ -281,6 +293,8 @@ export const useMapConfig = ({ windowConfig }: IProgs) => {
             },
             width: windowConfig?.WIDTH,
             defaultValues: subTabs[0]?.defaultValues || {},
+            columnVisibility: subTabs[0]?.columnVisibility || {},
+            columnVisibilityEdit: subTabs[0]?.columnVisibilityEdit || {},
             columnPinning,
             subTabs
         }
@@ -316,8 +330,6 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
         const [fValue, fParam, isNotReplace] = p.replace(/[{}]/g, "").split(":");
         expression[fParam] = fValue;
     });
-
-    if (field.COLUMN_NAME === 'STATUS') console.log('field status>>', field)
     const typoeEditor = field.TYPE_EDITOR || 'empty';
     switch (typoeEditor) {
         case "text":
@@ -368,7 +380,7 @@ const getConfigView = (field: IFieldConfig, span?: number): IFieldAll => {
                 name: field.COLUMN_NAME,
                 labelPosition: labelPosition,
                 labelWidth: field.LABEL_WIDTH ?? undefined,
-                display: { fDisplay: field.DISPLAY_FIELD || (['combo', 'richselect'].includes(field.TYPE_EDITOR) ? 'value' : 'id') },
+                display: { fId: field.DISPLAY_FIELD ?? undefined },
                 width: field.WIDTH ?? undefined,
                 columns: listColumn,
                 expression: expression,

@@ -12,6 +12,7 @@ declare module '@tanstack/react-table' {
         typeEditor?: ITypeEditor,
         listColumn?: IColumn[] | null,
         refId?: string | null;
+        displayField?: string | null;
         expression?: Record<string, string>,
         classCellName?: string,
         columnType?: IColumnType,

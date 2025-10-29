@@ -1,8 +1,7 @@
-import 'react-virtualized/styles.css';
 import { cn } from "@/lib/utils";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import debounce from "lodash.debounce";
-import { AutoSizer, Table, Column } from "react-virtualized";
+
 import {
     Command,
     CommandInput,
@@ -14,13 +13,13 @@ import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { Search, X } from "lucide-react";
 import { useT } from "@/i18n/config";
 import { filterTree, findInTree, mapTreeWithValueSearch } from "@/lib/helpers";
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export interface IColumn {
     id: string;
     label?: string;
     format?: IFormatDate | IFormatNumber;
-    width?: number;
-    [key: string]: any;
+    width?: number
 }
 const columnDefault: IColumn[] = [
     { id: "value", label: 'GIA_TRI' },
@@ -51,7 +50,7 @@ interface IProgs {
     onSelect?: (itemSelected: IData | null) => void;
     width?: number
 }
-export default function VcComboBox({ value, source, iconLeft, columns = columnDefault,
+export default function VcComboBoxBack({ value, source, iconLeft, columns = columnDefault,
     placeholder, placeholderSearch, disabled, cleanable, display = {}, className,
     onChange, onSelect, width
 }: IProgs) {
@@ -76,10 +75,8 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
     }, [reloadSource]);
 
     const [itemSelected, setItemSelected] = useState<IData | null>(null);
-    const isFirstInit = useRef(false);
 
     const onChangeSelected = useCallback((item: IData | null) => {
-        if (!isFirstInit.current) isFirstInit.current = true;
         setItemSelected(item);
         // // if (isConstData) setDataFilter(data);
         onChange?.(item?.[display.fId!] || null);
@@ -87,6 +84,13 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         // expression...
 
     }, [display.fId, onChange, onSelect]);
+
+    useEffect(() => {
+        if (!!value && !itemSelected && Array.isArray(data)) {
+            const foundItem = findInTree(data, display.fId!, value);
+            setItemSelected(foundItem ?? null);
+        }
+    }, [data, value]);
 
     const [open, setOpen] = useState(false);
 
@@ -115,22 +119,6 @@ export default function VcComboBox({ value, source, iconLeft, columns = columnDe
         }, 500),
         [data, display.fId, display.fValue, isConstData, source]
     );
-
-    useEffect(() => {
-        if (!!value && !isFirstInit.current) {
-            setTxtSearch(value.toString());
-            if (data.length > 0) {
-                isFirstInit.current = true;
-                const foundItem = findInTree(data, display.fId!, value);
-                setItemSelected(foundItem ?? null);
-                if (isConstData) onSearch(value.toString());
-            }
-            if (!isConstData) {
-                onSearch(value.toString());
-            }
-        }
-    }, [data, display.fId, isConstData, onSearch, value]);
-
 
     const [highlightIndex, setHighlightIndex] = useState<number>(-1);
 
@@ -237,130 +225,145 @@ interface IMenuList {
     highlightIndex?: number;
     totalWidth: number;
 }
-
-export const CustomMenuList = ({
-    itemSelected,
-    columns,
-    data,
-    onSelect,
-    highlightIndex = -1,
-}: IMenuList) => {
-    const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+const CustomMenuList = ({ itemSelected, fId, columns, data, onSelect, highlightIndex = -1, totalWidth }: IMenuList) => {
     const _ = useT();
-    const flatData = useMemo(() => {
-        const result: IData[] = [];
-        const traverse = (nodes: IData[], level = 0) => {
-            for (const node of nodes) {
-                result.push({ ...node, level });
-                if (node.children && (expandedRows[node.id] === undefined || expandedRows[node.id])) {
-                    traverse(node.children, level + 1);
-                }
-            }
-        };
-        traverse(data);
-        return result;
-    }, [data, expandedRows]);
-
-    const toggleExpand = useCallback((id: string) => {
-        setExpandedRows((prev) => ({ ...prev, [id]: (prev[id] === undefined ? false : !prev[id]) }));
-    }, []);
-
-    const curentIndex = useMemo(() => {
-        return data.findIndex(d => d.id === itemSelected?.id);
-    }, [data, itemSelected]);
-
-    const rowHeight = 32;
+    const parentRef = useRef<HTMLDivElement>(null);
+    const rowVirtualizer = useVirtualizer({
+        count: data.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 32, // chiều cao ước tính của mỗi dòng (px) ~ <td>:h-8
+        overscan: 20, // render thêm các dòng ngoài vùng nhìn
+    });
     return (
-        <div style={{ height: 300, borderTop: "1px solid #ddd" }}>
-            <AutoSizer>
-                {({ width, height }) => (
-                    <Table
-                        width={width}
-                        height={height}
-                        headerHeight={32}
-                        rowHeight={rowHeight}
-                        rowCount={flatData.length}
-                        rowGetter={({ index }) => flatData[index]}
-                        scrollToIndex={curentIndex}
-                        rowClassName={({ index }) => {
-                            if (index < 0) return "headerRow bg-gray-100";
-                            const item = flatData[index];
-                            const isSelected = itemSelected?.id === item.id;
-                            const isHighlighted = index === highlightIndex;
-                            return [
-                                "cursor-pointer",
-                                "transition-colors",
-                                "border-b",
-                                "border-border",
-                                isSelected ? "bg-amber-50 font-bold" : "",
-                                isHighlighted ? "bg-amber-50" : "",
-                            ].join(" ");
-                        }}
-                        onRowClick={({ rowData }) => onSelect(rowData)}
-                    >
-                        {columns.map((col, idx) => (
-                            <Column
+        <div ref={parentRef} className="max-h-[300px] overflow-auto border-t">
+            <table className="w-full border-collapse table-fixed relative">
+                <colgroup>
+                    {columns.map((col: any) => (
+                        <col key={col.id} style={{ width: col.width }} />
+                    ))}
+                </colgroup>
+                <thead className="bg-muted text-xs font-medium text-muted-foreground sticky top-[0px] z-10">
+                    <tr>
+                        {columns.map((col: any) => (
+                            <th
                                 key={col.id}
-                                label={_(col.id)}
-                                dataKey={col.id}
-                                width={col.width || 100}
-                                headerRenderer={({ label }) => {
-                                    const isNumber = !!col.numberFormat;
-                                    return (
-                                        <div style={{ width: col.width ?? 200 }} className={cn('text-xs', isNumber ? "text-right font-mono" : "text-left")}>
-                                            <span className="font-bold">{label}</span>
-                                        </div>)
-                                }}
-                                cellDataGetter={({ rowData }) => rowData[col.id]}
-                                cellRenderer={({ cellData, rowData }) => {
-                                    const hasChildren = rowData.children?.length > 0;
-                                    const isFirstCol = idx === 0;
-                                    const isNumber = !!col.numberFormat || typeof cellData === "number";
-
-                                    if (isFirstCol) {
-                                        return (
-                                            <div
-                                                className="flex text-sm truncate"
-                                                style={{
-                                                    paddingLeft: rowData.level * 16,
-                                                    width: col.width ?? 200,
-                                                }}
-                                            >
-                                                {hasChildren && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleExpand(rowData.id);
-                                                        }}
-                                                        className="mr-1 text-muted-foreground hover:text-foreground"
-                                                    >
-                                                        {(expandedRows[rowData.id] === undefined || expandedRows[rowData.id]) ? "−" : "+"}
-                                                    </button>
-                                                )}
-                                                <span className={cn(hasChildren && 'font-bold')}>{cellData}</span>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <div
-                                            className={cn(
-                                                "px-3 text-sm truncate",
-                                                isNumber ? "text-right font-mono" : "text-left"
-                                            )}
-                                            style={{ width: col.width ?? 200, }}
-                                        >
-                                            {cellData}
-                                        </div>
-                                    );
-                                }}
-                            />
+                                className="px-3 py-2 text-left border-b border-border"
+                            >
+                                {_(col.label || col.id)}
+                            </th>
                         ))}
-                    </Table>
-                )}
-            </AutoSizer>
+                    </tr>
+                </thead>
+                <tbody
+                // style={{
+                //     position: 'relative',
+                //     height: `${rowVirtualizer.getTotalSize()}px`,
+                // }}
+                >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow, idx) => {
+                        const item = data[virtualRow.index];
+                        return (
+                            <CustomOption key={item.id} columns={columns} item={item} itemSelected={itemSelected} onSelect={onSelect} isHighlighted={idx === highlightIndex} />
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 };
+interface IOption {
+    columns: IColumn[];
+    item: IData;
+    itemSelected: IData | null;
+    onSelect: (item: IData) => void;
+    isHighlighted: boolean;
+}
+const CustomOption = ({
+    columns,
+    item,
+    itemSelected,
+    isHighlighted,
+    onSelect,
+}: IOption) => {
+    const rowRef = useRef<HTMLTableRowElement | null>(null);
+    const [isExpanded, setExpanded] = useState(true);
 
+    const hasChildren = item.children && item.children.length > 0;
+    const level = item.level || 0;
+
+    useEffect(() => {
+        if (isHighlighted && rowRef.current) {
+            rowRef.current.scrollIntoView({
+                block: "center",
+                behavior: "smooth",
+            });
+        }
+    }, [isHighlighted]);
+
+    return (
+        <>
+            <tr
+                ref={rowRef}
+                onClick={() => {
+                    onSelect(item);
+                }}
+                className={cn(
+                    "cursor-pointer transition-colors",
+                    (itemSelected?.id === item.id) && "bg-amber-50 font-bold",
+                    isHighlighted && "bg-amber-50"
+                )}
+                style={{ height: 32 }}
+            >
+                {columns.map((col: any, idx: number) => (
+                    <td
+                        key={idx}
+                        className={cn(
+                            "px-3 py-2 border-b border-border text-sm text-foreground truncate"
+                        )}
+                    >
+                        {idx === 0 ? (
+                            <div className="flex items-center">
+                                <div
+                                    style={{ width: `${level * 16}px` }}
+                                    className="shrink-0"
+                                />
+                                {hasChildren && (
+                                    <button
+                                        type="button"
+                                        className="mr-1 text-muted-foreground hover:text-foreground"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setExpanded(!isExpanded);
+                                        }}
+                                    >
+                                        {isExpanded ? (
+                                            <DynamicIcon name="minus-square" size={14} className="text-muted-foreground cursor-pointer" />
+                                        ) : (
+                                            <DynamicIcon name="plus-square" size={14} className="text-muted-foreground  cursor-pointer" />
+                                        )}
+                                    </button>
+                                )}
+                                <span>{item[col.id]}</span>
+                            </div>
+                        ) : (
+                            item[col.id]
+                        )}
+                    </td>
+                ))}
+            </tr>
+
+            {isExpanded &&
+                hasChildren &&
+                item.children.map((child: any) => (
+                    <CustomOption
+                        key={child.id}
+                        columns={columns}
+                        item={{ ...child, level: level + 1 }}
+                        itemSelected={itemSelected}
+                        isHighlighted={false}
+                        onSelect={onSelect}
+                    />
+                ))}
+        </>
+    );
+};

@@ -10,6 +10,7 @@ import {
     ColumnPinningState,
     ColumnDef,
     ExpandedState,
+    VisibilityState,
 } from '@tanstack/react-table';
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -42,7 +43,7 @@ export function WindowPage() {
         />;
     }, []);
     const { columns, data, itemSelected, permission, isExpand, subTabs,
-        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning,
+        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning, columnVisibility: colVisible,
         infoPage, setInfoPage, schema } = useWindowPage({ window_id, getContentView, type: "window" });
     const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(pinning);
 
@@ -64,12 +65,18 @@ export function WindowPage() {
         }
     }, [mapValueSource]);
 
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(colVisible);
+
     const [expandedRows, setExpandedRows] = useState<ExpandedState>({});
 
     useEffect(() => {
         setColumnPinning(pinning);
         setExpandedRows({});
     }, [pinning])
+
+    useEffect(() => {
+        setColumnVisibility(colVisible);
+    }, [colVisible])
 
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const colExpand: ColumnDef<IData, any> = useMemo(() => {
@@ -92,6 +99,7 @@ export function WindowPage() {
                 expandedContent: (row) => <ItemsSubContent row={row} subTabs={rest} window_id={window_id ?? ''} />,
                 cellClassName: 'p-1'
             },
+            enableHiding: false
         }
     }, [subTabs, window_id]);
 
@@ -120,6 +128,7 @@ export function WindowPage() {
             }
         },
         state: {
+            columnVisibility,
             columnFilters,
             columnPinning: isExpand ? { left: ['expand', ...(columnPinning.left || [])], right: columnPinning.right } : columnPinning,
             expanded: expandedRows,
@@ -127,6 +136,7 @@ export function WindowPage() {
         onExpandedChange: setExpandedRows,
         onColumnFiltersChange: setColumnFilters,
         onColumnPinningChange: setColumnPinning,
+        onColumnVisibilityChange: setColumnVisibility,
         filterFromLeafRows: true,
         enableMultiRowSelection: false
     });
@@ -142,15 +152,15 @@ export function WindowPage() {
     );
 
     const totalWidth = useMemo(() => {
-        return columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
-    }, [columns]);
+        return columns.filter((c: IData) => columnVisibility[c.accessorKey!] !== false).reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
+    }, [columns, columnVisibility]);
 
     return (
         <Fragment>
             <Container className="flex flex-col h-full">
                 <WinContext.Provider value={ctxWinValue}>
                     <div className="flex flex-col h-full space-y-2.5">
-                        <HeaderWin permission={permission} />
+                        <HeaderWin permission={permission} table={table} />
                         <div className="flex-1 min-h-0">
                             <DataGrid table={table} tableLayout={{ columnsPinnable: true, headerSticky: true, columnsResizable: true }}
                                 autoFocus={true} onKeyDown={onKeyDown} itemSelected={itemSelected}
@@ -235,9 +245,7 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
 
     const fixColumn = tab.columns.map((col: IData) => ({ ...col, meta: { ...col.meta, skeleton: <Skeleton className="w-full h-7" /> } }));
 
-    const totalWidth = useMemo(() => {
-        return tab.columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
-    }, [tab.columns]);
+
 
     const [itemSelected, setItemSelected] = useState<IData>();
 
@@ -245,12 +253,26 @@ function ItemsSubTable({ rowId, tab, isActive, window_id }: { rowId: string, tab
         setItemSelected(item);
     }, []);
 
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(tab.columnVisibility);
+
+    const totalWidth = useMemo(() => {
+        return tab.columns.filter((c: IData) => columnVisibility[c.accessorKey!] !== false).reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
+    }, [tab.columns, columnVisibility]);
+
+    useEffect(() => {
+        setColumnVisibility(tab.columnVisibility);
+    }, [tab.columnVisibility]);
+
     const table = useReactTable({
         data: data || [],
         columns: fixColumn,
         getCoreRowModel: getCoreRowModel(),
+        state: {
+            columnVisibility
+        },
         // getSortedRowModel: getSortedRowModel(),
         getRowId: (row: IData) => row.id?.toString(),
+        onColumnVisibilityChange: setColumnVisibility
     });
 
     return (

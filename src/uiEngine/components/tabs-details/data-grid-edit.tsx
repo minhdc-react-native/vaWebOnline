@@ -9,6 +9,7 @@ import {
     flexRender,
     Cell,
     CellContext,
+    VisibilityState,
 } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button';
 import { Delete, Plus } from 'lucide-react';
@@ -70,6 +71,12 @@ export function DataGridEdit({ tab, data, columns, itemSelected, setItemSelected
         resizeObserver.observe(parentRef.current);
         return () => resizeObserver.disconnect();
     }, []);
+    const [columnSizing, setColumnSizing] = useState({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(tab.columnVisibilityEdit);
+
+    useEffect(() => {
+        setColumnVisibility(tab.columnVisibilityEdit);
+    }, [tab.columnVisibilityEdit]);
 
     const table = useReactTable({
         data: data,
@@ -78,7 +85,14 @@ export function DataGridEdit({ tab, data, columns, itemSelected, setItemSelected
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
+        onColumnSizingChange: setColumnSizing,
+        columnResizeMode: "onChange",
         autoResetPageIndex,
+        state: {
+            columnVisibility,
+            columnSizing
+        },
         meta: {
             updateData: (rowIndex, columnId, value) => {
                 if (value === data[rowIndex][columnId]) return;
@@ -91,6 +105,7 @@ export function DataGridEdit({ tab, data, columns, itemSelected, setItemSelected
             }
         },
         debugTable: true,
+        enableColumnResizing: true,
     })
 
     const rowVirtualizer = useVirtualizer({
@@ -100,9 +115,10 @@ export function DataGridEdit({ tab, data, columns, itemSelected, setItemSelected
         overscan: 20,
     });
 
+
     const totalWidth = useMemo(() => {
-        return columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
-    }, [columns]);
+        return columns.filter((c: any) => columnVisibility[c.accessorKey!] !== false).reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
+    }, [columns, columnVisibility]);
 
     return (
         <div ref={parentRef} className="flex flex-col flex-1 min-h-0 max-w-full border rounded-lg rounded-tl-none">

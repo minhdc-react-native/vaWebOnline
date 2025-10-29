@@ -70,7 +70,7 @@ export function EditableCell({
             return <SelectEditor
                 value={value}
                 name={id}
-                display={{ fId: 'id' }}
+                display={{ fId: columnDef.meta?.displayField ?? undefined }}
                 columns={columnDef.meta?.listColumn || undefined}
                 expression={columnDef.meta?.expression}
                 onUpdate={onUpdateExpression}

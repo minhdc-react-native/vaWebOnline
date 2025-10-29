@@ -349,6 +349,8 @@ export const useWindowPage = ({ window_id, getContentView, type }: IProgs) => {
         onRefresh,
         handleAction,
         columnPinning: schemaWin.columnPinning || { left: [], right: [] },
+        columnVisibility: schemaWin.columnVisibility || {},
+        columnVisibilityEdit: schemaWin.columnVisibilityEdit || {},
         isExpand,
         subTabs: schemaWin.subTabs,
         schema: schemaWin.schema

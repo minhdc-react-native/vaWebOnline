@@ -7,7 +7,9 @@ import {
     ColumnFiltersState,
     useReactTable,
     getExpandedRowModel,
-    ColumnPinningState
+    ColumnPinningState,
+    VisibilityState,
+    ColumnDef
 } from '@tanstack/react-table';
 import { DataGridTree } from "@/components/ui-custom/data-grid-tree";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
@@ -32,7 +34,7 @@ export function TreeWindowPage() {
     }, []);
 
     const { columns, data, itemSelected, permission,
-        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning, schema } = useWindowPage({ window_id, getContentView, type: "tree" });
+        setItemSelected, onDoubleClick, onKeyDown, onContextMenu, handleAction, columnPinning: pinning, schema, columnVisibility: colVisible } = useWindowPage({ window_id, getContentView, type: "tree" });
 
     const { mapValueSource } = useMapSource({ source: schema.dataSource });
 
@@ -41,7 +43,11 @@ export function TreeWindowPage() {
     useEffect(() => {
         setColumnPinning(pinning);
     }, [pinning])
+    useEffect(() => {
+        setColumnVisibility(colVisible);
+    }, [colVisible])
 
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(colVisible);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const table = useReactTable({
         columns,
@@ -60,17 +66,19 @@ export function TreeWindowPage() {
         },
         state: {
             columnFilters,
-            columnPinning
+            columnPinning,
+            columnVisibility
         },
         onColumnFiltersChange: setColumnFilters,
         onColumnPinningChange: setColumnPinning,
+        onColumnVisibilityChange: setColumnVisibility,
         filterFromLeafRows: true,
         enableMultiRowSelection: false
     });
 
     const totalWidth = useMemo(() => {
-        return columns.reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
-    }, [columns]);
+        return columns.filter((c: IData) => columnVisibility[c.accessorKey!] !== false).reduce((sum: number, col: any) => sum + (col?.size ?? 100), 0);
+    }, [columns, columnVisibility]);
 
     const ctxWinValue = useMemo<IWinContext>(
         () => ({
@@ -87,7 +95,7 @@ export function TreeWindowPage() {
             <Container className="flex flex-col h-full">
                 <WinContext.Provider value={ctxWinValue}>
                     <div className="flex flex-col h-full space-y-2.5 pb-5">
-                        <HeaderWin permission={permission} />
+                        <HeaderWin permission={permission} table={table} />
                         <div className="flex-1 min-h-0">
                             <DataGrid table={table} tableLayout={{ columnsPinnable: true, headerSticky: true, columnsResizable: true }}
                                 autoFocus={true} onKeyDown={onKeyDown} itemSelected={itemSelected}

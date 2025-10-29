@@ -3,15 +3,18 @@ import { ButtonField } from '@/uiEngine/components/button-field';
 import { useT } from '@/i18n/config';
 import { useAuth } from '@/auth/context/auth-context';
 import { useWinContext } from './win-context';
+import { Table } from '@tanstack/react-table';
+import { ColumnVisibilityButton } from './column-visibility';
 
 interface IHeadeWin {
+    table: Table<IData>,
     permission: {
         new: boolean,
         edit: boolean,
         delete: boolean
     }
 }
-export default function HeaderWin({ permission }: IHeadeWin) {
+export default function HeaderWin({ permission, table }: IHeadeWin) {
     const _ = useT();
     const { currentMenuSelected } = useAuth();
 
@@ -92,6 +95,8 @@ export default function HeaderWin({ permission }: IHeadeWin) {
                         }
                         handleAction={handleAction}
                     />}
+                <div className='flex-1' />
+                <ColumnVisibilityButton table={table} />
             </div>
         </div>
     );
